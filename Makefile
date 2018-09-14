@@ -21,7 +21,9 @@ endif
 FILE_DOCKERNET:=$(CONF_TARGETROOT)/up-$(CONF_DOCKERNET)
 
 # project directory handling
-PROJ_WILDC:=$(wildcard *.docker)
+PROJ_SUFFX:=$(call confvalue,SUFFIX_PROJECT)
+DOWN_SUFFX:=$(call confvalue,SUFFIX_DOWN)
+PROJ_WILDC:=$(wildcard *$(PROJ_SUFFX))
 PROJ_NAMES:=$(basename $(PROJ_WILDC))
 
 # different complexities of commands with root privileges
@@ -58,7 +60,7 @@ net-down: down
 #########
 # sync project config directory to variable folder
 .PHONY: %-copyconf
-%-copyconf: %.docker
+%-copyconf: %$(PROJ_SUFFX)
 	@if [ -d "$</conf" ]; then \
 	  sudo rsync -r "$</conf" "$(CONF_TARGETROOT)"; \
 	  echo "Synced '$</conf' to '$(CONF_TARGETROOT)'"; \
@@ -78,54 +80,78 @@ update: $(patsubst %,%-update,$(PROJ_NAMES))
 #########
 # manage single project
 .PHONY: %-up
-%-up: %.docker %-copyconf
+%-up: %$(PROJ_SUFFX) %-copyconf
 	$(call sudocompose,up -d $(x))
 
 .PHONY: %-down
 ifeq ($(x),)
-%-down: %.docker
+%-down: %$(PROJ_SUFFX)
 	$(call sudocompose,down)
 else
-%-down: %.docker
+%-down: %$(PROJ_SUFFX)
 	$(call sudocompose,stop $(x))
 	$(call sudocompose,rm -f $(x))
 endif
 
 .PHONY: %-pull
-%-pull: %.docker
+%-pull: %$(PROJ_SUFFX)
 	$(call sudocompose,pull $(x))
 
 .PHONY: %-build
-%-build: %.docker
+%-build: %$(PROJ_SUFFX)
 	$(call sudocompose,build --pull $(x))
 
 .PHONY: %-logs
-%-logs: %.docker
+%-logs: %$(PROJ_SUFFX)
 	$(call sudocompose,logs -t $(x)) 2>/dev/null | less -R +G
 
 .PHONY: %-logf
-%-logf: %.docker
+%-logf: %$(PROJ_SUFFX)
 	$(call sudocompose,logs -tf --tail=10 $(x)) ||:
 
 s?=bash
 .PHONY: %-sh
-%-sh: %.docker
+%-sh: %$(PROJ_SUFFX)
 	$(call sudocompose,exec $(x) $(s)) ||:
 
 # enabling and disabling
 .PHONY: %-enable %-disable
-%-enable: %.docker.down
+%-enable: %$(PROJ_SUFFX)$(DOWN_SUFFX)
 	mv "$<" "$(basename $<)"
-%-disable: %.docker
-	mv "$<" "$<.down"
+%-disable: %$(PROJ_SUFFX)
+	mv "$<" "$<$(DOWN_SUFFX)"
 
 # Combinations
 .PHONY: %-update
-%-update: %.docker %-build %-pull
+%-update: %$(PROJ_SUFFX) %-build %-pull
 	$(MAKE) $(basename $<)-up
 
 # Arbitrary compose command
 .PHONY: %-cmd
-%-cmd: %.docker
+%-cmd: %$(PROJ_SUFFX)
 	$(call sudocompose,$(x))
 
+#########
+# project creation
+.PHONY: %-new
+%-new:
+	$(eval proj_dir:=$(patsubst %-new,%$(PROJ_SUFFX)$(DOWN_SUFFX),$@))
+	mkdir $(proj_dir)
+	$(eval export COMPOSEFILE)
+	echo -e "$$COMPOSEFILE" > $(proj_dir)/docker-compose.yml
+
+# default compose file
+define COMPOSEFILE
+version: '2'
+
+networks:
+  default:
+    external:
+      name: $$DOCKERNET
+
+services:
+  something:
+    image: maintainer/repo:tag
+    restart: unless-stopped
+    [...]
+endef
