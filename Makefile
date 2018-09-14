@@ -27,7 +27,7 @@ endif
 
 # suffix for disabled project directories
 DOWN_SUFFX:=$(call confvalue,SUFFIX_DOWN)
-ifeq ($(SUFFIX_DOWN),)
+ifeq ($(DOWN_SUFFX),)
 $(error SUFFIX_DOWN not set in $(CONF_WILDC))
 endif
 
