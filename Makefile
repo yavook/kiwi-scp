@@ -1,4 +1,6 @@
-# *.conf file handling
+#########
+# CONFIGS
+
 CONF_WILDC:=$(wildcard $(PWD)/*.conf)
 CONF_SOURCE:=$(patsubst %,. %;,$(CONF_WILDC))
 
@@ -17,14 +19,30 @@ ifeq ($(CONF_TARGETROOT),)
 $(error TARGETROOT not set in $(CONF_WILDC))
 endif
 
+# suffix for project directories
+PROJ_SUFFX:=$(call confvalue,SUFFIX_PROJECT)
+ifeq ($(PROJ_SUFFX),)
+$(error SUFFIX_PROJECT not set in $(CONF_WILDC))
+endif
+
+# suffix for disabled project directories
+DOWN_SUFFX:=$(call confvalue,SUFFIX_DOWN)
+ifeq ($(SUFFIX_DOWN),)
+$(error SUFFIX_DOWN not set in $(CONF_WILDC))
+endif
+
+#########
+# CONSTANTS
+
 # file to store docker network cidr
 FILE_DOCKERNET:=$(CONF_TARGETROOT)/up-$(CONF_DOCKERNET)
 
 # project directory handling
-PROJ_SUFFX:=$(call confvalue,SUFFIX_PROJECT)
-DOWN_SUFFX:=$(call confvalue,SUFFIX_DOWN)
 PROJ_WILDC:=$(wildcard *$(PROJ_SUFFX))
 PROJ_NAMES:=$(basename $(PROJ_WILDC))
+
+#########
+# FUNCTIONS
 
 # different complexities of commands with root privileges
 # - in project directory
@@ -142,7 +160,7 @@ s?=bash
 
 # default compose file
 define COMPOSEFILE
-version: '2'
+version: "3"
 
 networks:
   default:
