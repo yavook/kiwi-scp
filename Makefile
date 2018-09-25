@@ -91,14 +91,14 @@ purge-conf:
 #########
 # manage all projects
 .PHONY: up down update
-up: net-up $(patsubst %,%-up,$(PROJ_NAMES))
+up: net-up $(patsubst %,%-copyconf,$(PROJ_NAMES)) $(patsubst %,%-up,$(PROJ_NAMES))
 down: $(patsubst %,%-down,$(PROJ_NAMES))
 update: $(patsubst %,%-update,$(PROJ_NAMES))
 
 #########
 # manage single project
 .PHONY: %-up
-%-up: %$(PROJ_SUFFX) %-copyconf
+%-up: %$(PROJ_SUFFX)
 	$(call sudocompose,up -d $(x))
 
 .PHONY: %-down
