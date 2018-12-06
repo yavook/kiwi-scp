@@ -13,6 +13,11 @@ ifeq ($(CONF_DOCKERNET),)
 $(error DOCKERNET not set in $(CONF_WILDC))
 endif
 
+CONF_DOCKERCIDR:=$(call confvalue,DOCKERCIDR)
+ifeq ($(CONF_DOCKERNET),)
+$(error DOCKERCIDR not set in $(CONF_WILDC))
+endif
+
 # persistent data directory
 CONF_TARGETROOT:=$(call confvalue,TARGETROOT)
 ifeq ($(CONF_TARGETROOT),)
@@ -62,18 +67,18 @@ all: purge-conf up
 #########
 # manage the docker network (container name local DNS)
 $(FILE_DOCKERNET):
-	sudo docker network create "$(CONF_DOCKERNET)" ||:
+	sudo docker network create --driver bridge --internal --subnet "$(CONF_DOCKERCIDR)" "$(CONF_DOCKERNET)" ||:
 	sudo mkdir -p "$(CONF_TARGETROOT)"
 	sudo chmod 700 "$(CONF_TARGETROOT)"
-	sudo docker network inspect -f '{{(index .IPAM.Config 0).Subnet}}' "$(CONF_DOCKERNET)" | sudo tee "$@"
+	sudo echo "$(CONF_DOCKERCIDR)" | sudo tee "$@"
 
 .PHONY: net-up
 net-up: $(FILE_DOCKERNET)
 
 .PHONY: net-down
 net-down: down
-	sudo docker network rm $(CONF_DOCKERNET)
-	sudo rm $(FILE_DOCKERNET)
+	sudo docker network rm "$(CONF_DOCKERNET)"
+	sudo rm "$(FILE_DOCKERNET)"
 
 #########
 # sync project config directory to variable folder
@@ -160,10 +165,14 @@ s?=bash
 
 # default compose file
 define COMPOSEFILE
-version: "3"
+version: "2"
 
 networks:
-  default:
+	# reachable from outside
+	default:
+		driver: bridge
+	# interconnects projects
+  gassi:
     external:
       name: $$DOCKERNET
 
@@ -171,5 +180,8 @@ services:
   something:
     image: maintainer/repo:tag
     restart: unless-stopped
+		networks:
+		  - default
+		  - gassi
     [...]
 endef
