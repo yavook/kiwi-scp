@@ -168,10 +168,10 @@ define COMPOSEFILE
 version: "2"
 
 networks:
-	# reachable from outside
-	default:
-		driver: bridge
-	# interconnects projects
+  # reachable from outside
+  default:
+    driver: bridge
+  # interconnects projects
   gassi:
     external:
       name: $$DOCKERNET
