@@ -3,13 +3,13 @@
 
 DOCKER:=docker
 DOCKER_COMPOSE:=docker-compose
-docker_bash=bash -c '$(1)'
+docker_bash=$(1)
 
 # Check if needs root privileges?
 PRIVGROUP:=docker
 ifneq ($(findstring $(PRIVGROUP),$(shell groups)),$(PRIVGROUP))
 DOCKER:=sudo $(DOCKER)
-docker_bash=sudo $(docker_bash)
+docker_bash=sudo bash -c '$(1)'
 endif
 
 #########
@@ -60,7 +60,7 @@ FILE_DOCKERNET:=$(CONF_TARGETROOT)/up-$(CONF_DOCKERNET)
 
 # project directory handling
 PROJ_WILDC:=$(wildcard *$(PROJ_SUFFX))
-PROJ_NAMES:=$(basename $(PROJ_WILDC))
+PROJ_NAMES:=$(patsubst %$(PROJ_SUFFX),%,$(PROJ_WILDC))
 
 #########
 # FUNCTIONS
@@ -70,7 +70,7 @@ PROJ_NAMES:=$(basename $(PROJ_WILDC))
 #  - with sourced *.conf files
 #  - with COMPOSE_PROJECT_NAME, CONFDIR and TARGETDIR set
 kiwicompose=$(call docker_bash,\
-	cd "$(<)"; \
+	cd "$<"; \
 	$(CONF_SOURCE) \
 	COMPOSE_PROJECT_NAME="$(patsubst %$(PROJ_SUFFX),%,$<)" \
 	CONFDIR="$(CONF_TARGETROOT)/conf" \
