@@ -1,7 +1,22 @@
+##########
+# COMMANDS
+
+DOCKER:=docker
+DOCKER_COMPOSE:=docker-compose
+docker_bash=bash -c '$(1)'
+
+# Check if needs root privileges?
+PRIVGROUP:=docker
+ifneq ($(findstring $(PRIVGROUP),$(shell groups)),$(PRIVGROUP))
+DOCKER:=sudo $(DOCKER)
+docker_bash=sudo $(docker_bash)
+endif
+
 #########
 # CONFIGS
 
 CONF_WILDC:=$(wildcard $(PWD)/*.conf)
+# apply source to *all* configs!
 CONF_SOURCE:=$(patsubst %,. %;,$(CONF_WILDC))
 
 # extraction of env variables from *.conf files
@@ -13,6 +28,7 @@ ifeq ($(CONF_DOCKERNET),)
 $(error DOCKERNET not set in $(CONF_WILDC))
 endif
 
+# docker network CIDR 
 CONF_DOCKERCIDR:=$(call confvalue,DOCKERCIDR)
 ifeq ($(CONF_DOCKERNET),)
 $(error DOCKERCIDR not set in $(CONF_WILDC))
@@ -49,13 +65,17 @@ PROJ_NAMES:=$(basename $(PROJ_WILDC))
 #########
 # FUNCTIONS
 
-# different complexities of commands with root privileges
-# - in project directory
-projsudo=cd "$<"; sudo bash -c "$(1)"
-# - additionally with sourced *.conf files
-confprojsudo=$(call projsudo,$(CONF_SOURCE) $(1))
-# - only for compose: additionally with COMPOSE_PROJECT_NAME, CONFDIR and TARGETDIR set
-sudocompose=$(call confprojsudo,COMPOSE_PROJECT_NAME="$(basename $<)" CONFDIR="$(CONF_TARGETROOT)/conf" TARGETDIR="$(CONF_TARGETROOT)/$<" docker-compose $(1))
+# run DOCKER_COMPOSE:
+#  - in project directory
+#  - with sourced *.conf files
+#  - with COMPOSE_PROJECT_NAME, CONFDIR and TARGETDIR set
+kiwicompose=$(call docker_bash,\
+	cd "$(<)"; \
+	$(CONF_SOURCE) \
+	COMPOSE_PROJECT_NAME="$(patsubst %$(PROJ_SUFFX),%,$<)" \
+	CONFDIR="$(CONF_TARGETROOT)/conf" \
+	TARGETDIR="$(CONF_TARGETROOT)/$<" \
+	$(DOCKER_COMPOSE) $(1))
 
 #########
 # TARGETS
@@ -67,75 +87,118 @@ all: purge-conf up
 #########
 # manage the docker network (container name local DNS)
 $(FILE_DOCKERNET):
-	sudo docker network create --driver bridge --internal --subnet "$(CONF_DOCKERCIDR)" "$(CONF_DOCKERNET)" ||:
-	sudo mkdir -p "$(CONF_TARGETROOT)"
-	sudo chmod 700 "$(CONF_TARGETROOT)"
-	sudo echo "$(CONF_DOCKERCIDR)" | sudo tee "$@"
+	-$(DOCKER) network create \
+		--driver bridge \
+		--internal \
+		--subnet "$(CONF_DOCKERCIDR)" \
+		"$(CONF_DOCKERNET)"
+	@echo "Creating canary $(FILE_DOCKERNET) ..."
+	@$(DOCKER) run --rm \
+		-v "/:/mnt" -u root alpine:latest \
+		ash -c '\
+			mkdir -p "$(addprefix /mnt, $(CONF_TARGETROOT))"; \
+			echo "$(CONF_DOCKERCIDR)" > "$(addprefix /mnt, $(FILE_DOCKERNET))"; \
+		'
 
 .PHONY: net-up
 net-up: $(FILE_DOCKERNET)
 
 .PHONY: net-down
 net-down: down
-	sudo docker network rm "$(CONF_DOCKERNET)"
-	sudo rm "$(FILE_DOCKERNET)"
+	$(DOCKER) network rm "$(CONF_DOCKERNET)"
+	@echo "Removing canary $(FILE_DOCKERNET) ..."
+	@$(DOCKER) run --rm \
+		-v "/:/mnt" -u root alpine:latest \
+		ash -c '\
+			rm -f "$(addprefix /mnt, $(FILE_DOCKERNET))"; \
+		'
 
 #########
 # sync project config directory to variable folder
-.PHONY: %-copyconf
-%-copyconf: %$(PROJ_SUFFX)
-	@if [ -d "$</conf" ]; then \
-	  sudo rsync -r "$</conf" "$(CONF_TARGETROOT)"; \
-	  echo "Synced '$</conf' to '$(CONF_TARGETROOT)'"; \
-	fi
+
+# Dockerfile for 
+define DOCKERFILE_RSYNC
+FROM alpine:latest
+RUN  apk --no-cache add rsync
+endef
+
+.PHONY: copy-conf
+copy-conf:
+ifneq ($(wildcard *${PROJ_SUFFX}/conf),)
+	$(eval export DOCKERFILE_RSYNC)
+	@echo "Building auxiliary image ldericher/kiwi-config:rsync ..."
+	@echo -e "$${DOCKERFILE_RSYNC}" | \
+		$(DOCKER) build -t ldericher/kiwi-config:rsync . -f- &> /dev/null
+
+	$(eval sources:=$(wildcard *${PROJ_SUFFX}/conf))
+	@echo "Syncing $(sources) to $(CONF_TARGETROOT) ..."
+
+	$(eval sources:=$(realpath $(sources)))
+	$(eval sources:=$(addprefix /mnt, $(sources)))
+	$(eval sources:=$(patsubst %,'%',$(sources)))
+	$(eval dest:='$(addprefix /mnt, $(CONF_TARGETROOT))')
+
+	@$(DOCKER) run --rm \
+		-v "/:/mnt" -u root ldericher/kiwi-config:rsync \
+		ash -c '\
+			rsync -r $(sources) $(dest); \
+		'
+endif
 
 .PHONY: purge-conf
 purge-conf:
-	sudo rm -rf "$(CONF_TARGETROOT)/conf"
+	@echo "Emptying $(CONF_TARGETROOT)/conf ..."
+	@$(DOCKER) run --rm \
+		-v "/:/mnt" -u root alpine:latest \
+		ash -c '\
+			rm -rf "$(addprefix /mnt, $(CONF_TARGETROOT)/conf)"; \
+		'
 
 #########
 # manage all projects
 .PHONY: up down update
-up: net-up $(patsubst %,%-copyconf,$(PROJ_NAMES)) $(patsubst %,%-up,$(PROJ_NAMES))
+up: net-up copy-conf $(patsubst %,%-up,$(PROJ_NAMES))
 down: $(patsubst %,%-down,$(PROJ_NAMES))
 update: $(patsubst %,%-update,$(PROJ_NAMES))
 
 #########
 # manage single project
 .PHONY: %-up
-%-up: %$(PROJ_SUFFX)
-	$(call sudocompose,up -d $(x))
+%-up: %$(PROJ_SUFFX) net-up
+	$(call kiwicompose,up -d $(x))
 
 .PHONY: %-down
 ifeq ($(x),)
 %-down: %$(PROJ_SUFFX)
-	$(call sudocompose,down)
+	$(call kiwicompose,down)
 else
 %-down: %$(PROJ_SUFFX)
-	$(call sudocompose,stop $(x))
-	$(call sudocompose,rm -f $(x))
+	$(call kiwicompose,stop $(x))
+	$(call kiwicompose,rm -f $(x))
 endif
 
 .PHONY: %-pull
 %-pull: %$(PROJ_SUFFX)
-	$(call sudocompose,pull $(x))
+	$(call kiwicompose,pull --ignore-pull-failures $(x))
 
 .PHONY: %-build
 %-build: %$(PROJ_SUFFX)
-	$(call sudocompose,build --pull $(x))
+	$(call kiwicompose,build --pull $(x))
 
 .PHONY: %-logs
 %-logs: %$(PROJ_SUFFX)
-	$(call sudocompose,logs -t $(x)) 2>/dev/null | less -R +G
+	$(call kiwicompose,logs -t $(x)) 2>/dev/null | less -R +G
 
 .PHONY: %-logf
 %-logf: %$(PROJ_SUFFX)
-	$(call sudocompose,logs -tf --tail=10 $(x)) ||:
+	$(call kiwicompose,logs -tf --tail=10 $(x)) ||:
 
+ifneq ($(x),)
 s?=bash
 .PHONY: %-sh
 %-sh: %$(PROJ_SUFFX)
-	$(call sudocompose,exec $(x) $(s)) ||:
+	$(call kiwicompose,exec $(x) /bin/sh -c "[ -e /bin/$(s) ] && /bin/$(s) || /bin/sh")
+endif
 
 # enabling and disabling
 .PHONY: %-enable %-disable
@@ -152,7 +215,7 @@ s?=bash
 # Arbitrary compose command
 .PHONY: %-cmd
 %-cmd: %$(PROJ_SUFFX)
-	$(call sudocompose,$(x))
+	$(call kiwicompose,$(x))
 
 #########
 # project creation
@@ -161,7 +224,7 @@ s?=bash
 	$(eval proj_dir:=$(patsubst %-new,%$(PROJ_SUFFX)$(DOWN_SUFFX),$@))
 	mkdir $(proj_dir)
 	$(eval export COMPOSEFILE)
-	echo -e "$$COMPOSEFILE" > $(proj_dir)/docker-compose.yml
+	echo -e "$${COMPOSEFILE}" > $(proj_dir)/docker-compose.yml
 
 # default compose file
 define COMPOSEFILE
@@ -172,7 +235,7 @@ networks:
   default:
     driver: bridge
   # interconnects projects
-  gassi:
+  hubnet:
     external:
       name: $$DOCKERNET
 
@@ -182,6 +245,6 @@ services:
     restart: unless-stopped
 		networks:
 		  - default
-		  - gassi
+		  - hubnet
     [...]
 endef
