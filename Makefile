@@ -58,9 +58,14 @@ endif
 # file to store docker network cidr
 FILE_DOCKERNET:=$(CONF_TARGETROOT)/up-$(CONF_DOCKERNET)
 
+# remove any suffix $2 from $1
+rmsuffix=$(patsubst %$2,%,$1)
+# remove project suffix from $1
+projname=$(call rmsuffix,$1,$(PROJ_SUFFX))
+
 # project directory handling
 PROJ_WILDC:=$(wildcard *$(PROJ_SUFFX))
-PROJ_NAMES:=$(patsubst %$(PROJ_SUFFX),%,$(PROJ_WILDC))
+PROJ_NAMES:=$(call projname,$(PROJ_WILDC))
 
 #########
 # FUNCTIONS
@@ -72,7 +77,7 @@ PROJ_NAMES:=$(patsubst %$(PROJ_SUFFX),%,$(PROJ_WILDC))
 kiwicompose=$(call docker_bash,\
 	cd "$<"; \
 	$(CONF_SOURCE) \
-	COMPOSE_PROJECT_NAME="$(patsubst %$(PROJ_SUFFX),%,$<)" \
+	COMPOSE_PROJECT_NAME="$(call projname,$<)" \
 	CONFDIR="$(CONF_TARGETROOT)/conf" \
 	TARGETDIR="$(CONF_TARGETROOT)/$<" \
 	$(DOCKER_COMPOSE) $(1))
@@ -116,7 +121,7 @@ net-down: down
 #########
 # sync project config directory to variable folder
 
-# Dockerfile for 
+# Dockerfile for running rsync as root
 define DOCKERFILE_RSYNC
 FROM alpine:latest
 RUN  apk --no-cache add rsync
@@ -203,14 +208,15 @@ endif
 # enabling and disabling
 .PHONY: %-enable %-disable
 %-enable: %$(PROJ_SUFFX)$(DOWN_SUFFX)
-	mv "$<" "$(basename $<)"
+	mv "$<" "$(call projname,$(call rmsuffix,$<,$(DOWN_SUFFX)))$(PROJ_SUFFX)"
 %-disable: %$(PROJ_SUFFX)
 	mv "$<" "$<$(DOWN_SUFFX)"
 
 # Combinations
 .PHONY: %-update
-%-update: %$(PROJ_SUFFX) %-build %-pull
-	$(MAKE) $(basename $<)-up
+%-update: %$(PROJ_SUFFX) %-build %-pull copy-conf
+	$(MAKE) $(call projname,$<)-cmd x="restart $(x)"
+	$(MAKE) $(call projname,$<)-up
 
 # Arbitrary compose command
 .PHONY: %-cmd
