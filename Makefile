@@ -215,7 +215,7 @@ endif
 # Combinations
 .PHONY: %-update
 %-update: %$(PROJ_SUFFX) %-build %-pull copy-conf
-	$(MAKE) $(call projname,$<)-cmd x="restart $(x)"
+	$(MAKE) $(call projname,$<)-down
 	$(MAKE) $(call projname,$<)-up
 
 # Arbitrary compose command
