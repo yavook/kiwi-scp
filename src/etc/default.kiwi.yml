@@ -1,0 +1,12 @@
+version: 0.1
+
+suffix:
+  project: .project
+  down: .down
+
+docker:
+  net: kiwinet
+  cidr: 10.22.46.0/24
+
+target:
+  root: /var/kiwi
