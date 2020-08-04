@@ -1,0 +1,70 @@
+#!/bin/bash
+
+#############
+# CONSTANTS #
+############# 
+
+# base config filename (constant)
+KIWI_CONF_NAME="kiwi.conf"
+# base install dir 
+KIWI_BASEDIR="${HOME}/.cache/kiwi-config-bin"
+# repository uri
+KIWI_REPO="https://github.com/ldericher/kiwi-config"
+
+########
+# MAIN #
+########
+
+# use latest version by default
+version="master"
+
+# check if pwd is a kiwi folder
+if [ -f "./${KIWI_CONF_NAME}" ]; then
+    # determine needed kiwi-config version
+    version=$(source "./${KIWI_CONF_NAME}" && echo "v${VERSION}")
+fi
+
+# install if kiwi-config not found
+if [ ! -x "${KIWI_BASEDIR}/${version}/main.sh" ]; then
+    echo -n "Installing kiwi-config ${version} into ${KIWI_BASEDIR} ... "
+
+    ### production version ###
+
+    # # create temp dir
+    # tmpdir=$(mktemp -d)
+
+    # ( 
+    #     cd "${tmpdir}"
+
+    #     # download archive
+    #     wget "${KIWI_REPO}/archive/${version}.zip"
+    #     unzip "${version}.zip"
+
+    #     # read archive version tag
+    #     cd "kiwi-config-${version}"
+    #     version=$(cat ./version-tag)
+
+    #     # install archive
+    #     mkdir -p "${KIWI_BASEDIR}"
+    #     mv ./bin "${KIWI_BASEDIR}/${version}"
+    # )
+
+    # # discard temp dir
+    # rm -rf "${tmpdir}"
+
+    ### development version ###
+
+    ( 
+        # read this version tag
+        version=$(cat ./version-tag)
+
+        # install this
+        mkdir -p "${KIWI_BASEDIR}"
+        ln -s "$(readlink -f ./bin)" "${KIWI_BASEDIR}/${version}"
+    )
+
+    echo "OK"
+fi
+
+# run main script
+exec "${KIWI_BASEDIR}/${version}/main.sh" "${@}"
