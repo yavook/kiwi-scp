@@ -4,10 +4,10 @@
 # CONSTANTS #
 ############# 
 
-# base config filename (constant)
-KIWI_CONF_NAME="kiwi.conf"
+# base config filename
+export KIWI_CONF_NAME="kiwi.conf"
 # base install dir 
-KIWI_BASEDIR="${HOME}/.cache/kiwi-config-bin"
+KIWI_BASEDIR="${HOME}/.cache/kiwi-config"
 # repository uri
 KIWI_REPO="https://github.com/ldericher/kiwi-config"
 
@@ -16,55 +16,54 @@ KIWI_REPO="https://github.com/ldericher/kiwi-config"
 ########
 
 # use latest version by default
-version="master"
+export KIWI_VERSION="master"
 
 # check if pwd is a kiwi folder
 if [ -f "./${KIWI_CONF_NAME}" ]; then
     # determine needed kiwi-config version
-    version=$(source "./${KIWI_CONF_NAME}" && echo "v${VERSION}")
+    export KIWI_VERSION=$(source "./${KIWI_CONF_NAME}" && echo "${VERSION}")
 fi
 
 # install if kiwi-config not found
-if [ ! -x "${KIWI_BASEDIR}/${version}/main.sh" ]; then
-    echo -n "Installing kiwi-config ${version} into ${KIWI_BASEDIR} ... "
+if [ ! -x "${KIWI_BASEDIR}/${KIWI_VERSION}/bin/main.sh" ]; then
+    echo -n "Installing kiwi-config v${KIWI_VERSION} into ${KIWI_BASEDIR} ... "
 
     ### production version ###
 
-    # # create temp dir
+    # # switch to temp dir
+    # workdir=$(pwd)
     # tmpdir=$(mktemp -d)
+    # cd "${tmpdir}"
 
-    # ( 
-    #     cd "${tmpdir}"
+    # # download archive
+    # wget "${KIWI_REPO}/archive/${KIWI_VERSION}.zip"
+    # unzip "${KIWI_VERSION}.zip"
 
-    #     # download archive
-    #     wget "${KIWI_REPO}/archive/${version}.zip"
-    #     unzip "${version}.zip"
+    # # read archive version tag
+    # cd "kiwi-config-${KIWI_VERSION}"
+    # export KIWI_VERSION=$(cat ./version-tag)
 
-    #     # read archive version tag
-    #     cd "kiwi-config-${version}"
-    #     version=$(cat ./version-tag)
-
-    #     # install archive
-    #     mkdir -p "${KIWI_BASEDIR}"
-    #     mv ./bin "${KIWI_BASEDIR}/${version}"
-    # )
+    # # install archive
+    # mkdir -p "${KIWI_BASEDIR}"
+    # mv ./src "${KIWI_BASEDIR}/${KIWI_VERSION}"
 
     # # discard temp dir
+    # cd "${workdir}"
     # rm -rf "${tmpdir}"
 
     ### development version ###
 
-    ( 
-        # read this version tag
-        version=$(cat ./version-tag)
+    # read this version tag
+    export KIWI_VERSION=$(cat ./version-tag)
 
-        # install this
-        mkdir -p "${KIWI_BASEDIR}"
-        ln -s "$(readlink -f ./bin)" "${KIWI_BASEDIR}/${version}"
-    )
+    # install this
+    mkdir -p "${KIWI_BASEDIR}"
+    ln -s "$(readlink -f ./src)" "${KIWI_BASEDIR}/${KIWI_VERSION}"
 
     echo "OK"
 fi
 
+export KIWI_ROOT="${KIWI_BASEDIR}/${KIWI_VERSION}"
+
 # run main script
-exec "${KIWI_BASEDIR}/${version}/main.sh" "${@}"
+exec "${KIWI_ROOT}/bin/main.sh" "${@}"
