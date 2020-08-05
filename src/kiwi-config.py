@@ -20,7 +20,7 @@ def main():
     print(args.command)
 
     cf = Config.default()
-    cf.init()
+    cf.user_input()
 
     pass
 
