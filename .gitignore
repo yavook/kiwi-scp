@@ -1,1 +1,4 @@
 __pycache__/
+**/venv/lib
+**/venv/bin/easy_install*
+**/venv/bin/pip*
