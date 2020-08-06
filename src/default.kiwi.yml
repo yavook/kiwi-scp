@@ -11,3 +11,4 @@ network:
 runtime:
   storage: /var/kiwi
   env:
+    HELLO_KIWI: Hello World!

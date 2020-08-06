@@ -1,79 +1,76 @@
-import os
+import logging
 import re
 import yaml
 
+from .core import KIWI_ROOT, KIWI_CONF_NAME
+
+###########
+# CONSTANTS
+
+DEFAULT_KIWI_CONF_NAME = KIWI_ROOT + "/default.kiwi.yml"
+
 
 class Config:
-    KIWI_ROOT = os.getenv('KIWI_ROOT', '.')
-    __yml_content = None
+    __yml_content = {}
 
-    @classmethod
-    def __from_file(cls, filename):
-        result = cls()
+    def __str__(self):
+        # dump yml content
+        yml_string = yaml.dump(self.__yml_content, default_flow_style=False, sort_keys=False)
 
-        with open(filename, 'r') as stream:
-            try:
-                result.__yml_content = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                print(exc)
+        # insert newline before every main key
+        yml_string = re.sub(r'^(\S)', r'\n\1', yml_string, flags=re.MULTILINE)
 
-        return result
+        # extract header comment from default config
+        with open(DEFAULT_KIWI_CONF_NAME, 'r') as stream:
+            yml_header = stream.read().strip()
+            yml_header = re.sub(r'^[^#].*', r'', yml_header, flags=re.MULTILINE).strip()
+            yml_string = "{}\n{}".format(yml_header, yml_string)
 
-    @classmethod
-    def default(cls):
-        result = cls.__from_file(cls.KIWI_ROOT + "/default.kiwi.yml")
+        return yml_string
 
-        with open(cls.KIWI_ROOT + "/version-tag", 'r') as stream:
-            result.__yml_content["version"] = stream.read().strip()
-
-        return result
-
-    def __yml_resolve(self, key):
+    def __key_resolve(self, key):
         # "a:b:c" => path = ['a', 'b'], key = 'c'
         path = key.split(':')
         path, key = path[:-1], path[-1]
 
         # resolve path
-        content = self.__yml_content
+        container = self.__yml_content
         for step in path:
-            content = content[step]
+            container = container[step]
 
-        return content, key
+        return container, key
 
-    def __yml_get(self, key):
-        content, key = self.__yml_resolve(key)
-        return content[key]
+    def __setitem__(self, key, value):
+        container, key = self.__key_resolve(key)
+        container[key] = value
 
-    def __yml_set(self, key, value):
-        content, key = self.__yml_resolve(key)
-        content[key] = value
+    def __getitem__(self, key):
+        container, key = self.__key_resolve(key)
+        return container[key]
 
-    def __user_input(self, key, prompt):
-        # prompt user as per argument
-        result = input("{} [Current: {}] ".format(prompt, self.__yml_get(key))).strip()
+    def __update_from_file(self, filename):
+        with open(filename, 'r') as stream:
+            try:
+                self.__yml_content.update(yaml.safe_load(stream))
+            except yaml.YAMLError as exc:
+                logging.error(exc)
 
-        # store result if present
-        if result:
-            self.__yml_set(key, result)
+    @classmethod
+    def default(cls):
+        result = cls()
+        result.__update_from_file(DEFAULT_KIWI_CONF_NAME)
 
-    def user_input(self):
-        self.__user_input("version", "Choose kiwi-config version")
+        with open(KIWI_ROOT + "/version-tag", 'r') as stream:
+            result.__yml_content["version"] = stream.read().strip()
 
-        self.__user_input("markers:project", "Enter marker string for project directories")
-        self.__user_input("markers:down", "Enter marker string for disabled projects")
+        return result
 
-        self.__user_input("network:name", "Enter name for local docker network")
-        self.__user_input("network:cidr", "Enter CIDR block for local docker network")
+    @classmethod
+    def load(cls):
+        result = cls.default()
+        result.__update_from_file(KIWI_CONF_NAME)
 
-        self.__user_input("runtime:storage", "Enter main directory for local data")
+        return result
 
-    def dump(self):
-        yml_string = yaml.dump(self.__yml_content, default_flow_style=False, sort_keys=False)
-        yml_string = re.sub(r'^(\S)', r'\n\1', yml_string, flags=re.MULTILINE)
-
-        with open(Config.KIWI_ROOT + "/default.kiwi.yml", 'r') as stream:
-            yml_header = stream.read().strip()
-            yml_header = re.sub(r'^[^#].*', r'', yml_header, flags=re.MULTILINE).strip()
-            yml_string = "{}\n{}".format(yml_header, yml_string)
-
-        print(yml_string)
+    def save(self):
+        pass
