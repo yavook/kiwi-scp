@@ -38,19 +38,3 @@ class Parser:
             cls.__args = cls.get_instance().parse_args()
 
         return cls.__args
-
-
-class SubCommand:
-    __cmd = None
-
-    def __init__(self, cmd):
-        self.__cmd = cmd
-
-    def __str__(self):
-        return self.__cmd
-
-    def setup(self):
-        pass
-
-    def run(self):
-        pass
