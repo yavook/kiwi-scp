@@ -10,5 +10,4 @@ network:
   cidr: 10.22.46.0/24
 runtime:
   storage: /var/kiwi
-  env:
-    HELLO_KIWI: Hello World!
+  env: null
