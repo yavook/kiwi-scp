@@ -1,9 +1,17 @@
+######################################
+# kiwi-config instance configuration #
+######################################
+
 version:
-suffixes:
+
+markers:
   project: .project
   down: .down
+
 network:
   name: kiwinet
   cidr: 10.22.46.0/24
-storage:
-  location: /var/kiwi
+
+runtime:
+  storage: /var/kiwi
+  env: null
