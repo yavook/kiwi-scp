@@ -1,5 +1,6 @@
 import logging
 import re
+import os
 import yaml
 
 from .core import KIWI_ROOT, KIWI_CONF_NAME
@@ -12,6 +13,26 @@ DEFAULT_KIWI_CONF_NAME = KIWI_ROOT + "/default.kiwi.yml"
 
 class Config:
     __yml_content = {}
+
+    def __key_resolve(self, key):
+        # "a:b:c" => path = ['a', 'b'], key = 'c'
+        path = key.split(':')
+        path, key = path[:-1], path[-1]
+
+        # resolve path
+        container = self.__yml_content
+        for step in path:
+            container = container[step]
+
+        return container, key
+
+    def __getitem__(self, key):
+        container, key = self.__key_resolve(key)
+        return container[key]
+
+    def __setitem__(self, key, value):
+        container, key = self.__key_resolve(key)
+        container[key] = value
 
     def __str__(self):
         # dump yml content
@@ -28,32 +49,16 @@ class Config:
 
         return yml_string
 
-    def __key_resolve(self, key):
-        # "a:b:c" => path = ['a', 'b'], key = 'c'
-        path = key.split(':')
-        path, key = path[:-1], path[-1]
-
-        # resolve path
-        container = self.__yml_content
-        for step in path:
-            container = container[step]
-
-        return container, key
-
-    def __setitem__(self, key, value):
-        container, key = self.__key_resolve(key)
-        container[key] = value
-
-    def __getitem__(self, key):
-        container, key = self.__key_resolve(key)
-        return container[key]
-
     def __update_from_file(self, filename):
         with open(filename, 'r') as stream:
             try:
                 self.__yml_content.update(yaml.safe_load(stream))
             except yaml.YAMLError as exc:
                 logging.error(exc)
+
+    def __save_to_file(self, filename):
+        with open(filename, 'w') as stream:
+            stream.write(str(self))
 
     @classmethod
     def default(cls):
@@ -68,9 +73,11 @@ class Config:
     @classmethod
     def load(cls):
         result = cls.default()
-        result.__update_from_file(KIWI_CONF_NAME)
+
+        if os.path.isfile(KIWI_CONF_NAME):
+            result.__update_from_file(KIWI_CONF_NAME)
 
         return result
 
     def save(self):
-        pass
+        self.__save_to_file(KIWI_CONF_NAME)

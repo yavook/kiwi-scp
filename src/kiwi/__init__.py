@@ -1,4 +1,3 @@
-from .core import Parser
-from .config import Config
+from .runner import Runner
 
-__all__ = ['Parser', 'Config']
+__all__ = ['Runner']
