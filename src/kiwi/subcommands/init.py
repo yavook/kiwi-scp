@@ -9,7 +9,7 @@ from .subcommand import SubCommand
 
 def user_input(config, key, prompt):
     # prompt user as per argument
-    result = input("{} [Current: {}] ".format(prompt, config[key])).strip()
+    result = input("{} [Default: {}] ".format(prompt, config[key])).strip()
 
     # store result if present
     if result:
