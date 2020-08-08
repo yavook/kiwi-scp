@@ -1,7 +1,7 @@
-from kiwi.config import Config
-from kiwi.core import Parser
+from ..config import LoadedConfig
+from ..core import Parser
 
-from .subcommand import SubCommand
+from ._utils import SubCommand
 
 
 class ShowCommand(SubCommand):
@@ -17,5 +17,5 @@ class ShowCommand(SubCommand):
 
     @classmethod
     def run(cls):
-        config = Config.load()
+        config = LoadedConfig.get()
         print(config)

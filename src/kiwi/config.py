@@ -9,6 +9,7 @@ from .core import KIWI_ROOT, KIWI_CONF_NAME
 # CONSTANTS
 
 DEFAULT_KIWI_CONF_NAME = KIWI_ROOT + "/default.kiwi.yml"
+VERSION_TAG_NAME = KIWI_ROOT + "/version-tag"
 
 
 class Config:
@@ -49,35 +50,39 @@ class Config:
 
         return yml_string
 
-    def __update_from_file(self, filename):
+    def _update_from_file(self, filename):
         with open(filename, 'r') as stream:
             try:
                 self.__yml_content.update(yaml.safe_load(stream))
             except yaml.YAMLError as exc:
                 logging.error(exc)
 
-    def __save_to_file(self, filename):
-        with open(filename, 'w') as stream:
+    def save(self):
+        with open(KIWI_CONF_NAME, 'w') as stream:
             stream.write(str(self))
 
-    @classmethod
-    def default(cls):
-        result = cls()
-        result.__update_from_file(DEFAULT_KIWI_CONF_NAME)
 
-        with open(KIWI_ROOT + "/version-tag", 'r') as stream:
-            result.__yml_content["version"] = stream.read().strip()
-
-        return result
+class DefaultConfig(Config):
+    __instance = None
 
     @classmethod
-    def load(cls):
-        result = cls.default()
+    def get(cls):
+        if cls.__instance is None:
+            cls.__instance = cls()
+            cls.__instance._update_from_file(DEFAULT_KIWI_CONF_NAME)
+
+            with open(VERSION_TAG_NAME, 'r') as stream:
+                cls.__instance["version"] = stream.read().strip()
+
+        return cls.__instance
+
+
+class LoadedConfig(Config):
+    @classmethod
+    def get(cls):
+        result = DefaultConfig.get()
 
         if os.path.isfile(KIWI_CONF_NAME):
-            result.__update_from_file(KIWI_CONF_NAME)
+            result._update_from_file(KIWI_CONF_NAME)
 
         return result
-
-    def save(self):
-        self.__save_to_file(KIWI_CONF_NAME)
