@@ -1,10 +1,10 @@
 import logging
 import os
 
-from kiwi.core import KIWI_CONF_NAME, Parser
-from kiwi.config import Config
+from ..core import KIWI_CONF_NAME, Parser
+from ..config import DefaultConfig
 
-from .subcommand import SubCommand
+from ._utils import SubCommand
 
 
 def user_input(config, key, prompt):
@@ -14,6 +14,25 @@ def user_input(config, key, prompt):
     # store result if present
     if result:
         config[key] = result
+
+
+def find_exe(program_name):
+    for path in os.environ["PATH"].split(os.pathsep):
+        exe_file = os.path.join(path, program_name)
+        if os.path.isfile(exe_file) and os.access(exe_file, os.X_OK):
+            return exe_file
+
+    return None
+
+
+def user_input_exe(config, program_name):
+    exe_file = find_exe(program_name)
+    key = 'executables:' + program_name
+
+    if exe_file is not None:
+        config[key] = exe_file
+    else:
+        user_input(config, key, "Enter path to '{}' executable".format(program_name))
 
 
 class InitCommand(SubCommand):
@@ -30,12 +49,14 @@ class InitCommand(SubCommand):
 
     @classmethod
     def run(cls):
-        config = Config.default()
+        config = DefaultConfig.get()
 
         if os.path.isfile(KIWI_CONF_NAME):
             logging.warning("Overwriting existing '%s'!", KIWI_CONF_NAME)
 
         user_input(config, 'version', "Choose kiwi-config version")
+
+        user_input(config, 'runtime:storage', "Enter main directory for local data")
 
         user_input(config, 'markers:project', "Enter marker string for project directories")
         user_input(config, 'markers:down', "Enter marker string for disabled projects")
@@ -43,6 +64,8 @@ class InitCommand(SubCommand):
         user_input(config, 'network:name', "Enter name for local docker network")
         user_input(config, 'network:cidr', "Enter CIDR block for local docker network")
 
-        user_input(config, 'runtime:storage', "Enter main directory for local data")
+        user_input_exe(config, 'docker')
+        user_input_exe(config, 'docker-compose')
+        user_input_exe(config, 'sudo')
 
         config.save()

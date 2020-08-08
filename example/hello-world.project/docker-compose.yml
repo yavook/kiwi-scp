@@ -1,0 +1,15 @@
+version: "2"
+
+networks:
+  # reachable from outside
+  default:
+    driver: bridge
+  # interconnects projects
+  kiwihub:
+    external:
+      name: $DOCKERNET
+
+services:
+  hello-world:
+    image: alpine:latest
+    command: sh -c 'while :; do echo Hello World; sleep 10; done'

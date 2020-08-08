@@ -7,7 +7,8 @@ from .subcommands import *
 class Runner:
     __commands: List[SubCommand] = [
         InitCommand,
-        ShowCommand
+        ShowCommand,
+        LogsCommand
     ]
 
     @classmethod
