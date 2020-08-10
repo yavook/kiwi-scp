@@ -4,7 +4,7 @@ import os
 from ..core import KIWI_CONF_NAME, Parser
 from ..config import DefaultConfig, LoadedConfig
 
-from ._utils import SubCommand
+from ._utils import SubCommand, is_executable, find_exe_file, get_exe_key
 
 
 def user_input(config, key, prompt):
@@ -16,35 +16,19 @@ def user_input(config, key, prompt):
         config[key] = result
 
 
-def is_executable(filename):
-    if filename is None:
-        return False
-
-    return os.path.isfile(filename) and os.access(filename, os.X_OK)
-
-
-def find_exe(program_name):
-    for path in os.environ["PATH"].split(os.pathsep):
-        exe_file = os.path.join(path, program_name)
-        if is_executable(exe_file):
-            return exe_file
-
-    return None
-
-
-def user_input_exe(config, key):
+def user_input_exe(config, exe_name):
+    key = get_exe_key(exe_name)
     exe_file = config[key]
-    program_name = key.split(':')[1]
 
     if not is_executable(exe_file):
-        logging.info("Reconfiguring '%s' executable path.", program_name)
-        exe_file = find_exe(program_name)
+        logging.info(f"Reconfiguring '{exe_name}' executable path.")
+        exe_file = find_exe_file(exe_name)
 
         if exe_file is not None:
-            logging.debug("Found executable at '%s'.", exe_file)
+            logging.debug(f"Found executable at '{exe_file}'.")
             config[key] = exe_file
         else:
-            user_input(config, key, f"Enter path to '{program_name}' executable")
+            user_input(config, key, f"Enter path to '{exe_name}' executable")
 
 
 class InitCommand(SubCommand):
@@ -68,7 +52,7 @@ class InitCommand(SubCommand):
         logging.info(f"Initializing kiwi-config instance in '{os.getcwd()}'")
 
         if Parser.get_args().force and os.path.isfile(KIWI_CONF_NAME):
-            logging.warning("Overwriting existing '%s'!", KIWI_CONF_NAME)
+            logging.warning(f"Overwriting existing '{KIWI_CONF_NAME}'!")
             config = DefaultConfig.get()
         else:
             config = LoadedConfig.get()
@@ -88,8 +72,8 @@ class InitCommand(SubCommand):
         user_input(config, 'network:cidr', "Enter CIDR block for local docker network")
 
         # executables
-        user_input_exe(config, 'executables:docker')
-        user_input_exe(config, 'executables:docker-compose')
-        user_input_exe(config, 'executables:sudo')
+        user_input_exe(config, 'docker')
+        user_input_exe(config, 'docker-compose')
+        user_input_exe(config, 'sudo')
 
         config.save()

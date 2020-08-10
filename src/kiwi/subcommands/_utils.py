@@ -1,6 +1,30 @@
+import os
 import subprocess
 
 from ..config import LoadedConfig
+
+###########
+# CONSTANTS
+
+
+def is_executable(filename):
+    if filename is None:
+        return False
+
+    return os.path.isfile(filename) and os.access(filename, os.X_OK)
+
+
+def find_exe_file(exe_name):
+    for path in os.environ['PATH'].split(os.pathsep):
+        exe_file = os.path.join(path, exe_name)
+        if is_executable(exe_file):
+            return exe_file
+
+    return None
+
+
+def get_exe_key(exe_name):
+    return f'executables:{exe_name}'
 
 
 class SubCommand:
@@ -24,7 +48,7 @@ class Docker:
             try:
                 config = LoadedConfig.get()
                 subprocess.run(
-                    [config['executables:docker'], 'ps'],
+                    [config[get_exe_key('docker')], 'ps'],
                     check=True,
                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                 )
@@ -35,12 +59,12 @@ class Docker:
         return cls.__requires_root
 
     @classmethod
-    def run_command(cls, program, args, cwd=None, env=None):
+    def run_command(cls, exe_key, args, cwd=None, env=None):
         config = LoadedConfig.get()
-        cmd = [config['executables:' + program], *args]
+        cmd = [config[get_exe_key(exe_key)], *args]
 
         if cls.__check_requires_root():
-            cmd = [config['executables:sudo'], *cmd]
+            cmd = [config[get_exe_key('sudo')], *cmd]
 
         print(cmd)
         return subprocess.run(
