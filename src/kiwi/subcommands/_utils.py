@@ -1,10 +1,8 @@
 import os
 import subprocess
 
+from ..core import Parser
 from ..config import LoadedConfig
-
-###########
-# CONSTANTS
 
 
 def is_executable(filename):
@@ -28,14 +26,20 @@ def get_exe_key(exe_name):
 
 
 class SubCommand:
-    command = None
+    __name = None
+    __parser = None
 
-    @classmethod
-    def setup(cls):
-        pass
+    def __init__(self, name, **kwargs):
+        self.__name = name
+        self.__parser = Parser().get_subparsers().add_parser(name, **kwargs)
 
-    @classmethod
-    def run(cls):
+    def __str__(self):
+        return self.__name
+
+    def get_parser(self):
+        return self.__parser
+
+    def run(self):
         pass
 
 

@@ -5,16 +5,12 @@ from ._utils import SubCommand
 
 
 class ShowCommand(SubCommand):
-    command = 'show'
-
-    @classmethod
-    def setup(cls):
-        _ = Parser().get_subparsers().add_parser(
-            cls.command,
-            description="Show effective kiwi.yml"
+    def __init__(self):
+        super().__init__(
+            'logs',
+            description="Show logs of a project"
         )
 
-    @classmethod
-    def run(cls):
+    def run(self):
         config = LoadedConfig.get()
         print(config)

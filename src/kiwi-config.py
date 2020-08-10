@@ -21,26 +21,13 @@ def set_verbosity(logger, handler, verbosity):
 
 
 def main():
-    commands = [
-        InitCommand,
-        ShowCommand,
-        LogsCommand
-    ]
-
-    for cmd in commands:
-        cmd.setup()
-
     args = kiwi.Parser().get_args()
 
     log_handler = logging.StreamHandler()
     logging.getLogger().addHandler(log_handler)
-
     set_verbosity(logging.getLogger(), log_handler, args.verbosity)
 
-    for cmd in commands:
-        if cmd.command == args.command:
-            cmd.run()
-            return
+    kiwi.Runner().run(args.command)
 
 
 if __name__ == "__main__":

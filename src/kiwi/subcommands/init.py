@@ -32,23 +32,19 @@ def user_input_exe(config, exe_name):
 
 
 class InitCommand(SubCommand):
-    command = 'init'
-
-    @classmethod
-    def setup(cls):
-        parser = Parser().get_subparsers().add_parser(
-            cls.command,
+    def __init__(self):
+        super().__init__(
+            'init',
             description="Create a new kiwi-config instance"
         )
 
-        parser.add_argument(
+        self.get_parser().add_argument(
             '-f', '--force',
             action='store_true',
             help=f"Use default values even if {KIWI_CONF_NAME} is present"
         )
 
-    @classmethod
-    def run(cls):
+    def run(self):
         logging.info(f"Initializing kiwi-config instance in '{os.getcwd()}'")
 
         if Parser().get_args().force and os.path.isfile(KIWI_CONF_NAME):
