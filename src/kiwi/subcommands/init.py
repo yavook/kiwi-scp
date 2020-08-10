@@ -41,7 +41,7 @@ class InitCommand(SubCommand):
         self.get_parser().add_argument(
             '-f', '--force',
             action='store_true',
-            help=f"Use default values even if {KIWI_CONF_NAME} is present"
+            help=f"use default values even if {KIWI_CONF_NAME} is present"
         )
 
     def run(self):
