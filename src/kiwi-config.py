@@ -2,7 +2,6 @@
 import logging
 
 import kiwi
-from kiwi.subcommands import *
 
 
 def set_verbosity(logger, handler, verbosity):
@@ -21,6 +20,11 @@ def set_verbosity(logger, handler, verbosity):
 
 
 def main():
+    kiwi.Parser().get_parser().add_argument(
+        '-v', '--verbosity',
+        action='count', default=0
+    )
+
     args = kiwi.Parser().get_args()
 
     log_handler = logging.StreamHandler()
