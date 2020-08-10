@@ -21,6 +21,6 @@ class Runner:
         args = Parser.get_args()
 
         for cmd in cls.__commands:
-            if cmd.get_cmd() == args.command:
+            if cmd.command == args.command:
                 cmd.run()
                 return

@@ -4,15 +4,14 @@ from ._utils import SubCommand, Docker
 
 
 class LogsCommand(SubCommand):
-    __parser = None
-
-    @classmethod
-    def get_cmd(cls):
-        return 'logs'
+    command = 'logs'
 
     @classmethod
     def setup(cls):
-        cls.__parser = Parser.get_subparsers().add_parser(cls.get_cmd(), help="Show logs of a project")
+        parser = Parser.get_subparsers().add_parser(
+            cls.command,
+            description="Show logs of a project"
+        )
 
     @classmethod
     def run(cls):
