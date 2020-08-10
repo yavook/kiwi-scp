@@ -1,3 +1,5 @@
-from .runner import Runner
+from .core import Parser
 
-__all__ = ['Runner']
+__all__ = [
+    'Parser'
+]
