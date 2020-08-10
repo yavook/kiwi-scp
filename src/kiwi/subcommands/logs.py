@@ -1,6 +1,4 @@
-from ..core import Parser
-
-from ._utils import SubCommand, Docker
+from ._utils import SubCommand, DockerProgram
 
 
 class LogsCommand(SubCommand):
@@ -11,4 +9,8 @@ class LogsCommand(SubCommand):
         )
 
     def run(self):
-        print(Docker.run_command('docker-compose', ['logs', '-tf', '--tail=10'], cwd='hello-world.project', env={'COMPOSE_PROJECT_NAME': 'hello-world'}))
+        DockerProgram('docker-compose').run(
+            ['logs', '-tf', '--tail=10'],
+            cwd='hello-world.project',
+            env={'COMPOSE_PROJECT_NAME': 'hello-world'}
+        )

@@ -43,37 +43,42 @@ class SubCommand:
         pass
 
 
-class Docker:
+class DockerProgram:
+    class __DockerProgram:
+        __cmd = []
+
+        def __init__(self, exe_name):
+            config = LoadedConfig.get()
+            self.__cmd = [config[get_exe_key(exe_name)]]
+
+            if DockerProgram.__requires_root:
+                self.__cmd = [config[get_exe_key("sudo")], *self.__cmd]
+
+        def run(self, args, **kwargs):
+            cmd = [*self.__cmd, *args]
+            print(cmd)
+            return subprocess.run(cmd, **kwargs)
+
+    __exe_name = None
+    __instances = {}
     __requires_root = None
 
-    @classmethod
-    def __check_requires_root(cls):
-        if cls.__requires_root is None:
+    def __init__(self, exe_name):
+        if DockerProgram.__requires_root is None:
             try:
                 config = LoadedConfig.get()
                 subprocess.run(
                     [config[get_exe_key('docker')], 'ps'],
-                    check=True,
-                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                    check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                 )
-                cls.__requires_root = False
+                DockerProgram.__requires_root = False
             except subprocess.CalledProcessError:
-                cls.__requires_root = True
+                DockerProgram.__requires_root = True
 
-        return cls.__requires_root
+        self.__exe_name = exe_name
 
-    @classmethod
-    def run_command(cls, exe_key, args, cwd=None, env=None):
-        config = LoadedConfig.get()
-        cmd = [config[get_exe_key(exe_key)], *args]
+        if exe_name not in DockerProgram.__instances:
+            DockerProgram.__instances[exe_name] = DockerProgram.__DockerProgram(exe_name)
 
-        if cls.__check_requires_root():
-            cmd = [config[get_exe_key('sudo')], *cmd]
-
-        print(cmd)
-        return subprocess.run(
-            cmd,
-            # stdout=subprocess.PIPE,
-            # stderr=subprocess.PIPE,
-            cwd=cwd, env=env
-        )
+    def __getattr__(self, item):
+        return getattr(self.__instances[self.__exe_name], item)
