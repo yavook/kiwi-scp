@@ -17,11 +17,6 @@ class Parser:
         def __init__(self):
             self.__parser = argparse.ArgumentParser(description='kiwi-config')
 
-            self.__parser.add_argument(
-                '-v', '--verbosity',
-                action='count', default=0
-            )
-
             self.__subparsers = self.__parser.add_subparsers()
             self.__subparsers.required = True
             self.__subparsers.dest = 'command'
