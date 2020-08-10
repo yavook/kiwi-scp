@@ -8,7 +8,7 @@ class LogsCommand(SubCommand):
 
     @classmethod
     def setup(cls):
-        parser = Parser.get_subparsers().add_parser(
+        _ = Parser().get_subparsers().add_parser(
             cls.command,
             description="Show logs of a project"
         )

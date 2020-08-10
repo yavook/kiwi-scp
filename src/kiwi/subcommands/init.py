@@ -36,7 +36,7 @@ class InitCommand(SubCommand):
 
     @classmethod
     def setup(cls):
-        parser = Parser.get_subparsers().add_parser(
+        parser = Parser().get_subparsers().add_parser(
             cls.command,
             description="Create a new kiwi-config instance"
         )
@@ -51,7 +51,7 @@ class InitCommand(SubCommand):
     def run(cls):
         logging.info(f"Initializing kiwi-config instance in '{os.getcwd()}'")
 
-        if Parser.get_args().force and os.path.isfile(KIWI_CONF_NAME):
+        if Parser().get_args().force and os.path.isfile(KIWI_CONF_NAME):
             logging.warning(f"Overwriting existing '{KIWI_CONF_NAME}'!")
             config = DefaultConfig.get()
         else:

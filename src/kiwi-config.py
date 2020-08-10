@@ -30,7 +30,7 @@ def main():
     for cmd in commands:
         cmd.setup()
 
-    args = kiwi.Parser.get_args()
+    args = kiwi.Parser().get_args()
 
     log_handler = logging.StreamHandler()
     logging.getLogger().addHandler(log_handler)

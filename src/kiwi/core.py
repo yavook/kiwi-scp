@@ -9,34 +9,40 @@ KIWI_CONF_NAME = os.getenv('KIWI_CONF_NAME', "kiwi.yml")
 
 
 class Parser:
-    __parser = None
-    __subparsers = None
-    __args = None
+    class __Parser:
+        __parser = None
+        __subparsers = None
+        __args = None
 
-    @classmethod
-    def get_parser(cls):
-        if cls.__parser is None:
-            cls.__parser = argparse.ArgumentParser(description='kiwi-config')
+        def __init__(self):
+            self.__parser = argparse.ArgumentParser(description='kiwi-config')
 
-            cls.__parser.add_argument(
+            self.__parser.add_argument(
                 '-v', '--verbosity',
                 action='count', default=0
             )
 
-        return cls.__parser
+            self.__subparsers = self.__parser.add_subparsers()
+            self.__subparsers.required = True
+            self.__subparsers.dest = 'command'
 
-    @classmethod
-    def get_subparsers(cls):
-        if cls.__subparsers is None:
-            cls.__subparsers = cls.get_parser().add_subparsers()
-            cls.__subparsers.required = True
-            cls.__subparsers.dest = 'command'
+        def get_parser(self):
+            return self.__parser
 
-        return cls.__subparsers
+        def get_subparsers(self):
+            return self.__subparsers
 
-    @classmethod
-    def get_args(cls):
-        if cls.__args is None:
-            cls.__args = cls.get_parser().parse_args()
+        def get_args(self):
+            if self.__args is None:
+                self.__args = self.__parser.parse_args()
 
-        return cls.__args
+            return self.__args
+
+    __instance = None
+
+    def __init__(self):
+        if Parser.__instance is None:
+            Parser.__instance = Parser.__Parser()
+
+    def __getattr__(self, item):
+        return getattr(self.__instance, item)
