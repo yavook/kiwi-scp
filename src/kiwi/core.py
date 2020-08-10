@@ -9,32 +9,35 @@ KIWI_CONF_NAME = os.getenv('KIWI_CONF_NAME', "kiwi.yml")
 
 
 class Parser:
-    __instance = None
+    __parser = None
     __subparsers = None
     __args = None
 
     @classmethod
-    def __init_instance(cls):
-        if not cls.__instance:
-            cls.__instance = argparse.ArgumentParser(description='kiwi-config')
+    def get_parser(cls):
+        if cls.__parser is None:
+            cls.__parser = argparse.ArgumentParser(description='kiwi-config')
 
-            cls.__subparsers = Parser.__instance.add_subparsers()
-            cls.__subparsers.required = True
-            cls.__subparsers.dest = 'command'
+            cls.__parser.add_argument(
+                '-v', '--verbose',
+                action='count', default=0
+            )
 
-    @classmethod
-    def get_instance(cls):
-        cls.__init_instance()
-        return cls.__instance
+        return cls.__parser
 
     @classmethod
     def get_subparsers(cls):
-        cls.__init_instance()
+        if cls.__subparsers is None:
+            cls.__subparsers = cls.get_parser().add_subparsers()
+            cls.__subparsers.required = True
+            cls.__subparsers.dest = 'command'
+
         return cls.__subparsers
 
     @classmethod
     def get_args(cls):
-        if not cls.__args:
-            cls.__args = cls.get_instance().parse_args()
+        if cls.__args is None:
+            cls.__args = cls.get_parser().parse_args()
 
         return cls.__args
+
