@@ -241,7 +241,7 @@ networks:
   default:
     driver: bridge
   # interconnects projects
-  hubnet:
+  kiwihub:
     external:
       name: $$DOCKERNET
 
@@ -251,6 +251,6 @@ services:
     restart: unless-stopped
 		networks:
 		  - default
-		  - hubnet
+		  - kiwihub
     [...]
 endef
