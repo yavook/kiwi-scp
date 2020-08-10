@@ -37,11 +37,11 @@ def user_input_exe(config, key):
     program_name = key.split(':')[1]
 
     if not is_executable(exe_file):
-        logging.warning("Reconfiguring '%s' executable path.", program_name)
+        logging.info("Reconfiguring '%s' executable path.", program_name)
         exe_file = find_exe(program_name)
 
         if exe_file is not None:
-            logging.info("Found executable at '%s'.", exe_file)
+            logging.debug("Found executable at '%s'.", exe_file)
             config[key] = exe_file
         else:
             user_input(config, key, f"Enter path to '{program_name}' executable")

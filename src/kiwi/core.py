@@ -19,7 +19,7 @@ class Parser:
             cls.__parser = argparse.ArgumentParser(description='kiwi-config')
 
             cls.__parser.add_argument(
-                '-v', '--verbose',
+                '-v', '--verbosity',
                 action='count', default=0
             )
 
@@ -40,4 +40,3 @@ class Parser:
             cls.__args = cls.get_parser().parse_args()
 
         return cls.__args
-

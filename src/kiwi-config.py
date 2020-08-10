@@ -5,12 +5,22 @@ import kiwi
 from kiwi.subcommands import *
 
 
-def main():
-    logging.basicConfig(
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-        level=logging.NOTSET
-    )
+def set_verbosity(logger, handler, verbosity):
+    if verbosity >= 2:
+        log_level = logging.DEBUG
+        log_format = "[%(asctime)s] %(levelname)s @ %(filename)s:%(funcName)s:%(lineno)d: %(message)s"
+    elif verbosity >= 1:
+        log_level = logging.INFO
+        log_format = "[%(asctime)s] %(levelname)s: %(message)s"
+    else:
+        log_level = logging.WARNING
+        log_format = "%(levelname)s: %(message)s"
 
+    logger.setLevel(log_level)
+    handler.setFormatter(logging.Formatter(log_format))
+
+
+def main():
     commands = [
         InitCommand,
         ShowCommand,
@@ -22,14 +32,10 @@ def main():
 
     args = kiwi.Parser.get_args()
 
-    if args.verbose >= 2:
-        log_level = logging.DEBUG
-    elif args.verbose >= 1:
-        log_level = logging.INFO
-    else:
-        log_level = logging.WARNING
+    log_handler = logging.StreamHandler()
+    logging.getLogger().addHandler(log_handler)
 
-    logging.getLogger().setLevel(log_level)
+    set_verbosity(logging.getLogger(), log_handler, args.verbosity)
 
     for cmd in commands:
         if cmd.command == args.command:
