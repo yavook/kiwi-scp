@@ -7,7 +7,7 @@ class ShowCommand(SubCommand):
     def __init__(self):
         super().__init__(
             'show',
-            description="Show effective kiwi.yml"
+            description="show effective kiwi.yml"
         )
 
     def run(self):
