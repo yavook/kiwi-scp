@@ -2,14 +2,14 @@ import logging
 import os
 
 from ..core import KIWI_CONF_NAME, Parser
-from ..config import DefaultConfig
+from ..config import DefaultConfig, LoadedConfig
 
 from ._utils import SubCommand
 
 
 def user_input(config, key, prompt):
     # prompt user as per argument
-    result = input("{} [Default: {}] ".format(prompt, config[key])).strip()
+    result = input("{} [{}] ".format(prompt, config[key])).strip()
 
     # store result if present
     if result:
@@ -36,27 +36,34 @@ def user_input_exe(config, program_name):
 
 
 class InitCommand(SubCommand):
-    __parser = None
-
-    @classmethod
-    def get_cmd(cls):
-        return 'init'
+    command = 'init'
 
     @classmethod
     def setup(cls):
-        cls.__parser = Parser.get_subparsers().add_parser(cls.get_cmd(), help="Create new kiwi-config instance")
-        # cls.__parser.add_argument('cmd', metavar='command', type=str, help='subcommand to execute')
+        parser = Parser.get_subparsers().add_parser(
+            cls.command,
+            description="Create a new kiwi-config instance"
+        )
+
+        parser.add_argument(
+            '-f', '--force',
+            action='store_true',
+            help="Use default values even if {} is present".format(KIWI_CONF_NAME)
+        )
 
     @classmethod
     def run(cls):
-        config = DefaultConfig.get()
+        logging.info("Initializing kiwi-config instance in '%s'", os.getcwd())
 
-        if os.path.isfile(KIWI_CONF_NAME):
+        if Parser.get_args().force and os.path.isfile(KIWI_CONF_NAME):
             logging.warning("Overwriting existing '%s'!", KIWI_CONF_NAME)
+            config = DefaultConfig.get()
+        else:
+            config = LoadedConfig.get()
 
-        user_input(config, 'version', "Choose kiwi-config version")
+        user_input(config, 'version', "Enter kiwi-config version for this instance")
 
-        user_input(config, 'runtime:storage', "Enter main directory for local data")
+        user_input(config, 'runtime:storage', "Enter local directory for service data")
 
         user_input(config, 'markers:project', "Enter marker string for project directories")
         user_input(config, 'markers:down', "Enter marker string for disabled projects")

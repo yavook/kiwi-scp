@@ -4,9 +4,7 @@ from ..config import LoadedConfig
 
 
 class SubCommand:
-    @classmethod
-    def get_cmd(cls):
-        pass
+    command = None
 
     @classmethod
     def setup(cls):

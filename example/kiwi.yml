@@ -5,7 +5,7 @@
 version: '0.1'
 
 runtime:
-  storage: /var/kiwi
+  storage: /tmp/kiwi
   env: null
 
 markers:
