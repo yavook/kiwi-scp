@@ -8,8 +8,8 @@ from .core import KIWI_ROOT, KIWI_CONF_NAME
 ###########
 # CONSTANTS
 
-DEFAULT_KIWI_CONF_NAME = KIWI_ROOT + "/default.kiwi.yml"
-VERSION_TAG_NAME = KIWI_ROOT + "/version-tag"
+DEFAULT_KIWI_CONF_NAME = f"{KIWI_ROOT}/default.kiwi.yml"
+VERSION_TAG_NAME = f"{KIWI_ROOT}/version-tag"
 
 
 class Config:
