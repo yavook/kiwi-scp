@@ -37,4 +37,4 @@ class Runner:
 
 
 if __name__ == 'kiwi.runner':
-    Runner().setup_all()
+    _ = Runner()
