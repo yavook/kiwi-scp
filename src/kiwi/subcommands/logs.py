@@ -34,7 +34,7 @@ class LogsCommand(SubCommand):
         project_dir = f'{project_name}{project_marker}'
 
         environment = {
-            'DOCKERNET': config['network:name'],
+            'KIWI_NET_NAME': config['network:name'],
             'COMPOSE_PROJECT_NAME': project_name
         }
 
