@@ -1,8 +1,5 @@
 import logging
 
-from ..config import LoadedConfig
-from ..core import Parser
-
 from ._utils import SubCommand, DockerCommand
 
 
@@ -13,26 +10,23 @@ class LogsCommand(SubCommand):
             description="Show logs of a project or service(s) of a project"
         )
 
-        self._parser.add_argument(
+        self._sub_parser.add_argument(
             '-f', '--follow', action='store_true',
             help="output appended data as log grows"
         )
 
-        self._parser.add_argument(
+        self._sub_parser.add_argument(
             'project', type=str,
             help="select a project in this instance"
         )
 
-        self._parser.add_argument(
+        self._sub_parser.add_argument(
             'services', metavar='service', nargs='*', type=str,
             help="select service(s) in a project"
         )
 
-    def run(self):
-        config = LoadedConfig.get()
-        cli_args = Parser().get_args()
-
-        project_name = cli_args.project
+    def run(self, config, args):
+        project_name = args.project
         project_marker = config['markers:project']
         project_dir = f'{project_name}{project_marker}'
 
@@ -41,22 +35,22 @@ class LogsCommand(SubCommand):
             'COMPOSE_PROJECT_NAME': project_name
         }
 
-        args = ['logs', '-t']
-        if cli_args.follow:
-            args = [*args, '-f', '--tail=10']
+        process_args = ['logs', '-t']
+        if args.follow:
+            process_args = [*process_args, '-f', '--tail=10']
 
-        if cli_args.services:
-            args = [*args, *cli_args.services]
+        if args.services:
+            process_args = [*process_args, *args.services]
 
         try:
-            if cli_args.follow:
+            if args.follow:
                 DockerCommand('docker-compose').run(
-                    args,
+                    process_args,
                     cwd=project_dir, env=environment
                 )
             else:
                 DockerCommand('docker-compose').run_less(
-                    args,
+                    process_args,
                     cwd=project_dir, env=environment
                 )
         except KeyboardInterrupt:

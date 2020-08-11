@@ -1,5 +1,3 @@
-from ..config import LoadedConfig
-
 from ._utils import SubCommand
 
 
@@ -10,6 +8,5 @@ class ShowCommand(SubCommand):
             description="Show effective kiwi.yml"
         )
 
-    def run(self):
-        config = LoadedConfig.get()
+    def run(self, config, args):
         print(config)

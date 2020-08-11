@@ -3,12 +3,13 @@ import re
 import os
 import yaml
 
-from .core import KIWI_ROOT, KIWI_CONF_NAME
+from ._constants import KIWI_ROOT, KIWI_CONF_NAME
 
 ###########
 # CONSTANTS
 
-DEFAULT_KIWI_CONF_NAME = f"{KIWI_ROOT}/default.kiwi.yml"
+HEADER_KIWI_CONF_NAME = f"{KIWI_ROOT}/kiwi_header.yml"
+DEFAULT_KIWI_CONF_NAME = f"{KIWI_ROOT}/kiwi_default.yml"
 VERSION_TAG_NAME = f"{KIWI_ROOT}/version-tag"
 
 
@@ -42,11 +43,9 @@ class Config:
         # insert newline before every main key
         yml_string = re.sub(r'^(\S)', r'\n\1', yml_string, flags=re.MULTILINE)
 
-        # extract header comment from default config
-        with open(DEFAULT_KIWI_CONF_NAME, 'r') as stream:
-            yml_header = stream.read().strip()
-            yml_header = re.sub(r'^[^#].*', r'', yml_header, flags=re.MULTILINE).strip()
-            yml_string = "{}\n{}".format(yml_header, yml_string)
+        # load header comment from file
+        with open(HEADER_KIWI_CONF_NAME, 'r') as stream:
+            yml_string = stream.read() + yml_string
 
         return yml_string
 

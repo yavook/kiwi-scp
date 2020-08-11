@@ -1,15 +1,19 @@
 import logging
 import os
 
-from ..core import KIWI_CONF_NAME, Parser
-from ..config import DefaultConfig, LoadedConfig
+from .._constants import KIWI_CONF_NAME
+from ..config import DefaultConfig
 
 from ._utils import SubCommand, is_executable, find_exe_file, get_exe_key
 
 
 def user_input(config, key, prompt):
     # prompt user as per argument
-    result = input("{} [{}] ".format(prompt, config[key])).strip()
+    try:
+        result = input("{} [{}] ".format(prompt, config[key])).strip()
+    except EOFError:
+        print()
+        result = None
 
     # store result if present
     if result:
@@ -38,38 +42,41 @@ class InitCommand(SubCommand):
             description="Create a new kiwi-config instance"
         )
 
-        self._parser.add_argument(
+        self._sub_parser.add_argument(
             '-f', '--force',
             action='store_true',
             help=f"use default values even if {KIWI_CONF_NAME} is present"
         )
 
-    def run(self):
+    def run(self, config, args):
         logging.info(f"Initializing kiwi-config instance in '{os.getcwd()}'")
 
-        if Parser().get_args().force and os.path.isfile(KIWI_CONF_NAME):
+        if args.force and os.path.isfile(KIWI_CONF_NAME):
             logging.warning(f"Overwriting existing '{KIWI_CONF_NAME}'!")
             config = DefaultConfig.get()
-        else:
-            config = LoadedConfig.get()
 
-        # version
-        user_input(config, 'version', "Enter kiwi-config version for this instance")
+        try:
+            # version
+            user_input(config, 'version', "Enter kiwi-config version for this instance")
 
-        # runtime
-        user_input(config, 'runtime:storage', "Enter local directory for service data")
+            # runtime
+            user_input(config, 'runtime:storage', "Enter local directory for service data")
 
-        # markers
-        user_input(config, 'markers:project', "Enter marker string for project directories")
-        user_input(config, 'markers:down', "Enter marker string for disabled projects")
+            # markers
+            user_input(config, 'markers:project', "Enter marker string for project directories")
+            user_input(config, 'markers:down', "Enter marker string for disabled projects")
 
-        # network
-        user_input(config, 'network:name', "Enter name for local docker network")
-        user_input(config, 'network:cidr', "Enter CIDR block for local docker network")
+            # network
+            user_input(config, 'network:name', "Enter name for local docker network")
+            user_input(config, 'network:cidr', "Enter CIDR block for local docker network")
 
-        # executables
-        user_input_exe(config, 'docker')
-        user_input_exe(config, 'docker-compose')
-        user_input_exe(config, 'sudo')
+            # executables
+            user_input_exe(config, 'docker')
+            user_input_exe(config, 'docker-compose')
+            user_input_exe(config, 'sudo')
 
-        config.save()
+            config.save()
+
+        except KeyboardInterrupt:
+            print()
+            logging.warning(f"'{self}' aborted, input discarded.")

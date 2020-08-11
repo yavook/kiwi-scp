@@ -1,3 +1,7 @@
+import logging
+
+from .config import LoadedConfig
+from .parser import Parser
 from .subcommands import *
 
 ###########
@@ -18,10 +22,14 @@ class Runner:
             for cmd in SUBCOMMANDS:
                 self.__commands.append(cmd())
 
-        def run(self, command_name):
+        def run(self):
+            config = LoadedConfig.get()
+            args = Parser().get_args()
+
             for cmd in self.__commands:
-                if str(cmd) == command_name:
-                    cmd.run()
+                if str(cmd) == args.command:
+                    logging.debug(f"Running '{cmd}' with args: {args}")
+                    cmd.run(config, args)
                     return True
 
             return False
@@ -34,7 +42,3 @@ class Runner:
 
     def __getattr__(self, item):
         return getattr(self.__instance, item)
-
-
-if __name__ == 'kiwi.runner':
-    _ = Runner()
