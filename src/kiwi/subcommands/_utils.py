@@ -28,17 +28,14 @@ def get_exe_key(exe_name):
 
 class SubCommand:
     __name = None
-    __parser = None
+    _parser = None
 
     def __init__(self, name, **kwargs):
         self.__name = name
-        self.__parser = Parser().get_subparsers().add_parser(name, **kwargs)
+        self._parser = Parser().get_subparsers().add_parser(name, **kwargs)
 
     def __str__(self):
         return self.__name
-
-    def get_parser(self):
-        return self.__parser
 
     def run(self):
         pass
