@@ -23,15 +23,15 @@ CONF_SOURCE:=$(patsubst %,. %;,$(CONF_WILDC))
 confvalue=$(shell $(CONF_SOURCE) echo -n $${$(1)})
 
 # docker network name
-CONF_DOCKERNET:=$(call confvalue,DOCKERNET)
-ifeq ($(CONF_DOCKERNET),)
-$(error DOCKERNET not set in $(CONF_WILDC))
+CONF_KIWI_HUB_NAME:=$(call confvalue,KIWI_HUB_NAME)
+ifeq ($(CONF_KIWI_HUB_NAME),)
+$(error KIWI_HUB_NAME not set in $(CONF_WILDC))
 endif
 
 # docker network CIDR 
-CONF_DOCKERCIDR:=$(call confvalue,DOCKERCIDR)
-ifeq ($(CONF_DOCKERNET),)
-$(error DOCKERCIDR not set in $(CONF_WILDC))
+CONF_KIWI_HUB_CIDR:=$(call confvalue,KIWI_HUB_CIDR)
+ifeq ($(CONF_KIWI_HUB_CIDR),)
+$(error KIWI_HUB_CIDR not set in $(CONF_WILDC))
 endif
 
 # persistent data directory
@@ -56,7 +56,7 @@ endif
 # CONSTANTS
 
 # file to store docker network cidr
-FILE_DOCKERNET:=$(CONF_TARGETROOT)/up-$(CONF_DOCKERNET)
+KIWI_HUB_FILE:=$(CONF_TARGETROOT)/up-$(CONF_KIWI_HUB_NAME)
 
 # remove any suffix $2 from $1
 rmsuffix=$(patsubst %$2,%,$1)
@@ -91,31 +91,31 @@ all: purge-conf up
 
 #########
 # manage the docker network (container name local DNS)
-$(FILE_DOCKERNET):
+$(KIWI_HUB_FILE):
 	-$(DOCKER) network create \
 		--driver bridge \
 		--internal \
-		--subnet "$(CONF_DOCKERCIDR)" \
-		"$(CONF_DOCKERNET)"
-	@echo "Creating canary $(FILE_DOCKERNET) ..."
+		--subnet "$(CONF_KIWI_HUB_CIDR)" \
+		"$(CONF_KIWI_HUB_NAME)"
+	@echo "Creating canary $(KIWI_HUB_FILE) ..."
 	@$(DOCKER) run --rm \
 		-v "/:/mnt" -u root alpine:latest \
 		ash -c '\
 			mkdir -p "$(addprefix /mnt, $(CONF_TARGETROOT))"; \
-			echo "$(CONF_DOCKERCIDR)" > "$(addprefix /mnt, $(FILE_DOCKERNET))"; \
+			echo "$(CONF_KIWI_HUB_CIDR)" > "$(addprefix /mnt, $(KIWI_HUB_FILE))"; \
 		'
 
 .PHONY: net-up
-net-up: $(FILE_DOCKERNET)
+net-up: $(KIWI_HUB_FILE)
 
 .PHONY: net-down
 net-down: down
-	$(DOCKER) network rm "$(CONF_DOCKERNET)"
-	@echo "Removing canary $(FILE_DOCKERNET) ..."
+	$(DOCKER) network rm "$(CONF_KIWI_HUB_NAME)"
+	@echo "Removing canary $(KIWI_HUB_FILE) ..."
 	@$(DOCKER) run --rm \
 		-v "/:/mnt" -u root alpine:latest \
 		ash -c '\
-			rm -f "$(addprefix /mnt, $(FILE_DOCKERNET))"; \
+			rm -f "$(addprefix /mnt, $(KIWI_HUB_FILE))"; \
 		'
 
 #########
@@ -243,7 +243,7 @@ networks:
   # interconnects projects
   kiwihub:
     external:
-      name: $$DOCKERNET
+      name: $$KIWI_HUB_NAME
 
 services:
   something:

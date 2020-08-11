@@ -7,9 +7,9 @@ networks:
   # interconnects projects
   kiwihub:
     external:
-      name: $DOCKERNET
+      name: $KIWI_HUB_NAME
 
 services:
   hello-world:
     image: alpine:latest
-    command: sh -c 'while :; do echo Hello World; sleep 10; done'
+    command: sh -c 'while :; do echo Hello World "$$RANDOM"; sleep 10; done'
