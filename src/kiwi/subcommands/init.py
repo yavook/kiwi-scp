@@ -38,7 +38,7 @@ class InitCommand(SubCommand):
             description="Create a new kiwi-config instance"
         )
 
-        self.get_parser().add_argument(
+        self._parser.add_argument(
             '-f', '--force',
             action='store_true',
             help=f"use default values even if {KIWI_CONF_NAME} is present"
