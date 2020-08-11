@@ -2,7 +2,7 @@ import logging
 import os
 import subprocess
 
-from ..core import Parser
+from ..parser import Parser
 from ..config import LoadedConfig
 
 
@@ -28,16 +28,16 @@ def get_exe_key(exe_name):
 
 class SubCommand:
     __name = None
-    _parser = None
+    _sub_parser = None
 
     def __init__(self, name, **kwargs):
         self.__name = name
-        self._parser = Parser().get_subparsers().add_parser(name, **kwargs)
+        self._sub_parser = Parser().get_subparsers().add_parser(name, **kwargs)
 
     def __str__(self):
         return self.__name
 
-    def run(self):
+    def run(self, config, args):
         pass
 
 

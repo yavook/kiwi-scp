@@ -1,11 +1,4 @@
 import argparse
-import os
-
-###########
-# CONSTANTS
-
-KIWI_ROOT = os.getenv('KIWI_ROOT', ".")
-KIWI_CONF_NAME = os.getenv('KIWI_CONF_NAME', "kiwi.yml")
 
 
 class Parser:
@@ -16,6 +9,11 @@ class Parser:
 
         def __init__(self):
             self.__parser = argparse.ArgumentParser(description='kiwi-config')
+
+            self.__parser.add_argument(
+                '-v', '--verbosity',
+                action='count', default=0
+            )
 
             self.__subparsers = self.__parser.add_subparsers()
             self.__subparsers.required = True
