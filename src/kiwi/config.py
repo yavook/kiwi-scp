@@ -1,3 +1,4 @@
+import copy
 import logging
 import re
 import os
@@ -56,6 +57,12 @@ class Config:
             except yaml.YAMLError as exc:
                 logging.error(exc)
 
+    def clone(self):
+        result = Config()
+        result.__yml_content = copy.deepcopy(self.__yml_content)
+
+        return result
+
     def save(self):
         with open(KIWI_CONF_NAME, 'w') as stream:
             stream.write(str(self))
@@ -79,7 +86,7 @@ class DefaultConfig(Config):
 class LoadedConfig(Config):
     @classmethod
     def get(cls):
-        result = DefaultConfig.get()
+        result = DefaultConfig.get().clone()
 
         if os.path.isfile(KIWI_CONF_NAME):
             result._update_from_file(KIWI_CONF_NAME)
