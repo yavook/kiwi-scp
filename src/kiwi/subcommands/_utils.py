@@ -55,20 +55,20 @@ class DockerCommand:
             if DockerCommand.__requires_root:
                 self.__cmd = [config[get_exe_key("sudo")], *self.__cmd]
 
-        def __build_cmd(self, args):
+        def __build_cmd(self, args, **kwargs):
             cmd = [*self.__cmd, *args]
-            logging.debug(f"DockerProgram: {cmd}")
+            logging.debug(f"DockerProgram cmd{cmd}, kwargs{kwargs}")
             return cmd
 
         def run(self, args, **kwargs):
             return subprocess.run(
-                self.__build_cmd(args),
+                self.__build_cmd(args, **kwargs),
                 **kwargs
             )
 
         def run_less(self, args, **kwargs):
             process = subprocess.Popen(
-                self.__build_cmd(args),
+                self.__build_cmd(args, **kwargs),
                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                 **kwargs
             )

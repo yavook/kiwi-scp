@@ -31,6 +31,8 @@ def main():
     logging.getLogger().addHandler(log_handler)
     set_verbosity(logging.getLogger(), log_handler, args.verbosity)
 
+    logging.debug(f"main CLI args: {args}")
+
     kiwi.Runner().run(args.command)
 
 
