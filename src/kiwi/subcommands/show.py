@@ -1,4 +1,4 @@
-from ._utils import SubCommand
+from ._subcommand import SubCommand
 
 
 class ShowCommand(SubCommand):

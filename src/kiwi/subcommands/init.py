@@ -4,7 +4,8 @@ import os
 from .._constants import KIWI_CONF_NAME
 from ..config import DefaultConfig
 
-from ._utils import SubCommand, is_executable, find_exe_file, get_exe_key
+from ._subcommand import SubCommand
+from .utils.executable import get_exe_key, is_executable, find_exe_file
 
 
 def user_input(config, key, prompt):

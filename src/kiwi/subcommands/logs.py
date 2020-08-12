@@ -1,6 +1,7 @@
 import logging
 
-from ._utils import SubCommand, DockerCommand
+from ._subcommand import SubCommand
+from .utils.dockercommand import DockerCommand
 
 
 class LogsCommand(SubCommand):
