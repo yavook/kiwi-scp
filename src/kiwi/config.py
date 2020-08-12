@@ -1,9 +1,11 @@
+# system
 import copy
 import logging
-import re
 import os
+import re
 import yaml
 
+# local
 from ._constants import KIWI_ROOT, KIWI_CONF_NAME
 
 ###########

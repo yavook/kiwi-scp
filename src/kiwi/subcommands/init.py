@@ -1,9 +1,11 @@
+# system
 import logging
 import os
 
+# parent (display purposes only)
 from .._constants import KIWI_CONF_NAME
-from ..config import DefaultConfig
 
+# local
 from ._subcommand import SubCommand
 
 
@@ -37,6 +39,8 @@ class InitCommand(SubCommand):
         logging.info(f"Initializing kiwi-config instance in '{os.getcwd()}'")
 
         if args.force and os.path.isfile(KIWI_CONF_NAME):
+            from ..config import DefaultConfig
+
             logging.warning(f"Overwriting existing '{KIWI_CONF_NAME}'!")
             config = DefaultConfig.get()
 

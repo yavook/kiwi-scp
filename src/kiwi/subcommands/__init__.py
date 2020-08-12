@@ -1,9 +1,10 @@
+# local
 from .init import InitCommand
-from .show import ShowCommand
 from .logs import LogsCommand
+from .show import ShowCommand
 
 __all__ = [
     'InitCommand',
-    'ShowCommand',
-    'LogsCommand'
+    'LogsCommand',
+    'ShowCommand'
 ]
