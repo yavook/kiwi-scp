@@ -20,34 +20,35 @@ def find_exe_file(exe_name):
 
 
 class Executable:
-    __exe_name = None
-    __instances = {}
-
     class __Executable:
-        __cmd = None
+        __exe_path = None
 
         def __init__(self, exe_name, requires_root=False):
-            self.__cmd = [find_exe_file(exe_name)]
+            self.__exe_path = find_exe_file(exe_name)
+
+        def __build_cmd(self, args, requires_root=False, **kwargs):
+            cmd = [self.__exe_path, *args]
 
             if requires_root:
-                self.__cmd = [find_exe_file("sudo"), *self.__cmd]
+                self.__exe_path = [find_exe_file("sudo"), self.__exe_path]
 
-        def __build_cmd(self, args, **kwargs):
-            cmd = [*self.__cmd, *args]
             logging.debug(f"Executable cmd{cmd}, kwargs{kwargs}")
             return cmd
 
-        def run(self, args, **kwargs):
+        def run(self, args, requires_root=False, **kwargs):
             return subprocess.run(
-                self.__build_cmd(args, **kwargs),
+                self.__build_cmd(args, requires_root, **kwargs),
                 **kwargs
             )
 
-        def Popen(self, args, **kwargs):
+        def Popen(self, args, requires_root=False, **kwargs):
             return subprocess.Popen(
-                self.__build_cmd(args, **kwargs),
+                self.__build_cmd(args, requires_root, **kwargs),
                 **kwargs
             )
+
+    __exe_name = None
+    __instances = {}
 
     def __init__(self, exe_name, requires_root=False):
         self.__exe_name = exe_name
