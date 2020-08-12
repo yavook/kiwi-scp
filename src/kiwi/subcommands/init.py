@@ -5,7 +5,6 @@ from .._constants import KIWI_CONF_NAME
 from ..config import DefaultConfig
 
 from ._subcommand import SubCommand
-from .utils.executable import get_exe_key, is_executable, find_exe_file
 
 
 def user_input(config, key, prompt):
@@ -19,21 +18,6 @@ def user_input(config, key, prompt):
     # store result if present
     if result:
         config[key] = result
-
-
-def user_input_exe(config, exe_name):
-    key = get_exe_key(exe_name)
-    exe_file = config[key]
-
-    if not is_executable(exe_file):
-        logging.info(f"Reconfiguring '{exe_name}' executable path.")
-        exe_file = find_exe_file(exe_name)
-
-        if exe_file is not None:
-            logging.debug(f"Found executable at '{exe_file}'.")
-            config[key] = exe_file
-        else:
-            user_input(config, key, f"Enter path to '{exe_name}' executable")
 
 
 class InitCommand(SubCommand):
@@ -70,11 +54,6 @@ class InitCommand(SubCommand):
             # network
             user_input(config, 'network:name', "Enter name for local docker network")
             user_input(config, 'network:cidr', "Enter CIDR block for local docker network")
-
-            # executables
-            user_input_exe(config, 'docker')
-            user_input_exe(config, 'docker-compose')
-            user_input_exe(config, 'sudo')
 
             config.save()
 

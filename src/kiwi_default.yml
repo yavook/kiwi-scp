@@ -8,7 +8,3 @@ markers:
 network:
   name: kiwihub
   cidr: 10.22.46.0/24
-executables:
-  docker: null
-  docker-compose: null
-  sudo: null
