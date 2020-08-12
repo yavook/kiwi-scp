@@ -15,8 +15,3 @@ markers:
 network:
   name: kiwihub
   cidr: 10.22.46.0/24
-
-executables:
-  docker: /usr/bin/docker
-  docker-compose: /usr/local/bin/docker-compose
-  sudo: /usr/bin/sudo
