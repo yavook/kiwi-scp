@@ -4,11 +4,13 @@ from .runner import Runner
 
 
 def verbosity():
+    # ensure singleton is instantiated: runs subcommand setup routines
     _ = Runner()
     return Parser().get_args().verbosity
 
 
 def run():
+    # pass down
     Runner().run()
 
 

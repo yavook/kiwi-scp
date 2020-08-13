@@ -8,6 +8,8 @@ import kiwi
 
 
 def set_verbosity(logger, handler, verbosity):
+    """set logging default verbosity level and format"""
+
     if verbosity >= 2:
         log_level = logging.DEBUG
         log_format = "[%(asctime)s] %(levelname)s @ %(filename)s:%(funcName)s:%(lineno)d: %(message)s"
@@ -23,10 +25,12 @@ def set_verbosity(logger, handler, verbosity):
 
 
 def main():
+    # add a new handler (needed to set the level)
     log_handler = logging.StreamHandler()
     logging.getLogger().addHandler(log_handler)
     set_verbosity(logging.getLogger(), log_handler, kiwi.verbosity())
 
+    # run the app
     kiwi.run()
 
 
