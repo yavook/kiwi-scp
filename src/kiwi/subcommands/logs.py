@@ -20,33 +20,19 @@ class LogsCommand(ServiceCommand):
         )
 
     def run(self, config, args):
-        project_name = args.project
-        project_marker = config['markers:project']
-        project_dir = f'{project_name}{project_marker}'
-
-        environment = {
-            'KIWI_HUB_NAME': config['network:name'],
-            'COMPOSE_PROJECT_NAME': project_name
-        }
-
-        process_args = ['logs', '-t']
+        compose_args = ['logs', '-t']
         if args.follow:
-            process_args = [*process_args, '-f', '--tail=10']
+            compose_args = [*compose_args, '-f', '--tail=10']
 
         if args.services:
-            process_args = [*process_args, *args.services]
+            compose_args = [*compose_args, *args.services]
 
         try:
             if args.follow:
-                DockerCommand('docker-compose').run(
-                    process_args,
-                    cwd=project_dir, env=environment
-                )
+                DockerCommand('docker-compose').run(config, args, compose_args)
             else:
-                DockerCommand('docker-compose').run_less(
-                    process_args,
-                    cwd=project_dir, env=environment
-                )
+                DockerCommand('docker-compose').run_less(config, args, compose_args)
+
         except KeyboardInterrupt:
             logging.debug("Subprocess aborted.")
             print()
