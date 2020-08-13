@@ -36,17 +36,34 @@ class Executable:
             logging.debug(f"Executable cmd{cmd}, kwargs{kwargs}")
             return cmd
 
-        def run(self, args, requires_root=False, **kwargs):
+        def run(self, process_args, requires_root=False, **kwargs):
             return subprocess.run(
-                self.__build_cmd(args, requires_root, **kwargs),
+                self.__build_cmd(process_args, requires_root, **kwargs),
                 **kwargs
             )
 
-        def Popen(self, args, requires_root=False, **kwargs):
+        def Popen(self, process_args, requires_root=False, **kwargs):
             return subprocess.Popen(
-                self.__build_cmd(args, requires_root, **kwargs),
+                self.__build_cmd(process_args, requires_root, **kwargs),
                 **kwargs
             )
+
+        def run_less(self, process_args, requires_root=False, **kwargs):
+            kwargs['stdout'] = subprocess.PIPE
+            kwargs['stderr'] = subprocess.DEVNULL
+
+            process = self.Popen(
+                process_args, requires_root,
+                **kwargs
+            )
+
+            less_process = Executable('less').run(
+                ['-R', '+G'],
+                stdin=process.stdout
+            )
+
+            process.communicate()
+            return less_process
 
     __exe_name = None
     __instances = {}

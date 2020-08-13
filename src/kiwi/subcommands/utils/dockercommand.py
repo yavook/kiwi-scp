@@ -1,8 +1,33 @@
 # system
+import logging
+import os
 import subprocess
 
 # local
 from .executable import Executable
+
+
+def _update_kwargs(config, args, **kwargs):
+    project_name = args.project
+    project_marker = config['markers:project']
+    project_dir = f'{project_name}{project_marker}'
+    kwargs['cwd'] = project_dir
+
+    if 'env' not in kwargs:
+        kwargs['env'] = {}
+
+    if config['runtime:env'] is not None:
+        kwargs['env'].update(config['runtime:env'])
+
+    kwargs['env'].update({
+        'KIWI_HUB_NAME': config['network:name'],
+        'COMPOSE_PROJECT_NAME': project_name,
+        'CONFDIR': os.path.join(config['runtime:storage'], 'conf'),
+        'TARGETDIR': os.path.join(config['runtime:storage'], project_dir)
+    })
+
+    logging.debug(f"kwargs updated: {kwargs}")
+    return kwargs
 
 
 class DockerCommand(Executable):
@@ -21,24 +46,19 @@ class DockerCommand(Executable):
             except subprocess.CalledProcessError:
                 DockerCommand.__requires_root = True
 
-    def run(self, args, **kwargs):
+    def run(self, config, args, process_args, **kwargs):
+        kwargs = _update_kwargs(config, args, **kwargs)
+
         # equivalent to 'super().run' but agnostic of nested class construct
         super().__getattr__("run")(
-            args, DockerCommand.__requires_root,
+            process_args, DockerCommand.__requires_root,
             **kwargs
         )
 
-    def run_less(self, args, **kwargs):
-        process = self.Popen(
-            args, DockerCommand.__requires_root,
-            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+    def run_less(self, config, args, process_args, **kwargs):
+        kwargs = _update_kwargs(config, args, **kwargs)
+
+        super().__getattr__("run_less")(
+            process_args, DockerCommand.__requires_root,
             **kwargs
         )
-
-        less_process = Executable('less').run(
-            ['-R', '+G'],
-            stdin=process.stdout
-        )
-
-        process.communicate()
-        return less_process
