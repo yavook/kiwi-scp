@@ -241,7 +241,7 @@ networks:
   default:
     driver: bridge
   # interconnects projects
-  kiwihub:
+  kiwi_hub:
     external:
       name: $$KIWI_HUB_NAME
 
