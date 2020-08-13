@@ -2,30 +2,21 @@
 import logging
 
 # local
-from ._subcommand import SubCommand
+from ._subcommand import ServiceCommand
 from .utils.dockercommand import DockerCommand
 
 
-class LogsCommand(SubCommand):
+class LogsCommand(ServiceCommand):
     def __init__(self):
         super().__init__(
             'logs',
             description="Show logs of a project or service(s) of a project"
         )
 
+        # -f switch: Follow logs
         self._sub_parser.add_argument(
             '-f', '--follow', action='store_true',
             help="output appended data as log grows"
-        )
-
-        self._sub_parser.add_argument(
-            'project', type=str,
-            help="select a project in this instance"
-        )
-
-        self._sub_parser.add_argument(
-            'services', metavar='service', nargs='*', type=str,
-            help="select service(s) in a project"
         )
 
     def run(self, config, args):
