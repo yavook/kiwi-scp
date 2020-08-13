@@ -42,7 +42,14 @@ class Runner:
                 if str(cmd) == args.command:
                     # command found
                     logging.debug(f"Running '{cmd}' with args: {args}")
-                    cmd.run(LoadedConfig.get(), args)
+
+                    try:
+                        cmd.run(LoadedConfig.get(), args)
+
+                    except KeyboardInterrupt:
+                        print()
+                        logging.warning(f"'{cmd}' aborted, inputs may have been discarded.")
+
                     return True
 
             # command not found
