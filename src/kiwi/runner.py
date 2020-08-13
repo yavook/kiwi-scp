@@ -13,7 +13,9 @@ from .subcommands import *
 SUBCOMMANDS = [
     InitCommand,
     ShowCommand,
-    LogsCommand
+    LogsCommand,
+    CmdCommand,
+    ShellCommand
 ]
 
 
