@@ -41,15 +41,20 @@ class ProjectCommand(SubCommand):
 
 
 class ServiceCommand(ProjectCommand):
-    """this command concerns services in a project"""
+    """this command concerns service(s) in a project"""
 
-    def __init__(self, name, nargs='*', **kwargs):
+    def __init__(self, name, nargs=1, **kwargs):
         super().__init__(
             name,
             **kwargs
         )
 
+        services = "service"
+
+        if not nargs == 1:
+            services = "services"
+
         self._sub_parser.add_argument(
             'services', metavar='service', nargs=nargs, type=str,
-            help="select service(s) in a project"
+            help=f"select {services} in a project"
         )

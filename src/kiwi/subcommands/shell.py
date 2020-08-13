@@ -7,26 +7,26 @@ from ._subcommand import ServiceCommand
 from .utils.dockercommand import DockerCommand
 
 
-def _service_has_shell(config, args, exec_service, try_shell):
+def _service_has_shell(config, args, compose_cmd, shell):
     try:
         # test if desired shell exists
         DockerCommand('docker-compose').run(
-            config, args, [*exec_service, '/bin/sh', '-c', f"which {try_shell}"],
+            config, args, [*compose_cmd, '/bin/sh', '-c', f"which {shell}"],
             check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
         return True
 
     except subprocess.CalledProcessError:
         # fallback
-        logging.info(f"Shell '{try_shell}' not found in container")
+        logging.info(f"Shell '{shell}' not found in container")
         return False
 
 
 class ShellCommand(ServiceCommand):
     def __init__(self):
         super().__init__(
-            'sh', 1,
-            description="Spawn shell inside project's service"
+            'sh',
+            description="Spawn shell inside a project's service"
         )
 
         # -s switch: Select shell
@@ -36,22 +36,18 @@ class ShellCommand(ServiceCommand):
         )
 
     def run(self, config, args):
-        try:
-            exec_service = ['exec', args.services[0]]
-            exec_shell = args.shell
+        compose_cmd = ['exec', args.services[0]]
+        shell = args.shell
 
-            if not _service_has_shell(config, args, exec_service, exec_shell):
-                # fallback
-                exec_shell = '/bin/bash'
+        if not _service_has_shell(config, args, compose_cmd, shell):
+            # fallback
+            shell = '/bin/bash'
 
-                if not _service_has_shell(config, args, exec_service, exec_shell):
-                    exec_shell = '/bin/sh'
+            if not _service_has_shell(config, args, compose_cmd, shell):
+                # safe fallback
+                shell = '/bin/sh'
 
-            # spawn shell
-            DockerCommand('docker-compose').run(
-                config, args, [*exec_service, exec_shell]
-            )
-
-        except KeyboardInterrupt:
-            logging.debug("Subprocess aborted.")
-            print()
+        # spawn shell
+        DockerCommand('docker-compose').run(
+            config, args, [*compose_cmd, shell]
+        )

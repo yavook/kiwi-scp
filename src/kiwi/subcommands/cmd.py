@@ -7,23 +7,22 @@ from .utils.dockercommand import DockerCommand
 
 
 class CmdCommand(ProjectCommand):
+    """kiwi cmd"""
+
     def __init__(self):
         super().__init__(
             'cmd',
             description="Run raw docker-compose command in a project"
         )
 
-        # arguments for docker-compose command
+        # command string after docker-compose
         self._sub_parser.add_argument(
             'compose_cmd', metavar='cmd', type=str,
-            help="runs `docker-compose <cmd>"
+            help="runs `docker-compose <cmd>`"
         )
 
     def run(self, config, args):
-        try:
-            import shlex
-            DockerCommand('docker-compose').run(config, args, shlex.split(args.compose_cmd))
+        import shlex
 
-        except KeyboardInterrupt:
-            logging.debug("Subprocess aborted.")
-            print()
+        # run with split compose_cmd argument
+        DockerCommand('docker-compose').run(config, args, shlex.split(args.compose_cmd))

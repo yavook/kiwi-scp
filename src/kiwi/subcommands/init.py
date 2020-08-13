@@ -43,29 +43,25 @@ class InitCommand(SubCommand):
     def run(self, config, args):
         logging.info(f"Initializing '{KIWI_CONF_NAME}' in '{os.getcwd()}'")
 
+        # check force switch
         if args.force and os.path.isfile(KIWI_CONF_NAME):
             from ..config import DefaultConfig
 
             logging.warning(f"Overwriting existing '{KIWI_CONF_NAME}'!")
             config = DefaultConfig.get()
 
-        try:
-            # version
-            user_input(config, 'version', "Enter kiwi-config version for this instance")
+        # version
+        user_input(config, 'version', "Enter kiwi-config version for this instance")
 
-            # runtime
-            user_input(config, 'runtime:storage', "Enter local directory for service data")
+        # runtime
+        user_input(config, 'runtime:storage', "Enter local directory for service data")
 
-            # markers
-            user_input(config, 'markers:project', "Enter marker string for project directories")
-            user_input(config, 'markers:down', "Enter marker string for disabled projects")
+        # markers
+        user_input(config, 'markers:project', "Enter marker string for project directories")
+        user_input(config, 'markers:down', "Enter marker string for disabled projects")
 
-            # network
-            user_input(config, 'network:name', "Enter name for local docker network")
-            user_input(config, 'network:cidr', "Enter CIDR block for local docker network")
+        # network
+        user_input(config, 'network:name', "Enter name for local docker network")
+        user_input(config, 'network:cidr', "Enter CIDR block for local docker network")
 
-            config.save()
-
-        except KeyboardInterrupt:
-            print()
-            logging.warning(f"'{self}' aborted, input discarded.")
+        config.save()

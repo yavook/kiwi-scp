@@ -9,7 +9,7 @@ from .utils.dockercommand import DockerCommand
 class LogsCommand(ServiceCommand):
     def __init__(self):
         super().__init__(
-            'logs',
+            'logs', nargs='*',
             description="Show logs of a project or service(s) of a project"
         )
 
@@ -20,19 +20,19 @@ class LogsCommand(ServiceCommand):
         )
 
     def run(self, config, args):
-        compose_args = ['logs', '-t']
+        # include timestamps
+        compose_cmd = ['logs', '-t']
+
+        # handle following the log output
         if args.follow:
-            compose_args = [*compose_args, '-f', '--tail=10']
+            compose_cmd = [*compose_cmd, '-f', '--tail=10']
 
+        # append if one or more services are given
         if args.services:
-            compose_args = [*compose_args, *args.services]
+            compose_cmd = [*compose_cmd, *args.services]
 
-        try:
-            if args.follow:
-                DockerCommand('docker-compose').run(config, args, compose_args)
-            else:
-                DockerCommand('docker-compose').run_less(config, args, compose_args)
-
-        except KeyboardInterrupt:
-            logging.debug("Subprocess aborted.")
-            print()
+        # use 'less' viewer if output will be static
+        if args.follow:
+            DockerCommand('docker-compose').run(config, args, compose_cmd)
+        else:
+            DockerCommand('docker-compose').run_less(config, args, compose_cmd)
