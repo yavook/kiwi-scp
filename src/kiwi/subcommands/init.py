@@ -10,6 +10,8 @@ from ._subcommand import SubCommand
 
 
 def user_input(config, key, prompt):
+    """query user for new config value"""
+
     # prompt user as per argument
     try:
         result = input("{} [{}] ".format(prompt, config[key])).strip()
@@ -23,12 +25,15 @@ def user_input(config, key, prompt):
 
 
 class InitCommand(SubCommand):
+    """kiwi init"""
+
     def __init__(self):
         super().__init__(
             'init',
             description="Create a new kiwi-config instance"
         )
 
+        # -f switch: Initialize with default config
         self._sub_parser.add_argument(
             '-f', '--force',
             action='store_true',
@@ -36,7 +41,7 @@ class InitCommand(SubCommand):
         )
 
     def run(self, config, args):
-        logging.info(f"Initializing kiwi-config instance in '{os.getcwd()}'")
+        logging.info(f"Initializing '{KIWI_CONF_NAME}' in '{os.getcwd()}'")
 
         if args.force and os.path.isfile(KIWI_CONF_NAME):
             from ..config import DefaultConfig
