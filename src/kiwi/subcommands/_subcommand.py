@@ -23,3 +23,33 @@ class SubCommand:
     def run(self, config, args):
         """actually run command with this dir's config and parsed CLI args"""
         pass
+
+
+class ProjectCommand(SubCommand):
+    """this command concerns a project in current instance"""
+
+    def __init__(self, name, **kwargs):
+        super().__init__(
+            name,
+            **kwargs
+        )
+
+        self._sub_parser.add_argument(
+            'project', type=str,
+            help="select a project in this instance"
+        )
+
+
+class ServiceCommand(ProjectCommand):
+    """this command concerns services in a project"""
+
+    def __init__(self, name, **kwargs):
+        super().__init__(
+            name,
+            **kwargs
+        )
+
+        self._sub_parser.add_argument(
+            'services', metavar='service', nargs='*', type=str,
+            help="select service(s) in a project"
+        )
