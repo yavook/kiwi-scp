@@ -35,9 +35,9 @@ $(error KIWI_HUB_CIDR not set in $(CONF_WILDC))
 endif
 
 # persistent data directory
-CONF_TARGETROOT:=$(call confvalue,TARGETROOT)
-ifeq ($(CONF_TARGETROOT),)
-$(error TARGETROOT not set in $(CONF_WILDC))
+CONF_TARGET_ROOT:=$(call confvalue,TARGET_ROOT)
+ifeq ($(CONF_TARGET_ROOT),)
+$(error TARGET_ROOT not set in $(CONF_WILDC))
 endif
 
 # suffix for project directories
@@ -56,7 +56,7 @@ endif
 # CONSTANTS
 
 # file to store docker network cidr
-KIWI_HUB_FILE:=$(CONF_TARGETROOT)/up-$(CONF_KIWI_HUB_NAME)
+KIWI_HUB_FILE:=$(CONF_TARGET_ROOT)/up-$(CONF_KIWI_HUB_NAME)
 
 # remove any suffix $2 from $1
 rmsuffix=$(patsubst %$2,%,$1)
@@ -78,8 +78,8 @@ kiwicompose=$(call docker_bash,\
 	cd "$<"; \
 	$(CONF_SOURCE) \
 	COMPOSE_PROJECT_NAME="$(call projname,$<)" \
-	CONFDIR="$(CONF_TARGETROOT)/conf" \
-	TARGETDIR="$(CONF_TARGETROOT)/$<" \
+	CONFDIR="$(CONF_TARGET_ROOT)/conf" \
+	TARGETDIR="$(CONF_TARGET_ROOT)/$<" \
 	$(DOCKER_COMPOSE) $(1))
 
 #########
@@ -101,7 +101,7 @@ $(KIWI_HUB_FILE):
 	@$(DOCKER) run --rm \
 		-v "/:/mnt" -u root alpine:latest \
 		ash -c '\
-			mkdir -p "$(addprefix /mnt, $(CONF_TARGETROOT))"; \
+			mkdir -p "$(addprefix /mnt, $(CONF_TARGET_ROOT))"; \
 			echo "$(CONF_KIWI_HUB_CIDR)" > "$(addprefix /mnt, $(KIWI_HUB_FILE))"; \
 		'
 
@@ -136,12 +136,12 @@ ifneq ($(wildcard *${PROJ_SUFFX}/conf),)
 		$(DOCKER) build -t ldericher/kiwi-config:rsync . -f- &> /dev/null
 
 	$(eval sources:=$(wildcard *${PROJ_SUFFX}/conf))
-	@echo "Syncing $(sources) to $(CONF_TARGETROOT) ..."
+	@echo "Syncing $(sources) to $(CONF_TARGET_ROOT) ..."
 
 	$(eval sources:=$(realpath $(sources)))
 	$(eval sources:=$(addprefix /mnt, $(sources)))
 	$(eval sources:=$(patsubst %,'%',$(sources)))
-	$(eval dest:='$(addprefix /mnt, $(CONF_TARGETROOT))')
+	$(eval dest:='$(addprefix /mnt, $(CONF_TARGET_ROOT))')
 
 	@$(DOCKER) run --rm \
 		-v "/:/mnt" -u root ldericher/kiwi-config:rsync \
@@ -152,11 +152,11 @@ endif
 
 .PHONY: purge-conf
 purge-conf:
-	@echo "Emptying $(CONF_TARGETROOT)/conf ..."
+	@echo "Emptying $(CONF_TARGET_ROOT)/conf ..."
 	@$(DOCKER) run --rm \
 		-v "/:/mnt" -u root alpine:latest \
 		ash -c '\
-			rm -rf "$(addprefix /mnt, $(CONF_TARGETROOT)/conf)"; \
+			rm -rf "$(addprefix /mnt, $(CONF_TARGET_ROOT)/conf)"; \
 		'
 
 #########
