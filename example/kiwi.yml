@@ -13,5 +13,5 @@ markers:
   down: .down
 
 network:
-  name: kiwihub
+  name: kiwi_hub
   cidr: 10.22.46.0/24
