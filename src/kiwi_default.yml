@@ -1,6 +1,8 @@
 version:
 runtime:
   storage: /var/kiwi
+  shells:
+    - /bin/bash
   env: null
 markers:
   project: .project
