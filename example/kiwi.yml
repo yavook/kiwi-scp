@@ -6,6 +6,8 @@ version: '0.1'
 
 runtime:
   storage: /tmp/kiwi
+  shells:
+    - /bin/bash
   env: null
 
 markers:
