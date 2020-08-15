@@ -2,21 +2,9 @@
 import logging
 
 # local
+from . import subcommands
 from .config import LoadedConfig
 from .parser import Parser
-from .subcommands import *
-
-###########
-# CONSTANTS
-
-# all available subcommands
-SUBCOMMANDS = [
-    InitCommand,
-    ShowCommand,
-    LogsCommand,
-    CmdCommand,
-    ShellCommand
-]
 
 
 class Runner:
@@ -30,7 +18,8 @@ class Runner:
 
         def __init__(self):
             # setup all subcommands
-            for cmd in SUBCOMMANDS:
+            for className in subcommands.__all__:
+                cmd = getattr(subcommands, className)
                 self.__commands.append(cmd())
 
         def run(self):

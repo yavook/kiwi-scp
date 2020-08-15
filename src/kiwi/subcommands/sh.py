@@ -22,7 +22,7 @@ def _service_has_shell(config, args, compose_cmd, shell):
         return False
 
 
-class ShellCommand(ServiceCommand):
+class ShCommand(ServiceCommand):
     def __init__(self):
         super().__init__(
             'sh',
