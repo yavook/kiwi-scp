@@ -7,6 +7,8 @@ from .utils.dockercommand import DockerCommand
 
 
 class LogsCommand(ServiceCommand):
+    """kiwi logs"""
+
     def __init__(self):
         super().__init__(
             'logs', nargs='*',

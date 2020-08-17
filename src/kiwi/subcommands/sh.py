@@ -7,22 +7,29 @@ from ._subcommand import ServiceCommand
 from .utils.dockercommand import DockerCommand
 
 
-def _service_has_shell(config, args, compose_cmd, shell):
+def _service_has_executable(config, args, compose_cmd, exe_name):
+    """
+    Test if container (as of compose_cmd array) has an executable exe_name in its PATH.
+    Requires /bin/sh and which.
+    """
+
     try:
         # test if desired shell exists
         DockerCommand('docker-compose').run(
-            config, args, [*compose_cmd, '/bin/sh', '-c', f"which {shell}"],
+            config, args, [*compose_cmd, '/bin/sh', '-c', f"which {exe_name}"],
             check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
         return True
 
-    except subprocess.CalledProcessError:
+    except subprocess.CalledProcessError as e:
         # fallback
         return False
 
 
 def _find_shell(config, args, compose_cmd):
-    # as a last resort, fallback to "sh"
+    """find first working shell (provided by config and args) in container (as of compose_cmd array)"""
+
+    # builtin shells: as a last resort, fallback to '/bin/sh' and 'sh'
     shells = ['/bin/sh', 'sh']
 
     # load favorite shells from config
@@ -37,20 +44,32 @@ def _find_shell(config, args, compose_cmd):
 
     # actually try shells
     for i, shell in enumerate(shells):
-        if _service_has_shell(config, args, compose_cmd, shell):
-            # shell found
+        if _service_has_executable(config, args, compose_cmd, shell):
+            # found working shell
             logging.debug(f"Using shell '{shell}'")
             return shell
+
         elif i + 1 < len(shells):
-            # not found, try next
+            # try next in list
             logging.info(f"Shell '{shell}' not found in container, trying '{shells[i+1]}'")
+
+        elif args.shell:
+            # not found, user suggestion provided
+            logging.warning(f"Could not find any working shell in this container. "
+                            f"Launching provided '{args.shell}' nevertheless. "
+                            f"Don't get mad if this fails!")
+            return args.shell
+
         else:
             # not found, search exhausted
-            logging.error(f"None of the shells {shells} found in container, please provide -s SHELL!")
+            logging.error(f"Could not find any working shell among '{shells}' in this container. "
+                          f"Please suggest a shell using the '-s SHELL' command line option!")
             return None
 
 
 class ShCommand(ServiceCommand):
+    """kiwi sh"""
+
     def __init__(self):
         super().__init__(
             'sh',
@@ -67,7 +86,7 @@ class ShCommand(ServiceCommand):
         compose_cmd = ['exec', args.services[0]]
         shell = _find_shell(config, args, compose_cmd)
 
-        if shell:
+        if shell is not None:
             # spawn shell
             DockerCommand('docker-compose').run(
                 config, args, [*compose_cmd, shell]
