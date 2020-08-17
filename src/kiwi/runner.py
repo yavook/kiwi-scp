@@ -36,7 +36,7 @@ class Runner:
                     logging.debug(f"Running '{cmd}' with args: {args}")
 
                     try:
-                        cmd.run(LoadedConfig.get(), args)
+                        cmd.run(self, LoadedConfig.get(), args)
 
                     except KeyboardInterrupt:
                         print()
