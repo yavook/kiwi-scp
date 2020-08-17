@@ -5,6 +5,7 @@ import subprocess
 # local
 from ._subcommand import SubCommand
 from .utils.dockercommand import DockerCommand
+from .utils.user_input import are_you_sure
 
 
 def _find_net(config, args):
@@ -65,12 +66,15 @@ class NetDownCommand(SubCommand):
             return
 
         try:
-            DockerCommand('docker').run(
-                config, args,
-                ['network', 'rm', config['network:name']],
-                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
-            logging.info(f"Network '{config['network:name']}' removed")
+            if are_you_sure("This will bring down this instance's hub network!"):
+                runner.run('down')
+
+                DockerCommand('docker').run(
+                    config, args,
+                    ['network', 'rm', config['network:name']],
+                    check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                )
+                logging.info(f"Network '{config['network:name']}' removed")
 
         except subprocess.CalledProcessError:
             logging.error(f"Error removing network '{config['network:name']}'")
