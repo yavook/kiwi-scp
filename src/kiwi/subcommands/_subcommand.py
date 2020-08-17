@@ -20,7 +20,7 @@ class SubCommand:
     def __str__(self):
         return self.__name
 
-    def run(self, config, args):
+    def run(self, runner, config, args):
         """actually run command with this dir's config and parsed CLI args"""
         pass
 

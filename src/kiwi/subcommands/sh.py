@@ -82,7 +82,7 @@ class ShCommand(ServiceCommand):
             help="shell to spawn"
         )
 
-    def run(self, config, args):
+    def run(self, runner, config, args):
         compose_cmd = ['exec', args.services[0]]
         shell = _find_shell(config, args, compose_cmd)
 

@@ -18,7 +18,7 @@ class LogsCommand(ServiceCommand):
             help="output appended data as log grows"
         )
 
-    def run(self, config, args):
+    def run(self, runner, config, args):
         # include timestamps
         compose_cmd = ['logs', '-t']
 

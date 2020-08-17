@@ -18,7 +18,7 @@ class CmdCommand(ProjectCommand):
             help="runs `docker-compose <cmd>`"
         )
 
-    def run(self, config, args):
+    def run(self, runner, config, args):
         import shlex
 
         # run with split compose_cmd argument

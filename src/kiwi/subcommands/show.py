@@ -11,5 +11,5 @@ class ShowCommand(SubCommand):
             description="Show effective kiwi.yml"
         )
 
-    def run(self, config, args):
+    def run(self, runner, config, args):
         print(config)
