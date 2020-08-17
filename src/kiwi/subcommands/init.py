@@ -14,7 +14,7 @@ def user_input(config, key, prompt):
 
     # prompt user as per argument
     try:
-        result = input("{} [{}] ".format(prompt, config[key])).strip()
+        result = input(f"{prompt} [{config[key]}] ").strip()
     except EOFError:
         print()
         result = None
