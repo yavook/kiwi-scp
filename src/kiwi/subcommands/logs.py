@@ -8,7 +8,7 @@ class LogsCommand(ServiceCommand):
 
     def __init__(self):
         super().__init__(
-            'logs', nargs='*',
+            'logs', num_projects=1, num_services='*',
             description="Show logs of a project or service(s) of a project"
         )
 

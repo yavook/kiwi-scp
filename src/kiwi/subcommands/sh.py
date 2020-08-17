@@ -72,11 +72,11 @@ class ShCommand(ServiceCommand):
 
     def __init__(self):
         super().__init__(
-            'sh',
+            'sh', num_projects=1, num_services=1,
             description="Spawn shell inside a project's service"
         )
 
-        # -s switch: Select shell
+        # -s argument: Select shell
         self._sub_parser.add_argument(
             '-s', '--shell', type=str,
             help="shell to spawn"
