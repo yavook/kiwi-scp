@@ -42,37 +42,34 @@ class Executable:
         def __init__(self, exe_name):
             self.__exe_path = _find_exe_file(exe_name)
 
-        def __build_cmd(self, args, requires_root=False, **kwargs):
+        def __build_cmd(self, args, **kwargs):
             cmd = [self.__exe_path, *args]
-
-            if requires_root:
-                self.__exe_path = [_find_exe_file("sudo"), self.__exe_path]
 
             logging.debug(f"Executable cmd{cmd}, kwargs{kwargs}")
             return cmd
 
-        def run(self, process_args, config=None, requires_root=False, **kwargs):
+        def run(self, process_args, config=None, **kwargs):
             kwargs = _update_kwargs(config, **kwargs)
 
             return subprocess.run(
-                self.__build_cmd(process_args, requires_root, **kwargs),
+                self.__build_cmd(process_args, **kwargs),
                 **kwargs
             )
 
-        def Popen(self, process_args, config=None, requires_root=False, **kwargs):
+        def Popen(self, process_args, config=None, **kwargs):
             kwargs = _update_kwargs(config, **kwargs)
 
             return subprocess.Popen(
-                self.__build_cmd(process_args, requires_root, **kwargs),
+                self.__build_cmd(process_args, **kwargs),
                 **kwargs
             )
 
-        def run_less(self, process_args, config=None, requires_root=False, **kwargs):
+        def run_less(self, process_args, config=None, **kwargs):
             kwargs['stdout'] = subprocess.PIPE
             kwargs['stderr'] = subprocess.DEVNULL
 
             process = self.Popen(
-                process_args, config, requires_root,
+                process_args, config,
                 **kwargs
             )
 
