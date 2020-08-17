@@ -23,3 +23,5 @@ class CmdCommand(ProjectCommand):
 
         # run with split compose_cmd argument
         DockerCommand('docker-compose').run(config, args, shlex.split(args.compose_cmd))
+
+        return True

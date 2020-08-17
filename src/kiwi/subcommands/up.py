@@ -30,7 +30,10 @@ class UpCommand(ServiceCommand):
         else:
             logging.info(f"Bringing up project '{get_project_name(args)}'")
 
-        runner.run('net-up')
-        DockerCommand('docker-compose').run(
-            config, args, ['up', '-d', *args.services]
-        )
+        if runner.run('net-up'):
+            DockerCommand('docker-compose').run(
+                config, args, ['up', '-d', *args.services]
+            )
+            return True
+
+        return False

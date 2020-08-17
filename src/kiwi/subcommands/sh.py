@@ -91,3 +91,6 @@ class ShCommand(ServiceCommand):
             DockerCommand('docker-compose').run(
                 config, args, [*compose_cmd, shell]
             )
+            return True
+
+        return False

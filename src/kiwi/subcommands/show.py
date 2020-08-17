@@ -13,3 +13,4 @@ class ShowCommand(SubCommand):
 
     def run(self, runner, config, args):
         print(config)
+        return True
