@@ -33,27 +33,28 @@ def _update_kwargs(config, args, **kwargs):
 
 
 class DockerCommand(Executable):
-    __requires_root = None
+    __has_tried = False
 
     def __init__(self, exe_name):
         super().__init__(exe_name)
 
-        if DockerCommand.__requires_root is None:
+        if not DockerCommand.__has_tried:
             try:
                 Executable('docker').run(
                     ['ps'],
                     check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                 )
-                DockerCommand.__requires_root = False
+                DockerCommand.__has_tried = True
+
             except subprocess.CalledProcessError:
-                DockerCommand.__requires_root = True
+                raise PermissionError("Cannot access docker, please get into the docker group or run as root!")
 
     def run(self, config, args, process_args, **kwargs):
         kwargs = _update_kwargs(config, args, **kwargs)
 
         # equivalent to 'super().run' but agnostic of nested class construct
         return super().__getattr__("run")(
-            process_args, config, DockerCommand.__requires_root,
+            process_args, config,
             **kwargs
         )
 
@@ -61,6 +62,6 @@ class DockerCommand(Executable):
         kwargs = _update_kwargs(config, args, **kwargs)
 
         return super().__getattr__("run_less")(
-            process_args, config, DockerCommand.__requires_root,
+            process_args, config,
             **kwargs
         )
