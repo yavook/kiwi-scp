@@ -3,6 +3,8 @@ from ._subcommand import SubCommand
 
 
 class ShowCommand(SubCommand):
+    """kiwi show"""
+
     def __init__(self):
         super().__init__(
             'show',
