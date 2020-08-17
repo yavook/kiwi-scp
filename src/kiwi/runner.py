@@ -22,13 +22,16 @@ class Runner:
                 cmd = getattr(subcommands, className)
                 self.__commands.append(cmd())
 
-        def run(self):
+        def run(self, command=None):
             """run the desired subcommand"""
 
             args = Parser().get_args()
 
+            if command is None:
+                command = args.command
+
             for cmd in self.__commands:
-                if str(cmd) == args.command:
+                if str(cmd) == command:
                     # command found
                     logging.debug(f"Running '{cmd}' with args: {args}")
 
@@ -42,7 +45,7 @@ class Runner:
                     return True
 
             # command not found
-            logging.error(f"kiwi command '{args.command}' unknown")
+            logging.error(f"kiwi command '{command}' unknown")
             return False
 
     __instance = None
