@@ -8,25 +8,25 @@ from .executable import Executable
 
 
 def _update_kwargs(config, args, **kwargs):
-    project_name = args.project
-    project_marker = config['markers:project']
-    project_dir = f'{project_name}{project_marker}'
-    kwargs['cwd'] = project_dir
+    if 'project' in args:
+        # command affects a project in this instance
 
-    if 'env' not in kwargs:
-        kwargs['env'] = {}
+        project_name = args.project
+        project_marker = config['markers:project']
+        project_dir = f'{project_name}{project_marker}'
+        kwargs['cwd'] = project_dir
 
-    if config['runtime:env'] is not None:
-        kwargs['env'].update(config['runtime:env'])
+        if 'env' not in kwargs:
+            kwargs['env'] = {}
 
-    kwargs['env'].update({
-        'KIWI_HUB_NAME': config['network:name'],
-        'COMPOSE_PROJECT_NAME': project_name,
-        'CONFDIR': os.path.join(config['runtime:storage'], 'conf'),
-        'TARGETDIR': os.path.join(config['runtime:storage'], project_dir)
-    })
+        kwargs['env'].update({
+            'COMPOSE_PROJECT_NAME': project_name,
+            'CONFDIR': os.path.join(config['runtime:storage'], 'conf'),
+            'TARGETDIR': os.path.join(config['runtime:storage'], project_dir)
+        })
 
-    logging.debug(f"kwargs updated: {kwargs}")
+        logging.debug(f"kwargs updated: {kwargs}")
+
     return kwargs
 
 
@@ -50,15 +50,15 @@ class DockerCommand(Executable):
         kwargs = _update_kwargs(config, args, **kwargs)
 
         # equivalent to 'super().run' but agnostic of nested class construct
-        super().__getattr__("run")(
-            process_args, DockerCommand.__requires_root,
+        return super().__getattr__("run")(
+            process_args, config, DockerCommand.__requires_root,
             **kwargs
         )
 
     def run_less(self, config, args, process_args, **kwargs):
         kwargs = _update_kwargs(config, args, **kwargs)
 
-        super().__getattr__("run_less")(
-            process_args, DockerCommand.__requires_root,
+        return super().__getattr__("run_less")(
+            process_args, config, DockerCommand.__requires_root,
             **kwargs
         )
