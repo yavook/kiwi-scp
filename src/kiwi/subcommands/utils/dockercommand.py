@@ -5,27 +5,26 @@ import subprocess
 
 # local
 from .executable import Executable
+from .project import *
 
 
 def _update_kwargs(config, args, **kwargs):
-    if args is not None and 'projects' in args and args.projects is not None:
-        # command affects a project in this instance
+    # project given in args: command affects a project in this instance
+    project_name = get_project_name(args)
+    if project_name is not None:
+        # execute command in project directory
+        kwargs['cwd'] = get_project_dir(config, project_name)
 
-        project_name = args.projects
-        if isinstance(project_name, list) and len(project_name) > 0:
-            project_name = project_name[0]
-
-        project_marker = config['markers:project']
-        project_dir = f'{project_name}{project_marker}'
-        kwargs['cwd'] = project_dir
-
+        # ensure there is an environment
         if 'env' not in kwargs:
             kwargs['env'] = {}
 
+        # create environment variables for docker commands
         kwargs['env'].update({
             'COMPOSE_PROJECT_NAME': project_name,
+            'KIWI_HUB_NAME': config['network:name'],
             'CONFDIR': os.path.join(config['runtime:storage'], 'conf'),
-            'TARGETDIR': os.path.join(config['runtime:storage'], project_dir)
+            'TARGETDIR': os.path.join(config['runtime:storage'], get_project_dir(config, project_name))
         })
 
         logging.debug(f"kwargs updated: {kwargs}")

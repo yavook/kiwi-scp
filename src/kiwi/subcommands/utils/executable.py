@@ -6,15 +6,13 @@ import subprocess
 
 def _update_kwargs(config, **kwargs):
     if config is not None:
-        if config['runtime:env'] is not None:
-            kwargs['env'].update(config['runtime:env'])
-
+        # ensure there is an environment
         if 'env' not in kwargs:
             kwargs['env'] = {}
 
-        kwargs['env'].update({
-            'KIWI_HUB_NAME': config['network:name']
-        })
+        # add common environment from config
+        if config['runtime:env'] is not None:
+            kwargs['env'].update(config['runtime:env'])
 
         logging.debug(f"kwargs updated: {kwargs}")
 
