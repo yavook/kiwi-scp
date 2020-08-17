@@ -19,6 +19,12 @@ def get_project_dir(config, project_name):
     return f"{project_name}{config['markers:project']}"
 
 
+def get_target_dir(config, project_name):
+    """get project's target directory"""
+
+    return f"{config['runtime:storage']}{get_project_dir(config, project_name)}"
+
+
 def list_projects(config):
     """list projects in current instance"""
 
