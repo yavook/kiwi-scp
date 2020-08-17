@@ -24,9 +24,10 @@ class DownCommand(ServiceCommand):
                 for project_name in list_projects(config):
                     args.projects = project_name
                     runner.run('down')
-            return
+            else:
+                return False
 
-        if 'services' in args and args.services:
+        elif 'services' in args and args.services:
             # "down" for service(s) inside project
             logging.info(f"Bringing down services {args.services} in project '{get_project_name(args)}'")
 
@@ -44,3 +45,5 @@ class DownCommand(ServiceCommand):
             DockerCommand('docker-compose').run(
                 config, args, ['down']
             )
+
+        return True

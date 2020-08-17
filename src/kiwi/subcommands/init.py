@@ -65,3 +65,4 @@ class InitCommand(SubCommand):
         user_input(config, 'network:cidr', "Enter CIDR block for local docker network")
 
         config.save()
+        return True

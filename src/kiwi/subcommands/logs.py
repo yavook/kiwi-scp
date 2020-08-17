@@ -35,3 +35,5 @@ class LogsCommand(ServiceCommand):
             DockerCommand('docker-compose').run(config, args, compose_cmd)
         else:
             DockerCommand('docker-compose').run_less(config, args, compose_cmd)
+
+        return True

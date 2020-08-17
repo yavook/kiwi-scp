@@ -36,13 +36,14 @@ class Runner:
                     logging.debug(f"Running '{cmd}' with args: {args}")
 
                     try:
-                        cmd.run(self, LoadedConfig.get(), args)
+                        result = cmd.run(self, LoadedConfig.get(), args)
 
                     except KeyboardInterrupt:
                         print()
                         logging.warning(f"'{cmd}' aborted, inputs may have been discarded.")
+                        result = False
 
-                    return True
+                    return result
 
             # command not found
             logging.error(f"kiwi command '{command}' unknown")

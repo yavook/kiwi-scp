@@ -31,7 +31,7 @@ class NetUpCommand(SubCommand):
     def run(self, runner, config, args):
         if _find_net(config, args):
             logging.info(f"Network '{config['network:name']}' already exists")
-            return
+            return True
 
         try:
             DockerCommand('docker').run(
@@ -49,6 +49,9 @@ class NetUpCommand(SubCommand):
 
         except subprocess.CalledProcessError:
             logging.error(f"Error creating network '{config['network:name']}'")
+            return False
+
+        return True
 
 
 class NetDownCommand(SubCommand):
@@ -63,18 +66,22 @@ class NetDownCommand(SubCommand):
     def run(self, runner, config, args):
         if not _find_net(config, args):
             logging.info(f"Network '{config['network:name']}' already removed")
-            return
+            return True
 
         try:
             if are_you_sure("This will bring down this instance's hub network!"):
-                runner.run('down')
-
-                DockerCommand('docker').run(
-                    config, args,
-                    ['network', 'rm', config['network:name']],
-                    check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-                )
-                logging.info(f"Network '{config['network:name']}' removed")
+                if runner.run('down'):
+                    DockerCommand('docker').run(
+                        config, args,
+                        ['network', 'rm', config['network:name']],
+                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                    )
+                    logging.info(f"Network '{config['network:name']}' removed")
+            else:
+                return False
 
         except subprocess.CalledProcessError:
             logging.error(f"Error removing network '{config['network:name']}'")
+            return False
+
+        return True
