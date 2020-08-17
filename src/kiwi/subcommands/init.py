@@ -40,7 +40,7 @@ class InitCommand(SubCommand):
             help=f"use default values even if {KIWI_CONF_NAME} is present"
         )
 
-    def run(self, config, args):
+    def run(self, runner, config, args):
         logging.info(f"Initializing '{KIWI_CONF_NAME}' in '{os.getcwd()}'")
 
         # check force switch
