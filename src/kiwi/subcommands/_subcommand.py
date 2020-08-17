@@ -28,33 +28,38 @@ class SubCommand:
 class ProjectCommand(SubCommand):
     """this command concerns a project in current instance"""
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, name, num_projects, **kwargs):
         super().__init__(
             name,
             **kwargs
         )
 
+        projects = "a project"
+
+        if not str(num_projects) == '1':
+            projects = "projects"
+
         self._sub_parser.add_argument(
-            'project', type=str,
-            help="select a project in this instance"
+            'projects', metavar='project', nargs=num_projects, type=str,
+            help=f"select {projects} in this instance"
         )
 
 
 class ServiceCommand(ProjectCommand):
     """this command concerns service(s) in a project"""
 
-    def __init__(self, name, nargs=1, **kwargs):
+    def __init__(self, name, num_projects, num_services, **kwargs):
         super().__init__(
-            name,
+            name, num_projects=num_projects,
             **kwargs
         )
 
-        services = "service"
+        services = "a service"
 
-        if not nargs == 1:
+        if not str(num_services) == '1':
             services = "services"
 
         self._sub_parser.add_argument(
-            'services', metavar='service', nargs=nargs, type=str,
+            'services', metavar='service', nargs=num_services, type=str,
             help=f"select {services} in a project"
         )

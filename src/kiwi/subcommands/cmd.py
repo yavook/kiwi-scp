@@ -8,7 +8,7 @@ class CmdCommand(ProjectCommand):
 
     def __init__(self):
         super().__init__(
-            'cmd',
+            'cmd', num_projects=1,
             description="Run raw docker-compose command in a project"
         )
 
