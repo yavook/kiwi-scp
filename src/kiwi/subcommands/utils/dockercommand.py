@@ -8,10 +8,13 @@ from .executable import Executable
 
 
 def _update_kwargs(config, args, **kwargs):
-    if 'projects' in args:
+    if args is not None and 'projects' in args and args.projects is not None:
         # command affects a project in this instance
 
-        project_name = args.projects[0]
+        project_name = args.projects
+        if isinstance(project_name, list) and len(project_name) > 0:
+            project_name = project_name[0]
+
         project_marker = config['markers:project']
         project_dir = f'{project_name}{project_marker}'
         kwargs['cwd'] = project_dir
