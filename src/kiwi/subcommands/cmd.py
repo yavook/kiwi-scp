@@ -1,6 +1,3 @@
-# system
-import logging
-
 # local
 from ._subcommand import ProjectCommand
 from .utils.dockercommand import DockerCommand
