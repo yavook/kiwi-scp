@@ -5,6 +5,7 @@ from .logs import LogsCommand
 from .net import NetUpCommand, NetDownCommand
 from .sh import ShCommand
 from .show import ShowCommand
+from .up import UpCommand
 
 __all__ = [
     'CmdCommand',
@@ -14,4 +15,5 @@ __all__ = [
     'NetDownCommand',
     'ShCommand',
     'ShowCommand',
+    'UpCommand',
 ]
