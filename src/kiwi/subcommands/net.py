@@ -65,7 +65,7 @@ class NetDownCommand(SubCommand):
 
     def run(self, runner, config, args):
         if not _find_net(config, args):
-            logging.info(f"Network '{config['network:name']}' already removed")
+            logging.info(f"Network '{config['network:name']}' does not exist")
             return True
 
         try:
