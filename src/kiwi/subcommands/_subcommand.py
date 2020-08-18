@@ -1,5 +1,5 @@
 # local
-from .utils.project import get_project_name, list_projects
+from .utils._misc import get_project_name, get_services, list_projects
 
 # parent
 from ..parser import Parser
@@ -69,6 +69,8 @@ class ServiceCommand(ProjectCommand):
 
 
 class FlexCommand(ServiceCommand):
+    """this command concerns the entire instance, a whole project or just service(s) in a project"""
+
     def __init__(self, name, **kwargs):
         super().__init__(
             name, num_projects='?', num_services='*',
@@ -84,21 +86,23 @@ class FlexCommand(ServiceCommand):
 
         return result
 
-    def _run_project(self, runner, config, args):
+    def _run_project(self, runner, config, args, project_name):
         pass
 
-    def _run_services(self, runner, config, args):
+    def _run_services(self, runner, config, args, project_name, services):
         pass
 
     def run(self, runner, config, args):
-        if 'projects' not in args or args.projects is None:
-            # command for entire instance
+        project_name = get_project_name(args)
+        services = get_services(args)
+
+        if project_name is None:
+            # no project given, run for entire instance
             return self._run_instance(runner, config, args)
 
-        elif 'services' not in args or not args.services:
-            # command for whole project
-            return self._run_project(runner, config, args)
+        if services is None:
+            # no services given, run for whole project
+            return self._run_project(runner, config, args, project_name)
 
-        else:
-            # command for service(s) inside project
-            return self._run_services(runner, config, args)
+        # run for service(s) inside project
+        return self._run_services(runner, config, args, project_name, services)

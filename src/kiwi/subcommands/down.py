@@ -4,8 +4,7 @@ import logging
 # local
 from ._subcommand import FlexCommand
 from .utils.dockercommand import DockerCommand
-from .utils.project import get_project_name, list_projects
-from .utils.user_input import are_you_sure
+from .utils._misc import are_you_sure
 
 
 class DownCommand(FlexCommand):
@@ -18,25 +17,25 @@ class DownCommand(FlexCommand):
 
     def _run_instance(self, runner, config, args):
         if are_you_sure("This will bring down the entire instance."):
-            super()._run_instance(runner, config, args)
+            return super()._run_instance(runner, config, args)
 
         return False
 
-    def _run_project(self, runner, config, args):
-        logging.info(f"Bringing down project '{get_project_name(args)}'")
+    def _run_project(self, runner, config, args, project_name):
+        logging.info(f"Bringing down project '{project_name}'")
 
         DockerCommand('docker-compose').run(
             config, args, ['down']
         )
         return True
 
-    def _run_services(self, runner, config, args):
-        logging.info(f"Bringing down services {args.services} in project '{get_project_name(args)}'")
+    def _run_services(self, runner, config, args, project_name, services):
+        logging.info(f"Bringing down services {services} in project '{project_name}'")
 
         DockerCommand('docker-compose').run(
-            config, args, ['stop', *args.services]
+            config, args, ['stop', *services]
         )
         DockerCommand('docker-compose').run(
-            config, args, ['rm', '-f', *args.services]
+            config, args, ['rm', '-f', *services]
         )
         return True
