@@ -1,9 +1,9 @@
 # system
 import logging
-import os
 import subprocess
 
 # local
+from ..._constants import CONF_DIRECTORY_NAME
 from .executable import Executable
 from .project import *
 
@@ -23,7 +23,7 @@ def _update_kwargs(config, args, **kwargs):
         kwargs['env'].update({
             'COMPOSE_PROJECT_NAME': project_name,
             'KIWI_HUB_NAME': config['network:name'],
-            'CONFDIR': os.path.join(config['runtime:storage'], 'conf'),
+            'CONFDIR': os.path.join(config['runtime:storage'], CONF_DIRECTORY_NAME),
             'TARGETDIR': os.path.join(config['runtime:storage'], get_project_dir(config, project_name))
         })
 

@@ -6,15 +6,7 @@ import re
 import yaml
 
 # local
-from ._constants import KIWI_ROOT, KIWI_CONF_NAME
-
-###########
-# CONSTANTS
-
-# text files inside kiwi-config "src" directory
-HEADER_KIWI_CONF_NAME = f"{KIWI_ROOT}/kiwi_header.yml"
-DEFAULT_KIWI_CONF_NAME = f"{KIWI_ROOT}/kiwi_default.yml"
-VERSION_TAG_NAME = f"{KIWI_ROOT}/version-tag"
+from ._constants import KIWI_CONF_NAME, HEADER_KIWI_CONF_NAME, DEFAULT_KIWI_CONF_NAME, VERSION_TAG_NAME
 
 
 class Config:
