@@ -10,10 +10,13 @@ networks:
       name: $KIWI_HUB_NAME
 
 services:
+  # an example service
   something:
+    # uses an image
     image: maintainer/repo:tag
+    # will get restarted
     restart: unless-stopped
-		networks:
-		  - default
-		  - kiwi_hub
-    [...]
+    # is also connected to the instance hub
+    networks:
+      - default
+      - kiwi_hub
