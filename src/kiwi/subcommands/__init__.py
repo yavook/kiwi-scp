@@ -1,7 +1,7 @@
 # local
 from .build import BuildCommand
 from .cmd import CmdCommand
-from .conf import ConfCopyCommand, ConfPurgeCommand
+from .conf import ConfCopyCommand, ConfPurgeCommand, ConfCleanCommand
 from .disable import DisableCommand
 from .down import DownCommand
 from .enable import EnableCommand
@@ -22,6 +22,7 @@ __all__ = [
     'CmdCommand',
     'ConfCopyCommand',
     'ConfPurgeCommand',
+    'ConfCleanCommand',
     'DisableCommand',
     'DownCommand',
     'EnableCommand',
