@@ -1,10 +1,11 @@
 # system
 import logging
+import os
 import subprocess
 
 # local
 from .executable import Executable
-from .project import *
+from ._misc import get_project_dir, get_project_name
 
 # parent
 from ..._constants import CONF_DIRECTORY_NAME

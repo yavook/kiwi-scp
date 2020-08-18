@@ -5,7 +5,7 @@ import subprocess
 # local
 from ._subcommand import SubCommand
 from .utils.dockercommand import DockerCommand
-from .utils.user_input import are_you_sure
+from .utils._misc import are_you_sure
 
 
 def _find_net(config, args):

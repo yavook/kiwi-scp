@@ -5,7 +5,7 @@ import subprocess
 
 # local
 from ._subcommand import SubCommand
-from .utils.project import list_projects, get_project_dir
+from .utils._misc import list_projects, get_project_dir
 from .utils.rootkit import Rootkit, prefix_path_mnt
 
 # parent
