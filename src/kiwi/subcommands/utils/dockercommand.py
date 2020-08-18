@@ -5,7 +5,7 @@ import subprocess
 
 # local
 from .executable import Executable
-from .misc import get_project_dir, get_project_name
+from .misc import get_project_dir, get_first_project_name
 
 # parent
 from ..._constants import CONF_DIRECTORY_NAME
@@ -13,7 +13,7 @@ from ..._constants import CONF_DIRECTORY_NAME
 
 def _update_kwargs(config, args, **kwargs):
     # project given in args: command affects a project in this instance
-    project_name = get_project_name(args)
+    project_name = get_first_project_name(args)
     if project_name is not None:
         # execute command in project directory
         kwargs['cwd'] = get_project_dir(config, project_name)
