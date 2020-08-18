@@ -12,6 +12,12 @@ class UpCommand(FlexCommand):
             description="Bring up the whole instance, a project or service(s) inside a project"
         )
 
+    def _run_instance(self, runner, config, args):
+        if runner.run('conf-copy'):
+            return super()._run_instance(runner, config, args)
+
+        return False
+
     def _run_services(self, runner, config, args, services):
         if runner.run('net-up'):
             DockerCommand('docker-compose').run(
