@@ -1,6 +1,9 @@
 # system
 import argparse
 
+# local
+from ._constants import COMMAND_HELP_TEXT_NAME
+
 
 class Parser:
     """Singleton: Main CLI arguments parser"""
@@ -14,10 +17,17 @@ class Parser:
         __args = None
 
         def __init__(self):
-            # create main parsers
+            # add version data from separate file (keeps default config cleaner)
+            with open(COMMAND_HELP_TEXT_NAME, 'r') as stream:
+                command_help_text = stream.read().strip()
+
+            # create main parser
             self.__parser = argparse.ArgumentParser(
-                description='kiwi-config'
+                description='kiwi-config',
+                usage='%(prog)s [command]',
+                epilog=command_help_text,
             )
+            self.__parser.formatter_class = argparse.RawDescriptionHelpFormatter
 
             # main arguments
             self.__parser.add_argument(
