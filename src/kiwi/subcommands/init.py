@@ -2,11 +2,11 @@
 import logging
 import os
 
-# parent (display purposes only)
-from .._constants import KIWI_CONF_NAME
-
 # local
 from ._subcommand import SubCommand
+
+# parent (display purposes only)
+from .._constants import KIWI_CONF_NAME
 
 
 def user_input(config, key, prompt):

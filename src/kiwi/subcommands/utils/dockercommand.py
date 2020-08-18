@@ -3,9 +3,11 @@ import logging
 import subprocess
 
 # local
-from ..._constants import CONF_DIRECTORY_NAME
 from .executable import Executable
 from .project import *
+
+# parent
+from ..._constants import CONF_DIRECTORY_NAME
 
 
 def _update_kwargs(config, args, **kwargs):

@@ -3,13 +3,13 @@ import logging
 import os
 import subprocess
 
-# parent
-from .._constants import CONF_DIRECTORY_NAME
-
 # local
 from ._subcommand import SubCommand
 from .utils.project import list_projects, get_project_dir
-from .utils.rootkit import Rootkit, _prefix_path_mnt
+from .utils.rootkit import Rootkit, prefix_path_mnt
+
+# parent
+from .._constants import CONF_DIRECTORY_NAME
 
 
 class ConfCopyCommand(SubCommand):
@@ -36,7 +36,7 @@ class ConfCopyCommand(SubCommand):
             logging.info(f"Sync directories: {conf_dirs}")
 
             Rootkit('rsync').run(
-                config, args, ['rsync', '-r', *_prefix_path_mnt(conf_dirs)],
+                config, args, ['rsync', '-r', *prefix_path_mnt(conf_dirs)],
                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
 
@@ -57,7 +57,7 @@ class ConfPurgeCommand(SubCommand):
         logging.info(f"Purging directories: {conf_target}")
 
         Rootkit().run(
-            config, args, ['rm', '-rf', _prefix_path_mnt(conf_target)],
+            config, args, ['rm', '-rf', prefix_path_mnt(conf_target)],
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
 
