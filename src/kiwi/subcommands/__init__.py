@@ -6,6 +6,7 @@ from .disable import DisableCommand
 from .down import DownCommand
 from .enable import EnableCommand
 from .init import InitCommand
+from .list import ListCommand
 from .logs import LogsCommand
 from .net import NetUpCommand, NetDownCommand
 from .new import NewCommand
@@ -25,6 +26,7 @@ __all__ = [
     'DownCommand',
     'EnableCommand',
     'InitCommand',
+    'ListCommand',
     'LogsCommand',
     'NetUpCommand',
     'NetDownCommand',
