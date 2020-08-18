@@ -3,11 +3,11 @@ import logging
 import os
 import subprocess
 
-# parent
-from ..._constants import IMAGES_DIRECTORY_NAME, LOCAL_IMAGES_NAME, DEFAULT_IMAGE_NAME
-
 # local
 from .dockercommand import DockerCommand
+
+# parent
+from ..._constants import IMAGES_DIRECTORY_NAME, LOCAL_IMAGES_NAME, DEFAULT_IMAGE_NAME
 
 
 def _prefix_path(prefix, path):
@@ -18,7 +18,7 @@ def _prefix_path(prefix, path):
         return [_prefix_path(prefix, p) for p in path]
 
 
-def _prefix_path_mnt(path):
+def prefix_path_mnt(path):
     return _prefix_path('/mnt/', path)
 
 
