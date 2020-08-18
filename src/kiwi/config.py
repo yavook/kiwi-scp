@@ -49,7 +49,10 @@ class Config:
         """dump into textual representation"""
 
         # dump yml content
-        yml_string = yaml.dump(self.__yml_content, default_flow_style=False, sort_keys=False)
+        yml_string = yaml.dump(
+            self.__yml_content,
+            default_flow_style=False, sort_keys=False
+        ).strip()
 
         # insert newline before every main key
         yml_string = re.sub(r'^(\S)', r'\n\1', yml_string, flags=re.MULTILINE)
@@ -82,6 +85,7 @@ class Config:
 
         with open(KIWI_CONF_NAME, 'w') as stream:
             stream.write(str(self))
+            stream.write('\n')
 
 
 class DefaultConfig(Config):
