@@ -1,14 +1,27 @@
 import os
 
 
-def get_project_name(args):
-    """get project name from CLI args"""
+def get_project_names(args):
+    """get project names from CLI args"""
 
     if args is not None and 'projects' in args:
-        if isinstance(args.projects, list) and len(args.projects) > 0:
-            return args.projects[0]
-        else:
-            return args.projects
+        if isinstance(args.projects, list):
+            if args.projects:
+                return args.projects
+            else:
+                return None
+        elif isinstance(args.projects, str):
+            return [args.projects]
+
+    return None
+
+
+def get_first_project_name(args):
+    """get first project name from CLI args"""
+
+    names = get_project_names(args)
+    if names is not None:
+        return names[0]
 
     return None
 
@@ -28,10 +41,16 @@ def get_project_dir(config, project_name):
     return f"{project_name}{config['markers:project']}"
 
 
+def get_project_down_dir(config, project_name):
+    """get project directory"""
+
+    return f"{get_project_dir(config, project_name)}{config['markers:down']}"
+
+
 def get_target_dir(config, project_name):
     """get project's target directory"""
 
-    return f"{config['runtime:storage']}{get_project_dir(config, project_name)}"
+    return os.path.join(config['runtime:storage'], get_project_dir(config, project_name))
 
 
 def list_projects(config):

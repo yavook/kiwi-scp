@@ -2,7 +2,7 @@
 import logging
 
 # local
-from .utils.misc import get_project_name, get_services, list_projects
+from .utils.misc import get_first_project_name, get_services, list_projects
 
 # parent
 from ..parser import Parser
@@ -42,8 +42,8 @@ class ProjectCommand(SubCommand):
 
         projects = "a project"
 
-        if not str(num_projects) == '1':
-            projects = "projects"
+        if not num_projects == 1:
+            projects = "project(s)"
 
         self._sub_parser.add_argument(
             'projects', metavar='project', nargs=num_projects, type=str,
@@ -62,8 +62,8 @@ class ServiceCommand(ProjectCommand):
 
         services = "a service"
 
-        if not str(num_services) == '1':
-            services = "services"
+        if not num_services == 1:
+            services = "service(s)"
 
         self._sub_parser.add_argument(
             'services', metavar='service', nargs=num_services, type=str,
@@ -104,7 +104,7 @@ class FlexCommand(ServiceCommand):
         pass
 
     def run(self, runner, config, args):
-        project_name = get_project_name(args)
+        project_name = get_first_project_name(args)
         services = get_services(args)
 
         if project_name is None:
