@@ -14,7 +14,12 @@ class DownCommand(FlexCommand):
         )
 
     def _run_instance(self, runner, config, args):
-        if are_you_sure("This will bring down the entire instance."):
+        if are_you_sure([
+            "This will bring down the entire instance.",
+            "",
+            "This may not be what you intended, because:",
+            " - Bringing down the instance stops ALL services in here",
+        ]):
             return super()._run_instance(runner, config, args)
 
         return False

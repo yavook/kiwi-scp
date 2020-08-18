@@ -59,6 +59,14 @@ def _surround(string, bang):
     return f"{sidelane}\n{midlane}\n{sidelane}"
 
 
+def _emphasize(lines):
+    if isinstance(lines, list):
+        return '\n'.join([_emphasize(line) for line in lines])
+    elif lines:
+        return f">>> {lines} <<<"
+    else:
+        return lines
+
 def are_you_sure(prompt, default="no"):
     if default.lower() == 'yes':
         suffix = "[YES|no]"
@@ -66,9 +74,9 @@ def are_you_sure(prompt, default="no"):
         suffix = "[yes|NO]"
 
     answer = input(
-        f"{_surround('CAREFULING IN PROGRESS', '!')}\n"
+        f"{_surround('MUST HAVE CAREFULING IN PROGRESS', '!')}\n"
         f"\n"
-        f">>> {prompt} <<<\n"
+        f"{_emphasize(prompt)}\n"
         f"\n"
         f"Are you sure you want to proceed? {suffix} "
     ).strip().lower()
