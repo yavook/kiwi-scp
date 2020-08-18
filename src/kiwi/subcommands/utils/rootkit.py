@@ -4,29 +4,29 @@ import os
 import subprocess
 
 # parent
-from ..._constants import KIWI_ROOT
+from ..._constants import IMAGES_DIRECTORY_NAME, LOCAL_IMAGES_NAME, DEFAULT_IMAGE_NAME
 
 # local
 from .dockercommand import DockerCommand
 
 
 def _prefix_path(prefix, path):
-    abs_path = os.path.abspath(path)
-    return os.path.realpath(prefix + '/' + abs_path)
-
-
-def prefix_path(path):
     if isinstance(path, str):
-        return _prefix_path('/mnt/', path)
+        abs_path = os.path.abspath(path)
+        return os.path.realpath(f"{prefix}/{abs_path}")
     elif isinstance(path, list):
-        return [_prefix_path('/mnt/', p) for p in path]
+        return [_prefix_path(prefix, p) for p in path]
+
+
+def _prefix_path_mnt(path):
+    return _prefix_path('/mnt/', path)
 
 
 def _image_name(image_tag):
     if image_tag is not None:
-        return f"kiwi-config/auxiliary:{image_tag}"
+        return f"{LOCAL_IMAGES_NAME}:{image_tag}"
     else:
-        return "alpine:latest"
+        return DEFAULT_IMAGE_NAME
 
 
 class Rootkit:
@@ -66,8 +66,8 @@ class Rootkit:
                         [
                             'build',
                             '-t', _image_name(self.__image_tag),
-                            '-f', f"{KIWI_ROOT}/images/{self.__image_tag}.Dockerfile",
-                            f"{KIWI_ROOT}/images"
+                            '-f', f"{IMAGES_DIRECTORY_NAME}/{self.__image_tag}.Dockerfile",
+                            f"{IMAGES_DIRECTORY_NAME}"
                         ],
                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                     )

@@ -1,6 +1,6 @@
 # local
 from .cmd import CmdCommand
-from .copy_conf import CopyConfCommand
+from .conf import ConfCopyCommand, ConfPurgeCommand
 from .down import DownCommand
 from .init import InitCommand
 from .logs import LogsCommand
@@ -11,7 +11,8 @@ from .up import UpCommand
 
 __all__ = [
     'CmdCommand',
-    'CopyConfCommand',
+    'ConfCopyCommand',
+    'ConfPurgeCommand',
     'DownCommand',
     'InitCommand',
     'LogsCommand',
