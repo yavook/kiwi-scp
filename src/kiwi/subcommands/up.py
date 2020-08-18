@@ -16,13 +16,19 @@ class UpCommand(FlexCommand):
         )
 
     def _run_project(self, runner, config, args):
-        DockerCommand('docker-compose').run(
-            config, args, ['up', '-d']
-        )
-        return True
+        if runner.run('net-up'):
+            DockerCommand('docker-compose').run(
+                config, args, ['up', '-d']
+            )
+            return True
+
+        return False
 
     def _run_services(self, runner, config, args, services):
-        DockerCommand('docker-compose').run(
-            config, args, ['up', '-d', *services]
-        )
-        return True
+        if runner.run('net-up'):
+            DockerCommand('docker-compose').run(
+                config, args, ['up', '-d', *services]
+            )
+            return True
+
+        return False
