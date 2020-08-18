@@ -249,8 +249,8 @@ services:
   something:
     image: maintainer/repo:tag
     restart: unless-stopped
-		networks:
-		  - default
-		  - kiwihub
+    networks:
+      - default
+      - kiwi_hub
     [...]
 endef
