@@ -98,7 +98,7 @@ class FlexCommand(ServiceCommand):
         return result
 
     def _run_project(self, runner, config, args):
-        pass
+        return self._run_services(runner, config, args, [])
 
     def _run_services(self, runner, config, args, services):
         pass
