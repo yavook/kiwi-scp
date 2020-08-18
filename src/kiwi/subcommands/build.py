@@ -8,7 +8,7 @@ class BuildCommand(FlexCommand):
 
     def __init__(self):
         super().__init__(
-            'build', "Building images",
+            'build', "Building images for",
             description="Build images for the whole instance, a project or service(s) inside a project"
         )
 
