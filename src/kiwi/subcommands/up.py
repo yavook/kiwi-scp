@@ -11,20 +11,17 @@ class UpCommand(FlexCommand):
 
     def __init__(self):
         super().__init__(
-            'up', description="Bring up the whole instance, a project or service(s) inside a project"
+            'up', "Bringing up",
+            description="Bring up the whole instance, a project or service(s) inside a project"
         )
 
-    def _run_project(self, runner, config, args, project_name):
-        logging.info(f"Bringing up project '{project_name}'")
-
+    def _run_project(self, runner, config, args):
         DockerCommand('docker-compose').run(
             config, args, ['up', '-d']
         )
         return True
 
-    def _run_services(self, runner, config, args, project_name, services):
-        logging.info(f"Bringing up services {services} in project '{project_name}'")
-
+    def _run_services(self, runner, config, args, services):
         DockerCommand('docker-compose').run(
             config, args, ['up', '-d', *services]
         )

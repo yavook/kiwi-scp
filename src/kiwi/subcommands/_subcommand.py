@@ -1,5 +1,8 @@
+# system
+import logging
+
 # local
-from .utils._misc import get_project_name, get_services, list_projects
+from .utils.misc import get_project_name, get_services, list_projects
 
 # parent
 from ..parser import Parser
@@ -71,11 +74,19 @@ class ServiceCommand(ProjectCommand):
 class FlexCommand(ServiceCommand):
     """this command concerns the entire instance, a whole project or just service(s) in a project"""
 
-    def __init__(self, name, **kwargs):
+    __action = None
+
+    def __init__(self, name, action='', **kwargs):
         super().__init__(
             name, num_projects='?', num_services='*',
             **kwargs
         )
+
+        if not action:
+            # default action string
+            self.__action = f"Running '{str(self)}' for"
+        else:
+            self.__action = action
 
     def _run_instance(self, runner, config, args):
         result = True
@@ -86,10 +97,10 @@ class FlexCommand(ServiceCommand):
 
         return result
 
-    def _run_project(self, runner, config, args, project_name):
+    def _run_project(self, runner, config, args):
         pass
 
-    def _run_services(self, runner, config, args, project_name, services):
+    def _run_services(self, runner, config, args, services):
         pass
 
     def run(self, runner, config, args):
@@ -98,11 +109,14 @@ class FlexCommand(ServiceCommand):
 
         if project_name is None:
             # no project given, run for entire instance
+            logging.info(f"{self.__action} this instance")
             return self._run_instance(runner, config, args)
 
-        if services is None:
+        if not services:
             # no services given, run for whole project
-            return self._run_project(runner, config, args, project_name)
+            logging.info(f"{self.__action} project '{project_name}'")
+            return self._run_project(runner, config, args)
 
         # run for service(s) inside project
-        return self._run_services(runner, config, args, project_name, services)
+        logging.info(f"{self.__action} services {services} in project '{project_name}'")
+        return self._run_services(runner, config, args, services)

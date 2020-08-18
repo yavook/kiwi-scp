@@ -5,7 +5,7 @@ import subprocess
 
 # local
 from .executable import Executable
-from ._misc import get_project_dir, get_project_name
+from .misc import get_project_dir, get_project_name
 
 # parent
 from ..._constants import CONF_DIRECTORY_NAME
