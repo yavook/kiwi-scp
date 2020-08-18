@@ -19,6 +19,7 @@ HEADER_KIWI_CONF_NAME = f"{KIWI_ROOT}/etc/kiwi_header.yml"
 DEFAULT_KIWI_CONF_NAME = f"{KIWI_ROOT}/etc/kiwi_default.yml"
 VERSION_TAG_NAME = f"{KIWI_ROOT}/etc/version_tag"
 DEFAULT_DOCKER_COMPOSE_NAME = f"{KIWI_ROOT}/etc/docker-compose_default.yml"
+COMMAND_HELP_TEXT_NAME = f"{KIWI_ROOT}/etc/command_help.txt"
 
 # special config directory in projects
 CONF_DIRECTORY_NAME = 'conf'
