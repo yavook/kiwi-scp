@@ -7,6 +7,7 @@ from .init import InitCommand
 from .logs import LogsCommand
 from .net import NetUpCommand, NetDownCommand
 from .pull import PullCommand
+from .push import PushCommand
 from .sh import ShCommand
 from .show import ShowCommand
 from .up import UpCommand
@@ -23,6 +24,7 @@ __all__ = [
     'NetUpCommand',
     'NetDownCommand',
     'PullCommand',
+    'PushCommand',
     'ShCommand',
     'ShowCommand',
     'UpCommand',
