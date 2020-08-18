@@ -1,0 +1,19 @@
+version: "2"
+
+networks:
+  # reachable from outside
+  default:
+    driver: bridge
+  # interconnects projects
+  kiwi_hub:
+    external:
+      name: $KIWI_HUB_NAME
+
+services:
+  something:
+    image: maintainer/repo:tag
+    restart: unless-stopped
+		networks:
+		  - default
+		  - kiwi_hub
+    [...]

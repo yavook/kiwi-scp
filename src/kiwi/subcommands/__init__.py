@@ -2,10 +2,13 @@
 from .build import BuildCommand
 from .cmd import CmdCommand
 from .conf import ConfCopyCommand, ConfPurgeCommand
+from .disable import DisableCommand
 from .down import DownCommand
+from .enable import EnableCommand
 from .init import InitCommand
 from .logs import LogsCommand
 from .net import NetUpCommand, NetDownCommand
+from .new import NewCommand
 from .pull import PullCommand
 from .push import PushCommand
 from .sh import ShCommand
@@ -18,11 +21,14 @@ __all__ = [
     'CmdCommand',
     'ConfCopyCommand',
     'ConfPurgeCommand',
+    'DisableCommand',
     'DownCommand',
+    'EnableCommand',
     'InitCommand',
     'LogsCommand',
     'NetUpCommand',
     'NetDownCommand',
+    'NewCommand',
     'PullCommand',
     'PushCommand',
     'ShCommand',
