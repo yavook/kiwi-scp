@@ -1,15 +1,19 @@
 # local
+from .build import BuildCommand
 from .cmd import CmdCommand
 from .conf import ConfCopyCommand, ConfPurgeCommand
 from .down import DownCommand
 from .init import InitCommand
 from .logs import LogsCommand
 from .net import NetUpCommand, NetDownCommand
+from .pull import PullCommand
 from .sh import ShCommand
 from .show import ShowCommand
 from .up import UpCommand
+from .update import UpdateCommand
 
 __all__ = [
+    'BuildCommand',
     'CmdCommand',
     'ConfCopyCommand',
     'ConfPurgeCommand',
@@ -18,7 +22,9 @@ __all__ = [
     'LogsCommand',
     'NetUpCommand',
     'NetDownCommand',
+    'PullCommand',
     'ShCommand',
     'ShowCommand',
     'UpCommand',
+    'UpdateCommand',
 ]
