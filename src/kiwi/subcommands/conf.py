@@ -62,3 +62,40 @@ class ConfPurgeCommand(SubCommand):
         )
 
         return True
+
+
+class ConfCleanCommand(SubCommand):
+    """kiwi conf-clean"""
+
+    def __init__(self):
+        super().__init__(
+            'conf-clean',
+            description="Cleanly sync all configs to target folder, relaunch affected projects"
+        )
+
+    def run(self, runner, config, args):
+        result = True
+
+        # down all projects with config directories
+        affected_projects = []
+
+        for project_name in list_projects(config):
+            project_conf = f"{get_project_dir(config, project_name)}/{CONF_DIRECTORY_NAME}"
+
+            if os.path.isdir(project_conf):
+                affected_projects.append(project_name)
+
+        for project_name in affected_projects:
+            args.projects = project_name
+            result &= runner.run('down')
+
+        # cleanly sync configs
+        result &= runner.run('conf-purge')
+        result &= runner.run('conf-purge')
+
+        # bring projects back up
+        for project_name in affected_projects:
+            args.projects = project_name
+            result &= runner.run('up')
+
+        return result
