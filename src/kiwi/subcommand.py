@@ -19,6 +19,8 @@ class SubCommand:
 
     def __init__(self, name, action, add_parser=True, **kwargs):
         self.__name = name
+        self._action = action
+
         if add_parser:
             self._sub_parser = Parser().get_subparsers().add_parser(
                 name,
