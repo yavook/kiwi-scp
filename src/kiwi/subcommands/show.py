@@ -11,6 +11,7 @@ class ShowCommand(SubCommand):
     def __init__(self):
         super().__init__(
             'show',
+            action="Printing",
             description="Show effective kiwi.yml"
         )
 

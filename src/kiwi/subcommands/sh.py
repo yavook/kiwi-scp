@@ -76,6 +76,7 @@ class ShCommand(ServiceCommand):
     def __init__(self):
         super().__init__(
             'sh', num_projects=1, num_services=1,
+            action="Spawning shell in",
             description="Spawn shell inside a project's service"
         )
 

@@ -31,6 +31,7 @@ class InitCommand(SubCommand):
     def __init__(self):
         super().__init__(
             'init',
+            action="Creating",
             description="Create a new kiwi-config instance"
         )
 

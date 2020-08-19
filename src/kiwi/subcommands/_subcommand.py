@@ -19,19 +19,13 @@ class SubCommand:
 
     _action = None
 
-    def __init__(self, name, action='', add_parser=True, **kwargs):
+    def __init__(self, name, action, add_parser=True, **kwargs):
         self.__name = name
         if add_parser:
             self._sub_parser = Parser().get_subparsers().add_parser(
                 name,
                 **kwargs
             )
-
-        if not action:
-            # default action string
-            self._action = f"Running '{str(self)}' for"
-        else:
-            self._action = action
 
     def __str__(self):
         return self.__name
@@ -50,7 +44,7 @@ class SubCommand:
 class ProjectCommand(SubCommand):
     """this command concerns a project in current instance"""
 
-    def __init__(self, name, num_projects, action='', add_parser=True, **kwargs):
+    def __init__(self, name, num_projects, action, add_parser=True, **kwargs):
         super().__init__(
             name, action=action, add_parser=add_parser,
             **kwargs
@@ -88,7 +82,7 @@ class ProjectCommand(SubCommand):
 class ServiceCommand(ProjectCommand):
     """this command concerns service(s) in a project"""
 
-    def __init__(self, name, num_projects, num_services, action='', add_parser=True, **kwargs):
+    def __init__(self, name, num_projects, num_services, action, add_parser=True, **kwargs):
         super().__init__(
             name, num_projects=num_projects, action=action, add_parser=add_parser,
             **kwargs
@@ -96,7 +90,7 @@ class ServiceCommand(ProjectCommand):
 
         if (isinstance(num_projects, str) and num_projects == '*') \
                 or (isinstance(num_projects, int) and num_projects > 1):
-            logging.warning(f"Invalid choice for project count: {num_projects}")
+            raise ValueError(f"Invalid choice for project count: {num_projects}")
 
         if num_services == 1:
             services = "a service"

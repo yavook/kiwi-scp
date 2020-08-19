@@ -27,7 +27,7 @@ class NetUpCommand(SubCommand):
     def __init__(self):
         super().__init__(
             'net-up',
-            action="Creating the local network hub",
+            action="Creating the local network hub for",
             description="Create the local network hub for this instance"
         )
 
@@ -63,6 +63,7 @@ class NetDownCommand(SubCommand):
     def __init__(self):
         super().__init__(
             'net-down',
+            action="Removing the local network hub for",
             description="Remove the local network hub for this instance"
         )
 
