@@ -1,5 +1,5 @@
 # local
-from ._subcommand import ServiceCommand
+from ..subcommand import ServiceCommand
 from ..misc import are_you_sure
 
 

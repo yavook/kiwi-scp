@@ -3,9 +3,7 @@ import logging
 import subprocess
 
 # local
-from ._subcommand import ServiceCommand
-
-# parent
+from ..subcommand import ServiceCommand
 from ..config import LoadedConfig
 
 

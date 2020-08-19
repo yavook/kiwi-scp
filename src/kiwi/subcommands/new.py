@@ -4,10 +4,8 @@ import os
 import shutil
 
 # local
-from ._subcommand import ProjectCommand
-
-# parent
 from .._constants import DEFAULT_DOCKER_COMPOSE_NAME
+from ..subcommand import ProjectCommand
 
 
 class NewCommand(ProjectCommand):

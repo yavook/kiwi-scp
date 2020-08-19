@@ -3,10 +3,8 @@ import logging
 import os
 
 # local
-from ._subcommand import SubCommand
-
-# parent (display purposes only)
 from .._constants import KIWI_CONF_NAME
+from ..subcommand import SubCommand
 from ..config import DefaultConfig, LoadedConfig
 
 

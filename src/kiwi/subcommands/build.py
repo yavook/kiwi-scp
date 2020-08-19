@@ -1,5 +1,5 @@
 # local
-from ._subcommand import ServiceCommand
+from ..subcommand import ServiceCommand
 
 
 class BuildCommand(ServiceCommand):

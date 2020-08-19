@@ -3,7 +3,7 @@ import logging
 import os
 import subprocess
 
-# parent
+# local
 from .config import LoadedConfig
 
 

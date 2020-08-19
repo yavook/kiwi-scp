@@ -2,9 +2,9 @@
 import logging
 import os
 
-# parent
-from ..parser import Parser
-from ..project import Projects
+# local
+from .parser import Parser
+from .project import Projects
 
 
 class SubCommand:
