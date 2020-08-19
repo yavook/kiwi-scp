@@ -29,7 +29,7 @@ class InitCommand(SubCommand):
     def __init__(self):
         super().__init__(
             'init',
-            action="Creating",
+            action=f"Initializing '{KIWI_CONF_NAME}' in",
             description="Create a new kiwi-config instance"
         )
 
@@ -41,7 +41,6 @@ class InitCommand(SubCommand):
         )
 
     def _run_instance(self, runner, args):
-        logging.info(f"Initializing '{KIWI_CONF_NAME}' in '{os.getcwd()}'")
         config = LoadedConfig.get()
 
         # check force switch

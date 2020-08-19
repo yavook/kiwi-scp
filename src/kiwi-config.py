@@ -31,7 +31,8 @@ def main():
     set_verbosity(logging.getLogger(), log_handler, kiwi.verbosity())
 
     # run the app
-    kiwi.run()
+    if not kiwi.run():
+        quit(1)
 
 
 if __name__ == "__main__":
