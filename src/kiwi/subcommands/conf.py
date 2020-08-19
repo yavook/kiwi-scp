@@ -5,7 +5,7 @@ import subprocess
 
 # local
 from ._subcommand import SubCommand
-from .utils.misc import list_projects, get_project_dir
+from .utils.project import Projects
 from .utils.rootkit import Rootkit, prefix_path_mnt
 
 # parent
@@ -22,13 +22,11 @@ class ConfCopyCommand(SubCommand):
         )
 
     def run(self, runner, config, args):
-        conf_dirs = []
-
-        for project_name in list_projects(config):
-            project_conf = f"{get_project_dir(config, project_name)}/{CONF_DIRECTORY_NAME}"
-
-            if os.path.isdir(project_conf):
-                conf_dirs.append(project_conf)
+        conf_dirs = [
+            project.conf_dir_name()
+            for project in Projects.all()
+            if project.is_enabled()
+        ]
 
         if conf_dirs:
             # add target directory
@@ -76,14 +74,11 @@ class ConfCleanCommand(SubCommand):
     def run(self, runner, config, args):
         result = True
 
-        # down all projects with config directories
-        affected_projects = []
-
-        for project_name in list_projects(config):
-            project_conf = f"{get_project_dir(config, project_name)}/{CONF_DIRECTORY_NAME}"
-
-            if os.path.isdir(project_conf):
-                affected_projects.append(project_name)
+        affected_projects = [
+            project.conf_dir_name()
+            for project in Projects.all()
+            if project.has_configs()
+        ]
 
         for project_name in affected_projects:
             args.projects = project_name
@@ -91,7 +86,7 @@ class ConfCleanCommand(SubCommand):
 
         # cleanly sync configs
         result &= runner.run('conf-purge')
-        result &= runner.run('conf-purge')
+        result &= runner.run('conf-copy')
 
         # bring projects back up
         for project_name in affected_projects:
