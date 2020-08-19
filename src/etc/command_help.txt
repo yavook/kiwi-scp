@@ -1,25 +1,27 @@
 COMMANDS
 ========
 
-net-up
+init -> config
+show -> config --show
+
 up
 down
-net-down
 update
+new
 enable
 disable
 
-show
-list
+list -> show
 logs
 sh
+cmd
 
 build
 pull
 push
 
-init
-conf-copy
-conf-purge
-
-cmd
+net-up
+net-down
+conf-copy (hide)
+conf-purge (hide)
+conf-clean -> clean
