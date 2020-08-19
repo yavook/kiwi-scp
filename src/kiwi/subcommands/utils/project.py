@@ -26,7 +26,7 @@ class Project:
         return f"{self.__name}{LoadedConfig.get()['markers:project']}"
 
     def disabled_dir_name(self):
-        return f"{self.enabled_dir_name()}{LoadedConfig.get()['markers:down']}"
+        return f"{self.enabled_dir_name()}{LoadedConfig.get()['markers:disabled']}"
 
     def conf_dir_name(self):
         return os.path.join(self.dir_name(), CONF_DIRECTORY_NAME)
@@ -81,7 +81,7 @@ class Project:
 def _extract_project_name(file_name):
     config = LoadedConfig.get()
     enabled_suffix = config['markers:project']
-    disabled_suffix = f"{enabled_suffix}{config['markers:down']}"
+    disabled_suffix = f"{enabled_suffix}{config['markers:disabled']}"
 
     if os.path.isdir(file_name):
         # all subdirectories

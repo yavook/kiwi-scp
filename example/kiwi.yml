@@ -12,7 +12,7 @@ runtime:
 
 markers:
   project: .project
-  down: .down
+  disabled: .disabled
 
 network:
   name: kiwi_hub

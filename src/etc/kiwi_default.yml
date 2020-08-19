@@ -6,7 +6,7 @@ runtime:
   env: null
 markers:
   project: .project
-  down: .down
+  disabled: .disabled
 network:
   name: kiwi_hub
   cidr: 10.22.46.0/24
