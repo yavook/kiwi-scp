@@ -1,5 +1,4 @@
 # local
-from .utils.project import Projects
 from ._subcommand import ProjectCommand
 
 

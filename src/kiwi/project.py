@@ -3,8 +3,8 @@ import os
 
 from .executable import Executable
 
-from ..._constants import CONF_DIRECTORY_NAME
-from ...config import LoadedConfig
+from ._constants import CONF_DIRECTORY_NAME
+from .config import LoadedConfig
 
 
 class Project:

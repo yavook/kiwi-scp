@@ -4,7 +4,7 @@ import os
 import subprocess
 
 # parent
-from ...config import LoadedConfig
+from .config import LoadedConfig
 
 
 def _update_kwargs(**kwargs):

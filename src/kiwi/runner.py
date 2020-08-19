@@ -4,7 +4,7 @@ import subprocess
 
 # local
 from . import subcommands
-from .subcommands.utils.executable import Executable
+from .executable import Executable
 from .parser import Parser
 
 

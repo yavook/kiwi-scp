@@ -4,7 +4,6 @@ import os
 import shutil
 
 # local
-from .utils.project import Projects
 from ._subcommand import ProjectCommand
 
 # parent

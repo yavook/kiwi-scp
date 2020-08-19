@@ -1,6 +1,6 @@
 # local
 from ._subcommand import ServiceCommand
-from .utils.misc import are_you_sure
+from ..misc import are_you_sure
 
 
 class DownCommand(ServiceCommand):
