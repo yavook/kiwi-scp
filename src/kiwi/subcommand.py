@@ -4,7 +4,7 @@ import os
 
 # local
 from .parser import Parser
-from .project import Projects
+from .projects import Projects
 
 
 class SubCommand:

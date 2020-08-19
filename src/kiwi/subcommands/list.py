@@ -5,7 +5,8 @@ import yaml
 
 # local
 from ..subcommand import ServiceCommand
-from ..project import Project, Projects
+from ..project import Project
+from ..projects import Projects
 
 
 def _print_list(strings):
