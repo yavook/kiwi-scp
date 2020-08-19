@@ -17,12 +17,12 @@ class NewCommand(ProjectCommand):
     def __init__(self):
         super().__init__(
             'new', num_projects='+',
+            action="Creating",
             description="Create new empty project(s) in this instance"
         )
 
-    def run(self, runner, config, args):
+    def _run_projects(self, runner, args, projects):
         result = True
-        projects = Projects.from_args(args)
 
         for project in projects:
             if project.exists():
@@ -31,7 +31,7 @@ class NewCommand(ProjectCommand):
 
             else:
                 logging.info(f"Creating project '{project.get_name()}'")
-                os.mkdir(project.enabled_dir_name())
+                os.mkdir(project.disabled_dir_name())
                 shutil.copy(DEFAULT_DOCKER_COMPOSE_NAME, project.compose_file_name())
 
         return result

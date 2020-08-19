@@ -1,5 +1,6 @@
 # system
 import logging
+import os
 
 # local
 from .utils.project import Projects
@@ -16,7 +17,9 @@ class SubCommand:
     # command parser
     _sub_parser = None
 
-    def __init__(self, name, add_parser=True, **kwargs):
+    _action = None
+
+    def __init__(self, name, action='', add_parser=True, **kwargs):
         self.__name = name
         if add_parser:
             self._sub_parser = Parser().get_subparsers().add_parser(
@@ -24,26 +27,38 @@ class SubCommand:
                 **kwargs
             )
 
+        if not action:
+            # default action string
+            self._action = f"Running '{str(self)}' for"
+        else:
+            self._action = action
+
     def __str__(self):
         return self.__name
 
-    def run(self, runner, config, args):
-        """actually run command with this dir's config and parsed CLI args"""
+    def _run_instance(self, runner, args):
         pass
+
+    def run(self, runner, args):
+        """actually run command with parsed CLI args"""
+
+        # run for entire instance
+        logging.info(f"{self._action} kiwi-config instance at '{os.getcwd()}'")
+        return self._run_instance(runner, args)
 
 
 class ProjectCommand(SubCommand):
     """this command concerns a project in current instance"""
 
-    def __init__(self, name, num_projects, add_parser=True, **kwargs):
+    def __init__(self, name, num_projects, action='', add_parser=True, **kwargs):
         super().__init__(
-            name, add_parser=add_parser,
+            name, action=action, add_parser=add_parser,
             **kwargs
         )
 
-        projects = "a project"
-
-        if not num_projects == 1:
+        if num_projects == 1:
+            projects = "a project"
+        else:
             projects = "project(s)"
 
         self._sub_parser.add_argument(
@@ -51,19 +66,41 @@ class ProjectCommand(SubCommand):
             help=f"select {projects} in this instance"
         )
 
+    def _run_instance(self, runner, args):
+        # default: run for all enabled projects
+        return self._run_projects(runner, args, Projects.from_dir().filter_enabled())
+
+    def _run_projects(self, runner, args, projects):
+        pass
+
+    def run(self, runner, args):
+        projects = Projects.from_args(args)
+
+        if not projects.empty():
+            # project(s) given
+            logging.info(f"{self._action} projects {projects}")
+            return self._run_projects(runner, args, projects)
+
+        else:
+            return super().run(runner, args)
+
 
 class ServiceCommand(ProjectCommand):
     """this command concerns service(s) in a project"""
 
-    def __init__(self, name, num_projects, num_services, add_parser=True, **kwargs):
+    def __init__(self, name, num_projects, num_services, action='', add_parser=True, **kwargs):
         super().__init__(
-            name, num_projects=num_projects, add_parser=add_parser,
+            name, num_projects=num_projects, action=action, add_parser=add_parser,
             **kwargs
         )
 
-        services = "a service"
+        if (isinstance(num_projects, str) and num_projects == '*') \
+                or (isinstance(num_projects, int) and num_projects > 1):
+            logging.warning(f"Invalid choice for project count: {num_projects}")
 
-        if not num_services == 1:
+        if num_services == 1:
+            services = "a service"
+        else:
             services = "service(s)"
 
         self._sub_parser.add_argument(
@@ -71,52 +108,25 @@ class ServiceCommand(ProjectCommand):
             help=f"select {services} in a project"
         )
 
-
-class FlexCommand(ServiceCommand):
-    """this command concerns the entire instance, a whole project or just service(s) in a project"""
-
-    __action = None
-
-    def __init__(self, name, action='', add_parser=True, **kwargs):
-        super().__init__(
-            name, num_projects='?', num_services='*', add_parser=add_parser,
-            **kwargs
-        )
-
-        if not action:
-            # default action string
-            self.__action = f"Running '{str(self)}' for"
-        else:
-            self.__action = action
-
-    def _run_instance(self, runner, config, args):
+    def _run_projects(self, runner, args, projects):
         result = True
 
-        for project in Projects.from_args(args):
-            args.projects = project.get_name()
-            result &= runner.run(str(self))
+        # default: run without services for all given
+        for project in projects:
+            result &= self._run_services(runner, args, project, [])
 
         return result
 
-    def _run_project(self, runner, config, args):
-        return self._run_services(runner, config, args, [])
-
-    def _run_services(self, runner, config, args, services):
+    def _run_services(self, runner, args, project, services):
         pass
 
-    def run(self, runner, config, args):
-        projects = Projects.from_args(args)
-        if not projects:
-            # no project given, run for entire instance
-            logging.info(f"{self.__action} this instance")
-            return self._run_instance(runner, config, args)
+    def run(self, runner, args):
+        if 'services' in args and args.services:
+            project = Projects.from_args(args)[0]
 
-        project = projects[0]
-        if args is None or 'services' not in args or not args.services:
-            # no services given, run for whole project
-            logging.info(f"{self.__action} project '{project.get_name()}'")
-            return self._run_project(runner, config, args)
+            # run for service(s) inside project
+            logging.info(f"{self._action} project '{project.get_name()}', services {args.services}")
+            return self._run_services(runner, args, project, args.services)
 
-        # run for service(s) inside project
-        logging.info(f"{self.__action} services {args.services} in project '{project.get_name()}'")
-        return self._run_services(runner, config, args, args.services)
+        else:
+            return super().run(runner, args)

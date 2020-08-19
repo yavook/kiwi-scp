@@ -3,18 +3,22 @@ import logging
 import os
 import subprocess
 
+# parent
+from ...config import LoadedConfig
 
-def _update_kwargs(config, **kwargs):
-    if config is not None:
-        # ensure there is an environment
-        if 'env' not in kwargs:
-            kwargs['env'] = {}
 
-        # add common environment from config
-        if config['runtime:env'] is not None:
-            kwargs['env'].update(config['runtime:env'])
+def _update_kwargs(**kwargs):
+    config = LoadedConfig.get()
 
-        logging.debug(f"kwargs updated: {kwargs}")
+    # ensure there is an environment
+    if 'env' not in kwargs:
+        kwargs['env'] = {}
+
+    # add common environment from config
+    if config['runtime:env'] is not None:
+        kwargs['env'].update(config['runtime:env'])
+
+    logging.debug(f"kwargs updated: {kwargs}")
 
     return kwargs
 
@@ -48,28 +52,24 @@ class Executable:
             logging.debug(f"Executable cmd{cmd}, kwargs{kwargs}")
             return cmd
 
-        def run(self, process_args, config=None, **kwargs):
-            kwargs = _update_kwargs(config, **kwargs)
-
+        def run(self, process_args, **kwargs):
             return subprocess.run(
-                self.__build_cmd(process_args, **kwargs),
+                self.__build_cmd(process_args, **_update_kwargs(**kwargs)),
                 **kwargs
             )
 
-        def Popen(self, process_args, config=None, **kwargs):
-            kwargs = _update_kwargs(config, **kwargs)
-
+        def Popen(self, process_args, **kwargs):
             return subprocess.Popen(
-                self.__build_cmd(process_args, **kwargs),
+                self.__build_cmd(process_args, **_update_kwargs(**kwargs)),
                 **kwargs
             )
 
-        def run_less(self, process_args, config=None, **kwargs):
+        def run_less(self, process_args, **kwargs):
             kwargs['stdout'] = subprocess.PIPE
             kwargs['stderr'] = subprocess.DEVNULL
 
             process = self.Popen(
-                process_args, config,
+                process_args,
                 **kwargs
             )
 

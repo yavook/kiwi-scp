@@ -1,6 +1,9 @@
 # local
 from ._subcommand import SubCommand
 
+# parent
+from ..config import LoadedConfig
+
 
 class ShowCommand(SubCommand):
     """kiwi show"""
@@ -11,6 +14,6 @@ class ShowCommand(SubCommand):
             description="Show effective kiwi.yml"
         )
 
-    def run(self, runner, config, args):
-        print(config)
+    def _run_instance(self, runner, args):
+        print(LoadedConfig.get())
         return True

@@ -9,11 +9,12 @@ class DisableCommand(ProjectCommand):
     def __init__(self):
         super().__init__(
             'disable', num_projects='+',
+            action="Disabling",
             description="Disable whole project(s) in this instance"
         )
 
-    def run(self, runner, config, args):
+    def _run_projects(self, runner, args, projects):
         return all([
             project.disable()
-            for project in Projects.from_args(args)
+            for project in projects
         ])

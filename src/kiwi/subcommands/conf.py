@@ -10,6 +10,7 @@ from .utils.rootkit import Rootkit, prefix_path_mnt
 
 # parent
 from .._constants import CONF_DIRECTORY_NAME
+from ..config import LoadedConfig
 
 
 class ConfCopyCommand(SubCommand):
@@ -21,22 +22,20 @@ class ConfCopyCommand(SubCommand):
             description="Synchronize all config files to target directory"
         )
 
-    def run(self, runner, config, args):
+    def _run_instance(self, runner, args):
         conf_dirs = [
             project.conf_dir_name()
-            for project in Projects.all()
-            if project.is_enabled()
+            for project in Projects.from_dir().filter_enabled()
         ]
 
         if conf_dirs:
             # add target directory
-            conf_dirs.append(config['runtime:storage'])
+            conf_dirs.append(LoadedConfig.get()['runtime:storage'])
             logging.info(f"Sync directories: {conf_dirs}")
 
-            Rootkit('rsync').run(
-                config, args, ['rsync', '-r', *prefix_path_mnt(conf_dirs)],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
+            Rootkit('rsync').run([
+                'rsync', '-r', *prefix_path_mnt(conf_dirs)
+            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         return True
 
@@ -50,14 +49,13 @@ class ConfPurgeCommand(SubCommand):
             description="Remove all config files in target directory"
         )
 
-    def run(self, runner, config, args):
-        conf_target = f"{config['runtime:storage']}/{CONF_DIRECTORY_NAME}"
+    def _run_instance(self, runner, args):
+        conf_target = f"{LoadedConfig.get()['runtime:storage']}/{CONF_DIRECTORY_NAME}"
         logging.info(f"Purging directories: {conf_target}")
 
-        Rootkit().run(
-            config, args, ['rm', '-rf', prefix_path_mnt(conf_target)],
-            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
+        Rootkit().run([
+            'rm', '-rf', prefix_path_mnt(conf_target)
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         return True
 
@@ -71,12 +69,12 @@ class ConfCleanCommand(SubCommand):
             description="Cleanly sync all configs to target folder, relaunch affected projects"
         )
 
-    def run(self, runner, config, args):
+    def _run_instance(self, runner, args):
         result = True
 
         affected_projects = [
             project.conf_dir_name()
-            for project in Projects.all()
+            for project in Projects.from_dir()
             if project.has_configs()
         ]
 

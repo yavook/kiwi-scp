@@ -3,7 +3,6 @@ import logging
 
 # local
 from . import subcommands
-from .config import LoadedConfig
 from .parser import Parser
 
 
@@ -13,7 +12,6 @@ class Runner:
     class __Runner:
         """Singleton type"""
 
-        __parser = None
         __commands = []
 
         def __init__(self):
@@ -22,10 +20,11 @@ class Runner:
                 cmd = getattr(subcommands, className)
                 self.__commands.append(cmd())
 
-        def run(self, command=None):
+        def run(self, command=None, args=None):
             """run the desired subcommand"""
 
-            args = Parser().get_args()
+            if args is None:
+                args = Parser().get_args()
 
             if command is None:
                 command = args.command
@@ -36,7 +35,7 @@ class Runner:
                     logging.debug(f"Running '{cmd}' with args: {args}")
 
                     try:
-                        result = cmd.run(self, LoadedConfig.get(), args)
+                        result = cmd.run(self, args)
 
                     except KeyboardInterrupt:
                         print()

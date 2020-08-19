@@ -11,6 +11,20 @@ class Project:
     def __init__(self, name):
         self.__name = name
 
+    @classmethod
+    def from_file_name(cls, file_name):
+        if os.path.isdir(file_name):
+            config = LoadedConfig.get()
+
+            if file_name.endswith(config['markers:disabled']):
+                file_name = file_name[:-len(config['markers:disabled'])]
+
+            if file_name.endswith(config['markers:project']):
+                file_name = file_name[:-len(config['markers:project'])]
+                return cls(file_name)
+
+        return None
+
     def get_name(self):
         return self.__name
 
@@ -78,40 +92,41 @@ class Project:
         return True
 
 
-def _extract_project_name(file_name):
-    config = LoadedConfig.get()
-    enabled_suffix = config['markers:project']
-    disabled_suffix = f"{enabled_suffix}{config['markers:disabled']}"
-
-    if os.path.isdir(file_name):
-        # all subdirectories
-        if file_name.endswith(enabled_suffix):
-            # enabled projects
-            return file_name[:-len(enabled_suffix)]
-
-        elif file_name.endswith(disabled_suffix):
-            # disabled projects
-            return file_name[:-len(disabled_suffix)]
-
-    return None
-
-
 class Projects:
     __projects = None
-
-    def __init__(self, names):
-        self.__projects = [
-            Project(name)
-            for name in names if isinstance(name, str)
-        ]
 
     def __getitem__(self, item):
         return self.__projects[item]
 
+    def __str__(self):
+        return str([
+            project.get_name()
+            for project
+            in self.__projects
+        ])
+
     @classmethod
-    def all(cls):
-        return cls([
-            _extract_project_name(file_name)
+    def from_names(cls, project_names):
+        result = cls()
+        result.__projects = [
+            Project(name)
+            for name in project_names if isinstance(name, str)
+        ]
+        return result
+
+    @classmethod
+    def from_projects(cls, projects):
+        result = cls()
+        result.__projects = [
+            project
+            for project in projects if isinstance(project, Project)
+        ]
+        return result
+
+    @classmethod
+    def from_dir(cls):
+        return cls.from_projects([
+            Project.from_file_name(file_name)
             for file_name in os.listdir()
         ])
 
@@ -119,9 +134,39 @@ class Projects:
     def from_args(cls, args):
         if args is not None and 'projects' in args:
             if isinstance(args.projects, list) and args.projects:
-                return cls(args.projects)
+                return cls.from_names(args.projects)
 
             elif isinstance(args.projects, str):
-                return cls([args.projects])
+                return cls.from_names([args.projects])
 
-        return []
+        return cls()
+
+    def empty(self):
+        return not self.__projects
+
+    def filter_exists(self):
+        result = Projects()
+        result.__projects = [
+            project
+            for project in self.__projects
+            if project.exists()
+        ]
+        return result
+
+    def filter_enabled(self):
+        result = Projects()
+        result.__projects = [
+            project
+            for project in self.__projects
+            if project.is_enabled()
+        ]
+        return result
+
+    def filter_disabled(self):
+        result = Projects()
+        result.__projects = [
+            project
+            for project in self.__projects
+            if project.is_disabled()
+        ]
+        return result
