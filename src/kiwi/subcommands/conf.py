@@ -19,6 +19,7 @@ class ConfCopyCommand(SubCommand):
     def __init__(self):
         super().__init__(
             'conf-copy',
+            action="Syncing all configs for",
             description="Synchronize all config files to target directory"
         )
 
@@ -46,6 +47,7 @@ class ConfPurgeCommand(SubCommand):
     def __init__(self):
         super().__init__(
             'conf-purge',
+            action="Removing all configs for",
             description="Remove all config files in target directory"
         )
 
@@ -66,6 +68,7 @@ class ConfCleanCommand(SubCommand):
     def __init__(self):
         super().__init__(
             'conf-clean',
+            action="Cleaning all configs for",
             description="Cleanly sync all configs to target folder, relaunch affected projects"
         )
 
