@@ -1,6 +1,5 @@
 # local
 from ._subcommand import ServiceCommand
-from .utils.dockercommand import DockerCommand
 
 
 class UpCommand(ServiceCommand):
@@ -21,9 +20,7 @@ class UpCommand(ServiceCommand):
 
     def _run_services(self, runner, args, project, services):
         if runner.run('net-up'):
-            DockerCommand('docker-compose').run(project, [
-                'up', '-d', *services
-            ])
+            project.compose_run(['up', '-d', *services])
             return True
 
         return False

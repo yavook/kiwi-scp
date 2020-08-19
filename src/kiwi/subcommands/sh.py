@@ -4,7 +4,6 @@ import subprocess
 
 # local
 from ._subcommand import ServiceCommand
-from .utils.dockercommand import DockerCommand
 
 # parent
 from ..config import LoadedConfig
@@ -18,9 +17,10 @@ def _service_has_executable(project, service, exe_name):
 
     try:
         # test if desired shell exists
-        DockerCommand('docker-compose').run(project, [
-            'exec', service, '/bin/sh', '-c', f"which {exe_name}"
-        ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        project.compose_run(
+            ['exec', service, '/bin/sh', '-c', f"which {exe_name}"],
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
         return True
 
     except subprocess.CalledProcessError as e:
@@ -92,9 +92,7 @@ class ShCommand(ServiceCommand):
 
         if shell is not None:
             # spawn shell
-            DockerCommand('docker-compose').run(project, [
-                'exec', service, shell
-            ])
+            project.compose_run(['exec', service, shell])
             return True
 
         return False

@@ -1,6 +1,5 @@
 # local
 from ._subcommand import ServiceCommand
-from .utils.dockercommand import DockerCommand
 from .utils.misc import are_you_sure
 
 
@@ -27,16 +26,12 @@ class DownCommand(ServiceCommand):
 
     def _run_projects(self, runner, args, projects):
         for project in projects:
-            DockerCommand('docker-compose').run(project, [
-                'down'
-            ])
+            project.compose_run(['down'])
+
         return True
 
     def _run_services(self, runner, args, project, services):
-        DockerCommand('docker-compose').run(project, [
-            'stop', *services
-        ])
-        DockerCommand('docker-compose').run(project, [
-            'rm', '-f', *services
-        ])
+        project.compose_run(['stop', *services])
+        project.compose_run(['rm', '-f', *services])
+
         return True

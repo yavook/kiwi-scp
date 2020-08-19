@@ -1,6 +1,5 @@
 # local
 from ._subcommand import ServiceCommand
-from .utils.dockercommand import DockerCommand
 
 
 class BuildCommand(ServiceCommand):
@@ -14,7 +13,6 @@ class BuildCommand(ServiceCommand):
         )
 
     def _run_services(self, runner, args, project, services):
-        DockerCommand('docker-compose').run(project, [
-            'build', '--pull', *services
-        ])
+        project.compose_run(['build', '--pull', *services])
+
         return True

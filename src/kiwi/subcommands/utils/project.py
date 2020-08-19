@@ -1,6 +1,8 @@
 import logging
 import os
 
+from .executable import Executable
+
 from ..._constants import CONF_DIRECTORY_NAME
 from ...config import LoadedConfig
 
@@ -62,6 +64,41 @@ class Project:
 
     def has_configs(self):
         return os.path.isdir(self.conf_dir_name())
+
+    def __update_kwargs(self, kwargs):
+        if not self.is_enabled():
+            # cannot compose in a disabled project
+            logging.warning(f"Project '{self.get_name()}' is not enabled!")
+            return False
+
+        config = LoadedConfig.get()
+
+        # execute command in project directory
+        kwargs['cwd'] = self.dir_name()
+
+        # ensure there is an environment
+        if 'env' not in kwargs:
+            kwargs['env'] = {}
+
+        # create environment variables for docker commands
+        kwargs['env'].update({
+            'COMPOSE_PROJECT_NAME': self.get_name(),
+            'KIWI_HUB_NAME': config['network:name'],
+            'CONFDIR': os.path.join(config['runtime:storage'], CONF_DIRECTORY_NAME),
+            'TARGETDIR': self.target_dir_name()
+        })
+
+        logging.debug(f"kwargs updated: {kwargs}")
+
+        return True
+
+    def compose_run(self, compose_args, **kwargs):
+        if self.__update_kwargs(kwargs):
+            Executable('docker-compose').run(compose_args, **kwargs)
+
+    def compose_run_less(self, compose_args, **kwargs):
+        if self.__update_kwargs(kwargs):
+            Executable('docker-compose').run_less(compose_args, **kwargs)
 
     def enable(self):
         if self.is_disabled():

@@ -1,8 +1,10 @@
 # system
 import logging
+import subprocess
 
 # local
 from . import subcommands
+from .subcommands.utils.executable import Executable
 from .parser import Parser
 
 
@@ -15,6 +17,16 @@ class Runner:
         __commands = []
 
         def __init__(self):
+            # probe for Docker access
+            try:
+                Executable('docker').run(
+                    ['ps'],
+                    check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                )
+
+            except subprocess.CalledProcessError:
+                raise PermissionError("Cannot access docker, please get into the docker group or run as root!")
+
             # setup all subcommands
             for className in subcommands.__all__:
                 cmd = getattr(subcommands, className)
