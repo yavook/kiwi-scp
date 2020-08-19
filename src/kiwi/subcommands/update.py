@@ -1,6 +1,8 @@
 # local
 from ._subcommand import ServiceCommand
-from .utils.misc import are_you_sure
+
+# parent
+from ..misc import are_you_sure
 
 
 class UpdateCommand(ServiceCommand):

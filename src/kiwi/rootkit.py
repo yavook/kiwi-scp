@@ -4,10 +4,8 @@ import os
 import subprocess
 
 # local
+from ._constants import IMAGES_DIRECTORY_NAME, LOCAL_IMAGES_NAME, DEFAULT_IMAGE_NAME
 from .executable import Executable
-
-# parent
-from ..._constants import IMAGES_DIRECTORY_NAME, LOCAL_IMAGES_NAME, DEFAULT_IMAGE_NAME
 
 
 def _prefix_path(prefix, path):

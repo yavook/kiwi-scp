@@ -1,16 +1,15 @@
 # system
 import logging
-import os
 import subprocess
 
 # local
 from ._subcommand import SubCommand
-from .utils.project import Projects
-from .utils.rootkit import Rootkit, prefix_path_mnt
 
 # parent
 from .._constants import CONF_DIRECTORY_NAME
 from ..config import LoadedConfig
+from ..project import Projects
+from ..rootkit import Rootkit, prefix_path_mnt
 
 
 class ConfCopyCommand(SubCommand):

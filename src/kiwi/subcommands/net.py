@@ -4,11 +4,11 @@ import subprocess
 
 # local
 from ._subcommand import SubCommand
-from .utils.executable import Executable
-from .utils.misc import are_you_sure
 
 # parent
 from ..config import LoadedConfig
+from ..executable import Executable
+from ..misc import are_you_sure
 
 
 def _find_net(net_name):
