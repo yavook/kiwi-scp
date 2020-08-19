@@ -58,7 +58,7 @@ class InitCommand(SubCommand):
 
         # markers
         user_input(config, 'markers:project', "Enter marker string for project directories")
-        user_input(config, 'markers:down', "Enter marker string for disabled projects")
+        user_input(config, 'markers:disabled', "Enter marker string for disabled projects")
 
         # network
         user_input(config, 'network:name', "Enter name for local docker network")
