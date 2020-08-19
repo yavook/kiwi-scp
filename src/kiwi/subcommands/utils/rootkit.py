@@ -4,7 +4,7 @@ import os
 import subprocess
 
 # local
-from .dockercommand import DockerCommand
+from .executable import Executable
 
 # parent
 from ..._constants import IMAGES_DIRECTORY_NAME, LOCAL_IMAGES_NAME, DEFAULT_IMAGE_NAME
@@ -38,7 +38,7 @@ class Rootkit:
             self.__image_tag = image_tag
 
         def __exists(self):
-            ps = DockerCommand('docker').run(None, [
+            ps = Executable('docker').run([
                 'images',
                 '--filter', f"reference={_image_name(self.__image_tag)}",
                 '--format', '{{.Repository}}:{{.Tag}}'
@@ -52,13 +52,13 @@ class Rootkit:
             else:
                 if self.__image_tag is None:
                     logging.info(f"Pulling image {_image_name(self.__image_tag)}")
-                    DockerCommand('docker').run(None, [
+                    Executable('docker').run([
                         'pull', _image_name(self.__image_tag)
                     ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
                 else:
                     logging.info(f"Building image {_image_name(self.__image_tag)}")
-                    DockerCommand('docker').run(None, [
+                    Executable('docker').run([
                         'build',
                         '-t', _image_name(self.__image_tag),
                         '-f', f"{IMAGES_DIRECTORY_NAME}/{self.__image_tag}.Dockerfile",
@@ -67,7 +67,7 @@ class Rootkit:
 
         def run(self, process_args, **kwargs):
             self.__build_image()
-            DockerCommand('docker').run(None, [
+            Executable('docker').run([
                 'run', '--rm',
                 '-v', '/:/mnt',
                 '-u', 'root',

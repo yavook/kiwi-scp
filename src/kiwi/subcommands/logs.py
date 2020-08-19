@@ -1,6 +1,5 @@
 # local
 from ._subcommand import ServiceCommand
-from .utils.dockercommand import DockerCommand
 
 
 class LogsCommand(ServiceCommand):
@@ -31,10 +30,11 @@ class LogsCommand(ServiceCommand):
         if services:
             compose_cmd = [*compose_cmd, *args.services]
 
-        # use 'less' viewer if output will be static
         if args.follow:
-            DockerCommand('docker-compose').run(project, compose_cmd)
+            project.compose_run(compose_cmd)
+
         else:
-            DockerCommand('docker-compose').run_less(project, compose_cmd)
+            # use 'less' viewer if output is static
+            project.compose_run_less(compose_cmd)
 
         return True

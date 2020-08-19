@@ -4,7 +4,7 @@ import subprocess
 
 # local
 from ._subcommand import SubCommand
-from .utils.dockercommand import DockerCommand
+from .utils.executable import Executable
 from .utils.misc import are_you_sure
 
 # parent
@@ -12,7 +12,7 @@ from ..config import LoadedConfig
 
 
 def _find_net(net_name):
-    ps = DockerCommand('docker').run(None, [
+    ps = Executable('docker').run([
         'network', 'ls', '--filter', f"name={net_name}", '--format', '{{.Name}}'
     ], stdout=subprocess.PIPE)
 
@@ -41,7 +41,7 @@ class NetUpCommand(SubCommand):
             return True
 
         try:
-            DockerCommand('docker').run(None, [
+            Executable('docker').run([
                 'network', 'create',
                 '--driver', 'bridge',
                 '--internal',
@@ -77,7 +77,7 @@ class NetDownCommand(SubCommand):
         try:
             if are_you_sure("This will bring down this instance's hub network!"):
                 if runner.run('down'):
-                    DockerCommand('docker').run(None, [
+                    Executable('docker').run([
                         'network', 'rm', net_name
                     ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 

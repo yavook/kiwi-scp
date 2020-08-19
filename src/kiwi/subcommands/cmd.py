@@ -3,7 +3,6 @@ import logging
 
 # local
 from ._subcommand import ProjectCommand
-from .utils.dockercommand import DockerCommand
 
 
 class CmdCommand(ProjectCommand):
@@ -36,8 +35,6 @@ class CmdCommand(ProjectCommand):
             logging.debug(f"Updated args: {args}")
 
         # run with split compose_cmd argument
-        DockerCommand('docker-compose').run(projects[0], [
-            args.compose_cmd, *args.compose_args
-        ])
+        projects[0].compose_run([args.compose_cmd, *args.compose_args])
 
         return True
