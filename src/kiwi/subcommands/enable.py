@@ -1,5 +1,5 @@
 # local
-from ._subcommand import ProjectCommand
+from ..subcommand import ProjectCommand
 
 
 class EnableCommand(ProjectCommand):

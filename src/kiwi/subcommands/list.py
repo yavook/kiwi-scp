@@ -4,9 +4,7 @@ import os
 import yaml
 
 # local
-from ._subcommand import ServiceCommand
-
-# parent
+from ..subcommand import ServiceCommand
 from ..project import Project, Projects
 
 

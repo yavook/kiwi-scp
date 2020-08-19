@@ -2,7 +2,7 @@
 import logging
 
 # local
-from ._subcommand import ProjectCommand
+from ..subcommand import ProjectCommand
 
 
 class CmdCommand(ProjectCommand):

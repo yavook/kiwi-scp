@@ -1,7 +1,5 @@
 # local
-from ._subcommand import SubCommand
-
-# parent
+from ..subcommand import SubCommand
 from ..config import LoadedConfig
 
 

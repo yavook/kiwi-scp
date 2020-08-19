@@ -3,9 +3,7 @@ import logging
 import subprocess
 
 # local
-from ._subcommand import SubCommand
-
-# parent
+from ..subcommand import SubCommand
 from ..config import LoadedConfig
 from ..executable import Executable
 from ..misc import are_you_sure
