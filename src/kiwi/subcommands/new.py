@@ -4,7 +4,7 @@ import os
 import shutil
 
 # local
-from .utils.misc import get_project_names, get_project_dir, get_project_down_dir
+from .utils.project import Projects
 from ._subcommand import ProjectCommand
 
 # parent
@@ -22,18 +22,16 @@ class NewCommand(ProjectCommand):
 
     def run(self, runner, config, args):
         result = True
+        projects = Projects.from_args(args)
 
-        for project_name in get_project_names(args):
-            project_dir = get_project_dir(config, project_name)
-            project_down_dir = get_project_down_dir(config, project_name)
-
-            if os.path.isdir(project_dir) or os.path.isdir(project_down_dir):
-                logging.error(f"Project '{project_name}' exists in this instance!")
+        for project in projects:
+            if project.exists():
+                logging.error(f"Project '{project.get_name()}' exists in this instance!")
                 result = False
 
             else:
-                logging.info(f"Creating project '{project_name}'")
-                os.mkdir(project_dir)
-                shutil.copy(DEFAULT_DOCKER_COMPOSE_NAME, os.path.join(project_dir, "docker-compose.yml"))
+                logging.info(f"Creating project '{project.get_name()}'")
+                os.mkdir(project.enabled_dir_name())
+                shutil.copy(DEFAULT_DOCKER_COMPOSE_NAME, project.compose_file_name())
 
         return result

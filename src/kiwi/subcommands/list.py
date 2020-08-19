@@ -2,11 +2,12 @@
 import logging
 import os
 import subprocess
+import yaml
 
 # local
 from ._subcommand import FlexCommand
 from .utils.dockercommand import DockerCommand
-from .utils.misc import list_projects, get_first_project_name, get_project_dir
+from .utils.project import Projects
 
 
 def _print_list(strings):
@@ -31,35 +32,61 @@ class ListCommand(FlexCommand):
         )
 
     def _run_instance(self, runner, config, args):
-        print(f"Projects in instance {os.getcwd()}:")
-        print("")
+        print(f"kiwi-config instance at '{os.getcwd()}'")
+        print("#########")
+        projects = Projects.all()
 
-        _print_list(list_projects(config))
+        enableds = [
+            project.get_name()
+            for project in projects
+            if project.is_enabled()
+        ]
+
+        if enableds:
+            print(f"Enabled projects:")
+            _print_list(enableds)
+
+        disableds = [
+            project.get_name()
+            for project in projects
+            if project.is_disabled()
+        ]
+
+        if disableds:
+            print(f"Disabled projects:")
+            _print_list(disableds)
 
         return True
 
     def _run_project(self, runner, config, args):
-        project_name = get_first_project_name(args)
-        print(f"Services in project '{project_name}':")
-        print("")
+        project = Projects.from_args(args)[0]
+
+        if not project.exists():
+            logging.error(f"Project '{project.get_name()}' not found")
+            return False
+
+        print(f"Services in project '{project.get_name()}':")
+        print("#########")
 
         ps = DockerCommand('docker-compose').run(
             config, args, ['config', '--services'],
             stdout=subprocess.PIPE
         )
-        _print_list(ps.stdout)
 
+        _print_list(ps.stdout)
         return True
 
     def _run_services(self, runner, config, args, services):
-        import yaml
+        project = Projects.from_args(args)[0]
 
-        project_name = get_first_project_name(args)
-        project_dir = get_project_dir(config, project_name)
-        print(f"Configuration of services {services} in project '{project_name}':")
-        print("")
+        if not project.exists():
+            logging.error(f"Project '{project.get_name()}' not found")
+            return False
 
-        with open(os.path.join(project_dir, 'docker-compose.yml'), 'r') as stream:
+        print(f"Configuration of services {services} in project '{project.get_name()}':")
+        print("#########")
+
+        with open(project.compose_file_name(), 'r') as stream:
             try:
                 docker_compose_yml = yaml.safe_load(stream)
 

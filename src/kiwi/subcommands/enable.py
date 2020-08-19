@@ -1,5 +1,5 @@
 # local
-from .utils.project import Project
+from .utils.project import Projects
 from ._subcommand import ProjectCommand
 
 
@@ -13,9 +13,7 @@ class EnableCommand(ProjectCommand):
         )
 
     def run(self, runner, config, args):
-        result = True
-
-        for project in Project.from_args(args):
-            result = project.enable()
-
-        return result
+        return all([
+            project.enable()
+            for project in Projects.from_args(args)
+        ])

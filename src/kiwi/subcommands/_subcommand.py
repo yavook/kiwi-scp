@@ -2,7 +2,7 @@
 import logging
 
 # local
-from .utils.misc import get_first_project_name, get_services, list_projects
+from .utils.project import Projects
 
 # parent
 from ..parser import Parser
@@ -16,12 +16,13 @@ class SubCommand:
     # command parser
     _sub_parser = None
 
-    def __init__(self, name, **kwargs):
+    def __init__(self, name, add_parser=True, **kwargs):
         self.__name = name
-        self._sub_parser = Parser().get_subparsers().add_parser(
-            name,
-            **kwargs
-        )
+        if add_parser:
+            self._sub_parser = Parser().get_subparsers().add_parser(
+                name,
+                **kwargs
+            )
 
     def __str__(self):
         return self.__name
@@ -34,9 +35,9 @@ class SubCommand:
 class ProjectCommand(SubCommand):
     """this command concerns a project in current instance"""
 
-    def __init__(self, name, num_projects, **kwargs):
+    def __init__(self, name, num_projects, add_parser=True, **kwargs):
         super().__init__(
-            name,
+            name, add_parser=add_parser,
             **kwargs
         )
 
@@ -54,9 +55,9 @@ class ProjectCommand(SubCommand):
 class ServiceCommand(ProjectCommand):
     """this command concerns service(s) in a project"""
 
-    def __init__(self, name, num_projects, num_services, **kwargs):
+    def __init__(self, name, num_projects, num_services, add_parser=True, **kwargs):
         super().__init__(
-            name, num_projects=num_projects,
+            name, num_projects=num_projects, add_parser=add_parser,
             **kwargs
         )
 
@@ -76,9 +77,9 @@ class FlexCommand(ServiceCommand):
 
     __action = None
 
-    def __init__(self, name, action='', **kwargs):
+    def __init__(self, name, action='', add_parser=True, **kwargs):
         super().__init__(
-            name, num_projects='?', num_services='*',
+            name, num_projects='?', num_services='*', add_parser=add_parser,
             **kwargs
         )
 
@@ -91,8 +92,8 @@ class FlexCommand(ServiceCommand):
     def _run_instance(self, runner, config, args):
         result = True
 
-        for project_name in list_projects(config):
-            args.projects = project_name
+        for project in Projects.from_args(args):
+            args.projects = project.get_name()
             result &= runner.run(str(self))
 
         return result
@@ -104,19 +105,18 @@ class FlexCommand(ServiceCommand):
         pass
 
     def run(self, runner, config, args):
-        project_name = get_first_project_name(args)
-        services = get_services(args)
-
-        if project_name is None:
+        projects = Projects.from_args(args)
+        if not projects:
             # no project given, run for entire instance
             logging.info(f"{self.__action} this instance")
             return self._run_instance(runner, config, args)
 
-        if not services:
+        project = projects[0]
+        if args is None or 'services' not in args or not args.services:
             # no services given, run for whole project
-            logging.info(f"{self.__action} project '{project_name}'")
+            logging.info(f"{self.__action} project '{project.get_name()}'")
             return self._run_project(runner, config, args)
 
         # run for service(s) inside project
-        logging.info(f"{self.__action} services {services} in project '{project_name}'")
-        return self._run_services(runner, config, args, services)
+        logging.info(f"{self.__action} services {args.services} in project '{project.get_name()}'")
+        return self._run_services(runner, config, args, args.services)
