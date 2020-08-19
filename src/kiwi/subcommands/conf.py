@@ -6,7 +6,7 @@ import subprocess
 from .._constants import CONF_DIRECTORY_NAME
 from ..subcommand import SubCommand
 from ..config import LoadedConfig
-from ..project import Projects
+from ..projects import Projects
 from ..rootkit import Rootkit, prefix_path_mnt
 
 
