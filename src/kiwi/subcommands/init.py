@@ -7,6 +7,7 @@ from ._subcommand import SubCommand
 
 # parent (display purposes only)
 from .._constants import KIWI_CONF_NAME
+from ..config import DefaultConfig, LoadedConfig
 
 
 def user_input(config, key, prompt):
@@ -40,12 +41,12 @@ class InitCommand(SubCommand):
             help=f"use default values even if {KIWI_CONF_NAME} is present"
         )
 
-    def run(self, runner, config, args):
+    def _run_instance(self, runner, args):
         logging.info(f"Initializing '{KIWI_CONF_NAME}' in '{os.getcwd()}'")
+        config = LoadedConfig.get()
 
         # check force switch
         if args.force and os.path.isfile(KIWI_CONF_NAME):
-            from ..config import DefaultConfig
 
             logging.warning(f"Overwriting existing '{KIWI_CONF_NAME}'!")
             config = DefaultConfig.get()

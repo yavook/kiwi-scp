@@ -6,19 +6,21 @@ import subprocess
 from ._subcommand import ServiceCommand
 from .utils.dockercommand import DockerCommand
 
+# parent
+from ..config import LoadedConfig
 
-def _service_has_executable(config, args, compose_cmd, exe_name):
+
+def _service_has_executable(project, service, exe_name):
     """
-    Test if container (as of compose_cmd array) has an executable exe_name in its PATH.
+    Test if service in project has an executable exe_name in its PATH.
     Requires /bin/sh and which.
     """
 
     try:
         # test if desired shell exists
-        DockerCommand('docker-compose').run(
-            config, args, [*compose_cmd, '/bin/sh', '-c', f"which {exe_name}"],
-            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-        )
+        DockerCommand('docker-compose').run(project, [
+            'exec', service, '/bin/sh', '-c', f"which {exe_name}"
+        ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         return True
 
     except subprocess.CalledProcessError as e:
@@ -26,13 +28,14 @@ def _service_has_executable(config, args, compose_cmd, exe_name):
         return False
 
 
-def _find_shell(config, args, compose_cmd):
-    """find first working shell (provided by config and args) in container (as of compose_cmd array)"""
+def _find_shell(args, project, service):
+    """find first working shell (provided by config and args) in service in project"""
 
     # builtin shells: as a last resort, fallback to '/bin/sh' and 'sh'
     shells = ['/bin/sh', 'sh']
 
     # load favorite shells from config
+    config = LoadedConfig.get()
     if config['runtime:shells']:
         shells = [*config['runtime:shells'], *shells]
 
@@ -44,7 +47,7 @@ def _find_shell(config, args, compose_cmd):
 
     # actually try shells
     for i, shell in enumerate(shells):
-        if _service_has_executable(config, args, compose_cmd, shell):
+        if _service_has_executable(project, service, shell):
             # found working shell
             logging.debug(f"Using shell '{shell}'")
             return shell
@@ -82,15 +85,15 @@ class ShCommand(ServiceCommand):
             help="shell to spawn"
         )
 
-    def run(self, runner, config, args):
-        compose_cmd = ['exec', args.services[0]]
-        shell = _find_shell(config, args, compose_cmd)
+    def _run_services(self, runner, args, project, services):
+        service = services[0]
+        shell = _find_shell(args, project, service)
 
         if shell is not None:
             # spawn shell
-            DockerCommand('docker-compose').run(
-                config, args, [*compose_cmd, shell]
-            )
+            DockerCommand('docker-compose').run(project, [
+                'exec', service, shell
+            ])
             return True
 
         return False

@@ -14,6 +14,7 @@ def _prefix_path(prefix, path):
     if isinstance(path, str):
         abs_path = os.path.abspath(path)
         return os.path.realpath(f"{prefix}/{abs_path}")
+
     elif isinstance(path, list):
         return [_prefix_path(prefix, p) for p in path]
 
@@ -36,55 +37,43 @@ class Rootkit:
         def __init__(self, image_tag=None):
             self.__image_tag = image_tag
 
-        def __exists(self, config, args):
-            ps = DockerCommand('docker').run(
-                config, args, [
-                    'images',
-                    '--filter', f"reference={_image_name(self.__image_tag)}",
-                    '--format', '{{.Repository}}:{{.Tag}}'
-                ],
-                stdout=subprocess.PIPE
-            )
+        def __exists(self):
+            ps = DockerCommand('docker').run(None, [
+                'images',
+                '--filter', f"reference={_image_name(self.__image_tag)}",
+                '--format', '{{.Repository}}:{{.Tag}}'
+            ], stdout=subprocess.PIPE)
 
             return str(ps.stdout, 'utf-8').strip() == _image_name(self.__image_tag)
 
-        def __build_image(self, config, args):
-            if self.__exists(config, args):
+        def __build_image(self):
+            if self.__exists():
                 logging.info(f"Using image {_image_name(self.__image_tag)}")
             else:
                 if self.__image_tag is None:
                     logging.info(f"Pulling image {_image_name(self.__image_tag)}")
-                    DockerCommand('docker').run(
-                        config, args, ['pull', _image_name(self.__image_tag)],
-                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-                    )
+                    DockerCommand('docker').run(None, [
+                        'pull', _image_name(self.__image_tag)
+                    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
                 else:
                     logging.info(f"Building image {_image_name(self.__image_tag)}")
-                    DockerCommand('docker').run(
-                        config, args,
-                        [
-                            'build',
-                            '-t', _image_name(self.__image_tag),
-                            '-f', f"{IMAGES_DIRECTORY_NAME}/{self.__image_tag}.Dockerfile",
-                            f"{IMAGES_DIRECTORY_NAME}"
-                        ],
-                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-                    )
+                    DockerCommand('docker').run(None, [
+                        'build',
+                        '-t', _image_name(self.__image_tag),
+                        '-f', f"{IMAGES_DIRECTORY_NAME}/{self.__image_tag}.Dockerfile",
+                        f"{IMAGES_DIRECTORY_NAME}"
+                    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        def run(self, config, args, process_args, **kwargs):
-            self.__build_image(config, args)
-            DockerCommand('docker').run(
-                config, args,
-                [
-                    'run', '--rm',
-                    '-v', '/:/mnt',
-                    '-u', 'root',
-                    _image_name(self.__image_tag),
-                    *process_args
-                ],
-                **kwargs
-            )
+        def run(self, process_args, **kwargs):
+            self.__build_image()
+            DockerCommand('docker').run(None, [
+                'run', '--rm',
+                '-v', '/:/mnt',
+                '-u', 'root',
+                _image_name(self.__image_tag),
+                *process_args
+            ], **kwargs)
 
     __image_tag = None
     __instances = {}

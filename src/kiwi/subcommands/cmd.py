@@ -1,3 +1,6 @@
+# system
+import logging
+
 # local
 from ._subcommand import ProjectCommand
 from .utils.dockercommand import DockerCommand
@@ -9,19 +12,32 @@ class CmdCommand(ProjectCommand):
     def __init__(self):
         super().__init__(
             'cmd', num_projects=1,
+            action="Running docker-compose in",
             description="Run raw docker-compose command in a project"
         )
 
-        # command string after docker-compose
+        # command for docker-compose
         self._sub_parser.add_argument(
             'compose_cmd', metavar='cmd', type=str,
-            help="runs `docker-compose <cmd>`"
+            help="command for 'docker-compose'"
         )
 
-    def run(self, runner, config, args):
-        import shlex
+        # arguments for docker-compose command
+        self._sub_parser.add_argument(
+            'compose_args', metavar='arg', nargs='*', type=str,
+            help="arguments for 'docker-compose' commands"
+        )
+
+    def _run_projects(self, runner, args, projects):
+        if args.unknowns:
+            args.compose_args = [*args.compose_args, *args.unknowns]
+            args.unknowns = []
+
+            logging.debug(f"Updated args: {args}")
 
         # run with split compose_cmd argument
-        DockerCommand('docker-compose').run(config, args, shlex.split(args.compose_cmd))
+        DockerCommand('docker-compose').run(projects[0], [
+            args.compose_cmd, *args.compose_args
+        ])
 
         return True

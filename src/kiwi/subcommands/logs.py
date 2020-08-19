@@ -9,6 +9,7 @@ class LogsCommand(ServiceCommand):
     def __init__(self):
         super().__init__(
             'logs', num_projects=1, num_services='*',
+            action="Showing logs of",
             description="Show logs of a project or service(s) of a project"
         )
 
@@ -18,7 +19,7 @@ class LogsCommand(ServiceCommand):
             help="output appended data as log grows"
         )
 
-    def run(self, runner, config, args):
+    def _run_services(self, runner, args, project, services):
         # include timestamps
         compose_cmd = ['logs', '-t']
 
@@ -27,13 +28,13 @@ class LogsCommand(ServiceCommand):
             compose_cmd = [*compose_cmd, '-f', '--tail=10']
 
         # append if one or more services are given
-        if args.services:
+        if services:
             compose_cmd = [*compose_cmd, *args.services]
 
         # use 'less' viewer if output will be static
         if args.follow:
-            DockerCommand('docker-compose').run(config, args, compose_cmd)
+            DockerCommand('docker-compose').run(project, compose_cmd)
         else:
-            DockerCommand('docker-compose').run_less(config, args, compose_cmd)
+            DockerCommand('docker-compose').run_less(project, compose_cmd)
 
         return True

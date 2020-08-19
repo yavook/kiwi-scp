@@ -1,84 +1,75 @@
 # system
 import logging
 import os
-import subprocess
 import yaml
 
 # local
-from ._subcommand import FlexCommand
-from .utils.dockercommand import DockerCommand
-from .utils.project import Projects
+from ._subcommand import ServiceCommand
+from .utils.project import Project, Projects
 
 
 def _print_list(strings):
-    if isinstance(strings, list):
+    if isinstance(strings, str):
+        print(f" - {strings}")
+
+    elif isinstance(strings, Project):
+        _print_list(strings.get_name())
+
+    elif isinstance(strings, list):
         for string in strings:
-            print(f" - {string}")
+            _print_list(string)
 
-    elif isinstance(strings, str):
-        _print_list(strings.strip().split('\n'))
-
-    elif isinstance(strings, bytes):
-        _print_list(str(strings, 'utf-8'))
+    else:
+        _print_list(list(strings))
 
 
-class ListCommand(FlexCommand):
+class ListCommand(ServiceCommand):
     """kiwi list"""
 
     def __init__(self):
         super().__init__(
-            'list', "Listing",
+            'list', num_projects='?', num_services='*',
+            action="Listing",
             description="List projects in this instance, services inside a project or service(s) inside a project"
         )
 
-    def _run_instance(self, runner, config, args):
+    def _run_instance(self, runner, args):
         print(f"kiwi-config instance at '{os.getcwd()}'")
         print("#########")
-        projects = Projects.all()
+        projects = Projects.from_dir()
 
-        enableds = [
-            project.get_name()
-            for project in projects
-            if project.is_enabled()
-        ]
-
-        if enableds:
+        enabled_projects = projects.filter_enabled()
+        if not enabled_projects.empty():
             print(f"Enabled projects:")
-            _print_list(enableds)
+            _print_list(enabled_projects)
 
-        disableds = [
-            project.get_name()
-            for project in projects
-            if project.is_disabled()
-        ]
-
-        if disableds:
+        disabled_projects = projects.filter_disabled()
+        if not disabled_projects.empty():
             print(f"Disabled projects:")
-            _print_list(disableds)
+            _print_list(disabled_projects)
 
         return True
 
-    def _run_project(self, runner, config, args):
-        project = Projects.from_args(args)[0]
-
+    def _run_projects(self, runner, args, projects):
+        project = projects[0]
         if not project.exists():
-            logging.error(f"Project '{project.get_name()}' not found")
+            logging.warning(f"Project '{project.get_name()}' not found")
             return False
 
         print(f"Services in project '{project.get_name()}':")
         print("#########")
 
-        ps = DockerCommand('docker-compose').run(
-            config, args, ['config', '--services'],
-            stdout=subprocess.PIPE
-        )
+        with open(project.compose_file_name(), 'r') as stream:
+            try:
+                docker_compose_yml = yaml.safe_load(stream)
+                _print_list(docker_compose_yml['services'].keys())
 
-        _print_list(ps.stdout)
+            except yaml.YAMLError as exc:
+                logging.error(exc)
+
         return True
 
-    def _run_services(self, runner, config, args, services):
-        project = Projects.from_args(args)[0]
-
+    def _run_services(self, runner, args, project, services):
         if not project.exists():
             logging.error(f"Project '{project.get_name()}' not found")
             return False
@@ -91,10 +82,13 @@ class ListCommand(FlexCommand):
                 docker_compose_yml = yaml.safe_load(stream)
 
                 for service_name in services:
-                    print(yaml.dump(
-                        {service_name: docker_compose_yml['services'][service_name]},
-                        default_flow_style=False, sort_keys=False
-                    ).strip())
+                    try:
+                        print(yaml.dump(
+                            {service_name: docker_compose_yml['services'][service_name]},
+                            default_flow_style=False, sort_keys=False
+                        ).strip())
+                    except KeyError:
+                        logging.error(f"Service '{service_name}' not found")
 
                 return True
 

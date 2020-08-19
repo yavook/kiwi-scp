@@ -46,7 +46,8 @@ class Parser:
         def get_args(self):
             if self.__args is None:
                 # parse args if needed
-                self.__args = self.__parser.parse_args()
+                self.__args, unknowns = self.__parser.parse_known_args()
+                self.__args.unknowns = unknowns
 
             return self.__args
 

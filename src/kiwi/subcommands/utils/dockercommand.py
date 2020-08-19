@@ -5,21 +5,16 @@ import subprocess
 
 # local
 from .executable import Executable
-from .project import Projects
 
 # parent
 from ..._constants import CONF_DIRECTORY_NAME
-from ...parser import Parser
 from ...config import LoadedConfig
 
 
-def _update_kwargs(**kwargs):
-    config = LoadedConfig.get()
-    projects = Projects.from_args(Parser().get_args())
-
-    # project given in args: command affects a project in this instance
-    if projects:
-        project = projects[0]
+def _update_kwargs(project, **kwargs):
+    # enabled project given: command affects a project in this instance
+    if project is not None and project.is_enabled():
+        config = LoadedConfig.get()
 
         # execute command in project directory
         kwargs['cwd'] = project.dir_name()
@@ -58,19 +53,15 @@ class DockerCommand(Executable):
             except subprocess.CalledProcessError:
                 raise PermissionError("Cannot access docker, please get into the docker group or run as root!")
 
-    def run(self, config, args, process_args, **kwargs):
-        kwargs = _update_kwargs(**kwargs)
-
+    def run(self, project, process_args, **kwargs):
         # equivalent to 'super().run' but agnostic of nested class construct
         return super().__getattr__("run")(
-            process_args, config,
-            **kwargs
+            process_args,
+            **_update_kwargs(project, **kwargs)
         )
 
-    def run_less(self, config, args, process_args, **kwargs):
-        kwargs = _update_kwargs(**kwargs)
-
+    def run_less(self, project, process_args, **kwargs):
         return super().__getattr__("run_less")(
-            process_args, config,
-            **kwargs
+            process_args,
+            **_update_kwargs(project, **kwargs)
         )
