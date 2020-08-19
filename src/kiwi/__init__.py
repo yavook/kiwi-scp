@@ -11,7 +11,7 @@ def verbosity():
 
 def run():
     # pass down
-    Runner().run()
+    return Runner().run()
 
 
 __all__ = [
