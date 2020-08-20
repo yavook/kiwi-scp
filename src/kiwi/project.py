@@ -88,6 +88,10 @@ class Project:
             'TARGETDIR': self.target_dir_name()
         })
 
+        # add common environment from config
+        if config['runtime:env'] is not None:
+            kwargs['env'].update(config['runtime:env'])
+
         logging.debug(f"kwargs updated: {kwargs}")
 
         return True
