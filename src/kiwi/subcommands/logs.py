@@ -9,7 +9,7 @@ class LogsCommand(ServiceCommand):
         super().__init__(
             'logs', num_projects=1, num_services='*',
             action="Showing logs of",
-            description="Show logs of a project or service(s) of a project"
+            description="Show logs of a project or service(s) inside a project"
         )
 
         # -f switch: Follow logs
