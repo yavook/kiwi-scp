@@ -24,14 +24,14 @@ def _print_list(strings):
         _print_list(list(strings))
 
 
-class ListCommand(ServiceCommand):
-    """kiwi list"""
+class InspectCommand(ServiceCommand):
+    """kiwi inspect"""
 
     def __init__(self):
         super().__init__(
-            'list', num_projects='?', num_services='*',
-            action="Listing",
-            description="List projects in this instance, services inside a project or service(s) inside a project"
+            'inspect', num_projects='?', num_services='*',
+            action="Inspecting",
+            description="Inspect projects in this instance, services inside a project or service(s) inside a project"
         )
 
     def _run_instance(self, runner, args):

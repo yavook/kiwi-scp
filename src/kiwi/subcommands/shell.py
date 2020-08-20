@@ -68,12 +68,12 @@ def _find_shell(args, project, service):
             return None
 
 
-class ShCommand(ServiceCommand):
-    """kiwi sh"""
+class ShellCommand(ServiceCommand):
+    """kiwi shell"""
 
     def __init__(self):
         super().__init__(
-            'sh', num_projects=1, num_services=1,
+            'shell', num_projects=1, num_services=1,
             action="Spawning shell in",
             description="Spawn shell inside a project's service"
         )

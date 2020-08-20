@@ -1,27 +1,30 @@
 COMMANDS
 ========
 
-init -> config
-show -> config --show
+# operation
 
+config
 up
 down
 update
+clean
+
+# management
+
 new
 enable
 disable
-
-list -> show
-logs
-sh
 cmd
+purge
+
+# inspection
+
+inspect
+logs
+shell
+
+# imaging
 
 build
 pull
 push
-
-net-up
-net-down
-conf-copy (hide)
-conf-purge (hide)
-conf-clean -> clean
