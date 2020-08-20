@@ -13,6 +13,19 @@ class Config:
     """represents a kiwi.yml"""
 
     __yml_content = {}
+    __keys = {
+        'version': "kiwi-config version to use in this instance",
+
+        'runtime:storage': "local directory for service data",
+        'runtime:shells': "shell preference for working in service containers",
+        'runtime:env': "common environment for compose yml",
+
+        'markers:project': "marker string for project directories",
+        'markers:disabled': "marker string for disabled projects",
+
+        'network:name': "name for local network hub",
+        'network:cidr': "CIDR block for local network hub",
+    }
 
     def __key_resolve(self, key):
         """
@@ -79,6 +92,20 @@ class Config:
                 return result
             except yaml.YAMLError as exc:
                 logging.error(exc)
+
+    def user_query(self, key):
+        """query user for new config value"""
+
+        # prompt user as per argument
+        try:
+            result = input(f"Enter {self.__keys[key]} [{self[key]}] ").strip()
+        except EOFError:
+            print()
+            result = None
+
+        # store result if present
+        if result:
+            self[key] = result
 
     def save(self):
         """save current yml representation in current directory's kiwi.yml"""

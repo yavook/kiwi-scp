@@ -8,21 +8,6 @@ from ..subcommand import SubCommand
 from ..config import DefaultConfig, LoadedConfig
 
 
-def user_input(config, key, prompt):
-    """query user for new config value"""
-
-    # prompt user as per argument
-    try:
-        result = input(f"{prompt} [{config[key]}] ").strip()
-    except EOFError:
-        print()
-        result = None
-
-    # store result if present
-    if result:
-        config[key] = result
-
-
 class InitCommand(SubCommand):
     """kiwi init"""
 
@@ -50,18 +35,18 @@ class InitCommand(SubCommand):
             config = DefaultConfig.get()
 
         # version
-        user_input(config, 'version', "Enter kiwi-config version for this instance")
+        config.user_query('version')
 
         # runtime
-        user_input(config, 'runtime:storage', "Enter local directory for service data")
+        config.user_query('runtime:storage')
 
         # markers
-        user_input(config, 'markers:project', "Enter marker string for project directories")
-        user_input(config, 'markers:disabled', "Enter marker string for disabled projects")
+        config.user_query('markers:project')
+        config.user_query('markers:disabled')
 
         # network
-        user_input(config, 'network:name', "Enter name for local docker network")
-        user_input(config, 'network:cidr', "Enter CIDR block for local docker network")
+        config.user_query('network:name')
+        config.user_query('network:cidr')
 
         config.save()
         return True
