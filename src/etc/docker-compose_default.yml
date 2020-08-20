@@ -7,7 +7,7 @@ networks:
   # interconnects projects
   kiwi_hub:
     external:
-      name: $KIWI_HUB_NAME
+      name: ${KIWI_HUB_NAME}
 
 services:
   # an example service

@@ -1,6 +1,0 @@
-
-  %(prog)s {up,down,update,clean,purge} [ARGS...]
-  %(prog)s {config,inspect,cmd} [ARGS...]
-  %(prog)s {new,enable,disable,logs,shell} [ARGS...]
-  %(prog)s {build,pull,push} [ARGS...]
-  %(prog)s -h|--help
