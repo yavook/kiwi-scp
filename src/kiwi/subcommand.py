@@ -70,7 +70,7 @@ class ProjectCommand(SubCommand):
     def run(self, runner, args):
         projects = Projects.from_args(args)
 
-        if not projects.empty():
+        if projects:
             # project(s) given
             logging.info(f"{self._action} projects {projects}")
             return self._run_projects(runner, args, projects)

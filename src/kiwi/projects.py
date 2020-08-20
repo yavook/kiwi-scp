@@ -16,6 +16,9 @@ class Projects:
             in self.__projects
         ])
 
+    def __bool__(self):
+        return bool(self.__projects)
+
     @classmethod
     def from_names(cls, project_names):
         result = cls()
@@ -51,9 +54,6 @@ class Projects:
                 return cls.from_names([args.projects])
 
         return cls()
-
-    def empty(self):
-        return not self.__projects
 
     def filter_exists(self):
         result = Projects()

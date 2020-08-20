@@ -40,12 +40,12 @@ class InspectCommand(ServiceCommand):
         projects = Projects.from_dir()
 
         enabled_projects = projects.filter_enabled()
-        if not enabled_projects.empty():
+        if enabled_projects:
             print(f"Enabled projects:")
             _print_list(enabled_projects)
 
         disabled_projects = projects.filter_disabled()
-        if not disabled_projects.empty():
+        if disabled_projects:
             print(f"Disabled projects:")
             _print_list(disabled_projects)
 
