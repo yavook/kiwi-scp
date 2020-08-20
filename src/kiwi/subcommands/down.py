@@ -24,10 +24,8 @@ class DownCommand(ServiceCommand):
 
         return False
 
-    def _run_projects(self, runner, args, projects):
-        for project in projects:
-            project.compose_run(['down'])
-
+    def _run_project(self, runner, args, project):
+        project.compose_run(['down'])
         return True
 
     def _run_services(self, runner, args, project, services):
