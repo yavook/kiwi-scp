@@ -5,30 +5,81 @@
 ############# 
 
 # base config filename
-export KIWI_CONF_NAME="kiwi.conf"
+KIWI_CONF_NAME="kiwi.yml"
+# version tag filename
+KIWI_VERSION_TAG="etc/version_tag"
+
+# dependencies to run kiwi-config
+KIWI_DEPS=(python3 pipenv less docker docker-compose)
 # base install dir 
 KIWI_BASEDIR="${HOME}/.cache/kiwi-config"
+# per-user env setup script
+KIWI_ENVFILE="${HOME}/.kiwienv"
+
 # repository uri
 KIWI_REPO="https://github.com/ldericher/kiwi-config"
+# use latest version by default
+KIWI_VERSION="master"
+
+###################
+# DYNAMIC STRINGS #
+###################
+
+# directory of correct installation
+function kiwi_installdir() {
+  echo "${KIWI_BASEDIR}/${KIWI_VERSION}"
+}
+
+# src directory in installed version
+function kiwi_root() {
+  echo "$(kiwi_installdir)/src"
+}
+
+# main script in installed version
+function kiwi_executable() {
+  echo "$(kiwi_root)/kiwi-config.py"
+}
+
+# cache current work directory
+WORKDIR="$(pwd)"
+
+##################
+# PER-USER SETUP #
+##################
+
+# add in environment setup
+if [ -f "${KIWI_ENVFILE}" ]; then
+    # shellcheck source=$HOME/.kiwienv
+    source "${KIWI_ENVFILE}"
+fi
+
+##########
+# CHECKS #
+##########
+
+for dep in "${KIWI_DEPS[@]}"; do
+  if ! command -v "${dep}" &> /dev/null; then
+    echo "Dependency '${dep}' not found, please install!"
+    exit 1
+  fi
+done
 
 ########
 # MAIN #
 ########
 
-# use latest version by default
-export KIWI_VERSION="master"
-
 # check if pwd is a kiwi folder
 if [ -f "./${KIWI_CONF_NAME}" ]; then
     # determine needed kiwi-config version
-    export KIWI_VERSION=$(source "./${KIWI_CONF_NAME}" && echo "${VERSION}")
+    re_version_line='version\s*:\s*'
+    eval "$(grep -E "${re_version_line}" "./${KIWI_CONF_NAME}" | sed -r 's/'"${re_version_line}"'/KIWI_VERSION=/')"
 fi
 
 # install if kiwi-config not found
-if [ ! -x "${KIWI_BASEDIR}/${KIWI_VERSION}/bin/main.sh" ]; then
+if [ ! -x "$(kiwi_executable)" ]; then
     echo -n "Installing kiwi-config v${KIWI_VERSION} into ${KIWI_BASEDIR} ... "
 
-    ### production version ###
+    ### TODO: post-release version ###
 
     # # switch to temp dir
     # workdir=$(pwd)
@@ -51,19 +102,45 @@ if [ ! -x "${KIWI_BASEDIR}/${KIWI_VERSION}/bin/main.sh" ]; then
     # cd "${workdir}"
     # rm -rf "${tmpdir}"
 
-    ### development version ###
+    # echo "OK"
+
+    ### pre-release version ###
+
+    # use this directory as archive
+    cd "$(dirname "$(readlink -f "${0}")")" ||:
 
     # read this version tag
-    export KIWI_VERSION=$(cat ./version-tag)
+    KIWI_VERSION=$(cat "./src/${KIWI_VERSION_TAG}")
 
-    # install this
-    mkdir -p "${KIWI_BASEDIR}"
-    ln -s "$(readlink -f ./src)" "${KIWI_BASEDIR}/${KIWI_VERSION}"
-
-    echo "OK"
+    if [ -x "$(kiwi_executable)" ]; then
+        # after version update: no need to install
+        echo "kiwi-config v${KIWI_VERSION} found!"
+    else
+        # install this
+        mkdir -p "${KIWI_BASEDIR}"
+        ln -s "$(readlink -f .)" "$(kiwi_installdir)"
+        # cd
+        echo "OK"
+    fi
 fi
 
-export KIWI_ROOT="${KIWI_BASEDIR}/${KIWI_VERSION}"
+# check virtualenv
+cd "$(kiwi_installdir)" ||:
+if ! pipenv --venv &> /dev/null; then
+  # install virtualenv
+  echo -n "Preparing virtualenv ... "
+  pipenv sync &> /dev/null
+  echo "OK"
+fi
+
+# go back to the original work directory
+cd "${WORKDIR}" ||:
+
+# setup main environment
+KIWI_ROOT="$(kiwi_root)"
+
+export KIWI_ROOT
+export KIWI_CONF_NAME
 
 # run main script
-exec "${KIWI_ROOT}/bin/main.sh" "${@}"
+exec pipenv run "$(kiwi_executable)" "${@}"
