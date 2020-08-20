@@ -73,7 +73,7 @@ class ConfCleanCommand(SubCommand):
         result = True
 
         affected_projects = [
-            project.conf_dir_name()
+            project.get_name()
             for project in Projects.from_dir()
             if project.has_configs()
         ]

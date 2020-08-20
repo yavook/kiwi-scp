@@ -113,20 +113,18 @@ class LoadedConfig(Config):
     __instances = {}
 
     @classmethod
-    def get(cls):
-        cwd = os.getcwd()
-
-        if cwd not in LoadedConfig.__instances:
+    def get(cls, directory='.'):
+        if directory not in LoadedConfig.__instances:
             # create singleton for new path
             result = DefaultConfig.get()
 
-            # update with current dir's kiwi.yml
+            # update with that dir's kiwi.yml
             try:
-                result = result._update_from_file(KIWI_CONF_NAME)
+                result = result._update_from_file(os.path.join(directory, KIWI_CONF_NAME))
             except FileNotFoundError:
-                logging.info(f"No '{KIWI_CONF_NAME}' found at '{cwd}'. Using defaults.")
+                logging.info(f"No '{KIWI_CONF_NAME}' found at '{directory}'. Using defaults.")
 
-            LoadedConfig.__instances[cwd] = result
+            LoadedConfig.__instances[directory] = result
 
         # return singleton
-        return LoadedConfig.__instances[cwd]
+        return LoadedConfig.__instances[directory]

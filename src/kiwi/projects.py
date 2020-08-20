@@ -35,10 +35,10 @@ class Projects:
         return result
 
     @classmethod
-    def from_dir(cls):
+    def from_dir(cls, directory='.'):
         return cls.from_projects([
             Project.from_file_name(file_name)
-            for file_name in os.listdir()
+            for file_name in os.listdir(directory)
         ])
 
     @classmethod
