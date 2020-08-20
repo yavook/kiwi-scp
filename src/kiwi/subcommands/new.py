@@ -18,17 +18,13 @@ class NewCommand(ProjectCommand):
             description="Create new empty project(s) in this instance"
         )
 
-    def _run_projects(self, runner, args, projects):
-        result = True
+    def _run_project(self, runner, args, project):
+        if project.exists():
+            logging.error(f"Project '{project.get_name()}' exists in this instance!")
+            return False
 
-        for project in projects:
-            if project.exists():
-                logging.error(f"Project '{project.get_name()}' exists in this instance!")
-                result = False
-
-            else:
-                logging.info(f"Creating project '{project.get_name()}'")
-                os.mkdir(project.disabled_dir_name())
-                shutil.copy(DEFAULT_DOCKER_COMPOSE_NAME, project.compose_file_name())
-
-        return result
+        else:
+            os.mkdir(project.disabled_dir_name())
+            shutil.copy(DEFAULT_DOCKER_COMPOSE_NAME, project.compose_file_name())
+            logging.debug(f"Project '{project.get_name()}' created")
+            return True

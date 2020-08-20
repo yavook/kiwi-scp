@@ -51,8 +51,7 @@ class InspectCommand(ServiceCommand):
 
         return True
 
-    def _run_projects(self, runner, args, projects):
-        project = projects[0]
+    def _run_project(self, runner, args, project):
         if not project.exists():
             logging.warning(f"Project '{project.get_name()}' not found")
             return False

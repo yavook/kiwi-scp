@@ -12,8 +12,5 @@ class EnableCommand(ProjectCommand):
             description="Enable project(s) in this instance"
         )
 
-    def _run_projects(self, runner, args, projects):
-        return all([
-            project.enable()
-            for project in projects
-        ])
+    def _run_project(self, runner, args, project):
+        return project.enable()

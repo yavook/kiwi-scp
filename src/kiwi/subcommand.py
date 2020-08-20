@@ -65,6 +65,13 @@ class ProjectCommand(SubCommand):
         return self._run_projects(runner, args, Projects.from_dir().filter_enabled())
 
     def _run_projects(self, runner, args, projects):
+        # default: run for all given projects
+        return all([
+            self._run_project(runner, args, project)
+            for project in projects
+        ])
+
+    def _run_project(self, runner, args, project):
         pass
 
     def run(self, runner, args):
@@ -102,14 +109,9 @@ class ServiceCommand(ProjectCommand):
             help=f"select {services} in a project"
         )
 
-    def _run_projects(self, runner, args, projects):
-        result = True
-
-        # default: run without services for all given
-        for project in projects:
-            result &= self._run_services(runner, args, project, [])
-
-        return result
+    def _run_project(self, runner, args, project):
+        # default: run with empty service list
+        return self._run_services(runner, args, project, [])
 
     def _run_services(self, runner, args, project, services):
         pass

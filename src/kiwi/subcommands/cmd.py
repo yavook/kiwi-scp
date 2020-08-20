@@ -27,7 +27,7 @@ class CmdCommand(ProjectCommand):
             help="arguments for 'docker-compose' commands"
         )
 
-    def _run_projects(self, runner, args, projects):
+    def _run_project(self, runner, args, project):
         if args.unknowns:
             args.compose_args = [*args.compose_args, *args.unknowns]
             args.unknowns = []
@@ -35,6 +35,6 @@ class CmdCommand(ProjectCommand):
             logging.debug(f"Updated args: {args}")
 
         # run with split compose_cmd argument
-        projects[0].compose_run([args.compose_cmd, *args.compose_args])
+        project.compose_run([args.compose_cmd, *args.compose_args])
 
         return True
