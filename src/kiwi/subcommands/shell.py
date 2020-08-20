@@ -10,13 +10,13 @@ from ..config import LoadedConfig
 def _service_has_executable(project, service, exe_name):
     """
     Test if service in project has an executable exe_name in its PATH.
-    Requires /bin/sh and which.
+    Requires /bin/sh.
     """
 
     try:
         # test if desired shell exists
         project.compose_run(
-            ['exec', service, '/bin/sh', '-c', f"which {exe_name}"],
+            ['exec', service, '/bin/sh', '-c', f"command -v {exe_name}"],
             check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
         return True

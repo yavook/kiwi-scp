@@ -26,6 +26,7 @@ class Parser:
 
             # create main parser
             self.__parser = argparse.ArgumentParser(
+                prog='kiwi',
                 description=kiwi_help,
                 epilog=command_help_text,
             )
