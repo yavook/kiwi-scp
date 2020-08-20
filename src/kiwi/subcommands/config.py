@@ -8,14 +8,14 @@ from ..subcommand import SubCommand
 from ..config import DefaultConfig, LoadedConfig
 
 
-class InitCommand(SubCommand):
-    """kiwi init"""
+class ConfigCommand(SubCommand):
+    """kiwi config"""
 
     def __init__(self):
         super().__init__(
-            'init',
-            action=f"Initializing '{KIWI_CONF_NAME}' in",
-            description="Create a new kiwi-config instance"
+            'config',
+            action=f"Configuring '{KIWI_CONF_NAME}' in",
+            description="Configure kiwi-config instance"
         )
 
         # -f switch: Initialize with default config
@@ -25,8 +25,20 @@ class InitCommand(SubCommand):
             help=f"use default values even if {KIWI_CONF_NAME} is present"
         )
 
+        # -s switch: Show current config instead
+        self._sub_parser.add_argument(
+            '-s', '--show',
+            action='store_true',
+            help=f"show effective {KIWI_CONF_NAME} contents instead"
+        )
+
     def _run_instance(self, runner, args):
         config = LoadedConfig.get()
+
+        # check show switch
+        if args.show:
+            print(config)
+            return True
 
         # check force switch
         if args.force and os.path.isfile(KIWI_CONF_NAME):

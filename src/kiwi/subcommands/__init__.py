@@ -1,41 +1,42 @@
 # local
+from ._hidden import ConfCopyCommand, ConfPurgeCommand, NetUpCommand
+
 from .build import BuildCommand
+from .clean import CleanCommand
 from .cmd import CmdCommand
-from .conf import ConfCopyCommand, ConfPurgeCommand, ConfCleanCommand
+from .config import ConfigCommand
 from .disable import DisableCommand
 from .down import DownCommand
 from .enable import EnableCommand
-from .init import InitCommand
-from .list import ListCommand
+from .inspect import InspectCommand
 from .logs import LogsCommand
-from .net import NetUpCommand, NetDownCommand
 from .new import NewCommand
 from .pull import PullCommand
+from .purge import PurgeCommand
 from .push import PushCommand
-from .sh import ShCommand
-from .show import ShowCommand
+from .shell import ShellCommand
 from .up import UpCommand
 from .update import UpdateCommand
 
 __all__ = [
-    'BuildCommand',
-    'CmdCommand',
     'ConfCopyCommand',
     'ConfPurgeCommand',
-    'ConfCleanCommand',
+    'NetUpCommand',
+
+    'BuildCommand',
+    'CleanCommand',
+    'CmdCommand',
+    'ConfigCommand',
     'DisableCommand',
     'DownCommand',
     'EnableCommand',
-    'InitCommand',
-    'ListCommand',
+    'InspectCommand',
     'LogsCommand',
-    'NetUpCommand',
-    'NetDownCommand',
     'NewCommand',
     'PullCommand',
+    'PurgeCommand',
     'PushCommand',
-    'ShCommand',
-    'ShowCommand',
+    'ShellCommand',
     'UpCommand',
     'UpdateCommand',
 ]
