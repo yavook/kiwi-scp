@@ -17,7 +17,7 @@ class PurgeCommand(SubCommand):
         super().__init__(
             'purge',
             action="Tearing down",
-            description="Remove all ephemeral artifacts of this instance"
+            description="Remove all running docker artifacts of this instance"
         )
 
     def _run_instance(self, runner, args):

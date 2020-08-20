@@ -9,7 +9,7 @@ class DisableCommand(ProjectCommand):
         super().__init__(
             'disable', num_projects='+',
             action="Disabling",
-            description="Disable whole project(s) in this instance"
+            description="Disable project(s) in this instance"
         )
 
     def _run_projects(self, runner, args, projects):

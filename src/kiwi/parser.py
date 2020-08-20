@@ -2,7 +2,7 @@
 import argparse
 
 # local
-from ._constants import COMMAND_HELP_TEXT_NAME
+from ._constants import COMMAND_HELP_TEXT_NAME, USAGE_TEXT_NAME
 
 
 class Parser:
@@ -19,12 +19,15 @@ class Parser:
         def __init__(self):
             # add version data from separate file (keeps default config cleaner)
             with open(COMMAND_HELP_TEXT_NAME, 'r') as stream:
-                command_help_text = stream.read().strip()
+                command_help_text = stream.read()
+
+            with open(USAGE_TEXT_NAME, 'r') as stream:
+                usage_text = stream.read()
 
             # create main parser
             self.__parser = argparse.ArgumentParser(
                 description='kiwi-config',
-                usage='%(prog)s [command]',
+                usage=usage_text,
                 epilog=command_help_text,
             )
             self.__parser.formatter_class = argparse.RawDescriptionHelpFormatter
