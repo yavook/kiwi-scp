@@ -7,22 +7,6 @@ import subprocess
 from .config import LoadedConfig
 
 
-def _update_kwargs(**kwargs):
-    config = LoadedConfig.get()
-
-    # ensure there is an environment
-    if 'env' not in kwargs:
-        kwargs['env'] = {}
-
-    # add common environment from config
-    if config['runtime:env'] is not None:
-        kwargs['env'].update(config['runtime:env'])
-
-    logging.debug(f"kwargs updated: {kwargs}")
-
-    return kwargs
-
-
 def _is_executable(filename):
     if filename is None:
         return False
@@ -46,7 +30,7 @@ class Executable:
         def __init__(self, exe_name):
             self.__exe_path = _find_exe_file(exe_name)
 
-        def __build_cmd(self, args, **kwargs):
+        def __build_cmd(self, args, kwargs):
             cmd = [self.__exe_path, *args]
 
             logging.debug(f"Executable cmd{cmd}, kwargs{kwargs}")
@@ -54,13 +38,13 @@ class Executable:
 
         def run(self, process_args, **kwargs):
             return subprocess.run(
-                self.__build_cmd(process_args, **_update_kwargs(**kwargs)),
+                self.__build_cmd(process_args, kwargs),
                 **kwargs
             )
 
         def Popen(self, process_args, **kwargs):
             return subprocess.Popen(
-                self.__build_cmd(process_args, **_update_kwargs(**kwargs)),
+                self.__build_cmd(process_args, kwargs),
                 **kwargs
             )
 
@@ -73,10 +57,9 @@ class Executable:
                 **kwargs
             )
 
-            less_process = Executable('less').run(
-                ['-R', '+G'],
-                stdin=process.stdout
-            )
+            less_process = Executable('less').run([
+                '-R', '+G'
+            ], stdin=process.stdout)
 
             process.communicate()
             return less_process

@@ -19,10 +19,9 @@ class Runner:
         def __init__(self):
             # probe for Docker access
             try:
-                Executable('docker').run(
-                    ['ps'],
-                    check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-                )
+                Executable('docker').run([
+                    'ps'
+                ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             except subprocess.CalledProcessError:
                 raise PermissionError("Cannot access docker, please get into the docker group or run as root!")
