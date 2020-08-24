@@ -1,0 +1,22 @@
+version: "2"
+
+networks:
+  # reachable from outside
+  default:
+    driver: bridge
+  # interconnects projects
+  kiwi_hub:
+    external:
+      name: ${KIWI_HUB_NAME}
+
+services:
+  # an example service
+  something:
+    # uses an image
+    image: maintainer/repo:tag
+    # will get restarted
+    restart: unless-stopped
+    # is also connected to the instance hub
+    networks:
+      - default
+      - kiwi_hub

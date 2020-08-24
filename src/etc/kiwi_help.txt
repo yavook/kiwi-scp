@@ -1,0 +1,9 @@
+kiwi-config is the tool for container server management.
+
+Features:
+  - Group services into projects using their own docker-compose.yml
+  - Bind to the local file system by using ${TARGETDIR} as volume in docker-compose.yml
+  - Add instance-global config files by using ${CONFDIR} as volume in docker-compose.yml
+  - Add instance-global custom values inside docker-compose.yml using config:runtime:env
+  - Build service-specific, private docker images from Dockerfiles
+  - Check full instances into any version control system
