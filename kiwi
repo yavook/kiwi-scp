@@ -1,0 +1,125 @@
+#!/bin/bash
+
+#############
+# CONSTANTS #
+#############
+
+# base config filename
+KIWI_CONF_NAME="kiwi.yml"
+# version tag filename
+KIWI_VERSION_TAG="etc/version_tag"
+
+# dependencies to run kiwi-config
+KIWI_DEPS=(docker docker-compose)
+# base install dir
+KIWI_BASEDIR="${HOME}/.local/lib/kiwi-config"
+# per-user env setup script
+KIWI_ENVFILE="${HOME}/.kiwienv"
+
+# repository uri
+KIWI_REPO="https://github.com/ldericher/kiwi-config"
+# use latest version by default
+KIWI_VERSION="master"
+
+###################
+# DYNAMIC STRINGS #
+###################
+
+# directory of correct installation
+function kiwi_installdir() {
+  echo "${KIWI_BASEDIR}/${KIWI_VERSION}"
+}
+
+# src directory in installed version
+function kiwi_root() {
+  echo "$(kiwi_installdir)/src"
+}
+
+# main script in installed version
+function kiwi_executable() {
+  echo "$(kiwi_root)/kiwi-config.py"
+}
+
+# cache current work directory
+WORKDIR="$(pwd)"
+
+##################
+# PER-USER SETUP #
+##################
+
+# add in environment setup
+if [ -f "${KIWI_ENVFILE}" ]; then
+  # shellcheck source=$HOME/.kiwienv
+  source "${KIWI_ENVFILE}"
+fi
+
+##########
+# CHECKS #
+##########
+
+for dep in "${KIWI_DEPS[@]}"; do
+  if ! command -v "${dep}" &>/dev/null; then
+    echo "Dependency '${dep}' not found, please install!" >/dev/stderr
+    exit 1
+  fi
+done
+
+########
+# MAIN #
+########
+
+# check if pwd is a kiwi folder
+if [ -f "./${KIWI_CONF_NAME}" ]; then
+  # determine needed kiwi-config version
+  re_version_line='version\s*:\s*'
+  eval "$(grep -E "${re_version_line}" "./${KIWI_CONF_NAME}" | sed -r "s/${re_version_line}/KIWI_VERSION=/")"
+fi
+
+# install if kiwi-config not found
+if [ ! -x "$(kiwi_executable)" ]; then
+  echo -n "Installing kiwi-config v${KIWI_VERSION} into ${KIWI_BASEDIR} ... "
+
+  # switch to temp dir
+  tmpdir=$(mktemp -d)
+  cd "${tmpdir}" || :
+
+  # download archive
+  curl -o "kiwi-config.zip" "${KIWI_REPO}/archive/${KIWI_VERSION}.zip"
+  unzip "kiwi-config.zip"
+
+  # read archive version tag
+  cd "kiwi-config-${KIWI_VERSION}" || :
+  KIWI_VERSION=$(cat "./src/${KIWI_VERSION_TAG}")
+
+  # install archive
+  mkdir -p "$(kiwi_installdir)"
+  mv "src" "Pipfile" "Pipfile.lock" "$(kiwi_installdir)/"
+
+  # discard temp dir
+  cd "${WORKDIR}" || :
+  rm -rf "${tmpdir}"
+
+  echo "OK"
+fi
+
+# check virtualenv
+cd "$(kiwi_installdir)" || :
+if ! pipenv --venv &>/dev/null; then
+  # install virtualenv
+  echo -n "Preparing virtualenv ... "
+  pipenv sync &>/dev/null
+  echo "OK"
+fi
+
+# go back to the original work directory
+cd "${WORKDIR}" || :
+
+# setup main environment
+KIWI_ROOT="$(kiwi_root)"
+
+export KIWI_ROOT
+export KIWI_CONF_NAME
+export PIPENV_VERBOSITY=-1
+
+# run main script
+exec pipenv run "$(kiwi_executable)" "${@}"

@@ -1,0 +1,19 @@
+######################################
+# kiwi-config instance configuration #
+######################################
+
+version: '0.0.1'
+
+runtime:
+  storage: /tmp/kiwi
+  shells:
+  - /bin/bash
+  env: null
+
+markers:
+  project: .project
+  disabled: .disabled
+
+network:
+  name: kiwi_hub
+  cidr: 10.22.46.0/24
