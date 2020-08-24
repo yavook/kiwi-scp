@@ -91,15 +91,20 @@ if [ ! -x "$(kiwi_executable)" ]; then
   cd "kiwi-config-${KIWI_VERSION}" || :
   KIWI_VERSION=$(cat "./src/${KIWI_VERSION_TAG}")
 
-  # install archive
-  mkdir -p "$(kiwi_installdir)"
-  mv "src" "Pipfile" "Pipfile.lock" "$(kiwi_installdir)/"
+  if [ -x "$(kiwi_executable)" ]; then
+    # after version update: no need to install
+    echo "kiwi-config v${KIWI_VERSION} found!"
+
+  else
+    # install archive
+    mkdir -p "$(kiwi_installdir)"
+    mv "src" "Pipfile" "Pipfile.lock" "$(kiwi_installdir)/"
+    echo "OK"
+  fi
 
   # discard temp dir
   cd "${WORKDIR}" || :
   rm -rf "${tmpdir}"
-
-  echo "OK"
 fi
 
 # check virtualenv
