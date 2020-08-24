@@ -10,9 +10,9 @@ KIWI_CONF_NAME="kiwi.yml"
 KIWI_VERSION_TAG="etc/version_tag"
 
 # dependencies to run kiwi-config
-KIWI_DEPS=(python3 pipenv less docker docker-compose)
+KIWI_DEPS=(docker docker-compose)
 # base install dir
-KIWI_BASEDIR="${HOME}/.cache/kiwi-config"
+KIWI_BASEDIR="${HOME}/.local/lib/kiwi-config"
 # per-user env setup script
 KIWI_ENVFILE="${HOME}/.kiwienv"
 
@@ -59,7 +59,7 @@ fi
 
 for dep in "${KIWI_DEPS[@]}"; do
   if ! command -v "${dep}" &>/dev/null; then
-    echo "Dependency '${dep}' not found, please install!"
+    echo "Dependency '${dep}' not found, please install!" >/dev/stderr
     exit 1
   fi
 done
@@ -79,48 +79,27 @@ fi
 if [ ! -x "$(kiwi_executable)" ]; then
   echo -n "Installing kiwi-config v${KIWI_VERSION} into ${KIWI_BASEDIR} ... "
 
-  ### TODO: post-release version ###
+  # switch to temp dir
+  tmpdir=$(mktemp -d)
+  cd "${tmpdir}" || :
 
-  # # switch to temp dir
-  # tmpdir=$(mktemp -d)
-  # cd "${tmpdir}" || :
+  # download archive
+  curl -o "kiwi-config.zip" "${KIWI_REPO}/archive/${KIWI_VERSION}.zip"
+  unzip "kiwi-config.zip"
 
-  # # download archive
-  # wget "${KIWI_REPO}/archive/${KIWI_VERSION}.zip"
-  # unzip "${KIWI_VERSION}.zip"
-
-  # # read archive version tag
-  # cd "kiwi-config-${KIWI_VERSION}" || :
-  # KIWI_VERSION=$(cat "./src/${KIWI_VERSION_TAG}")
-
-  # # install archive
-  # mkdir -p "$(kiwi_installdir)"
-  # mv "src" "Pipfile" "Pipfile.lock" "$(kiwi_installdir)/"
-
-  # # discard temp dir
-  # cd "${WORKDIR}" || :
-  # rm -rf "${tmpdir}"
-
-  # echo "OK"
-
-  ### pre-release version ###
-
-  # use this directory as archive
-  cd "$(dirname "$(readlink -f "${0}")")" || :
-
-  # read this version tag
+  # read archive version tag
+  cd "kiwi-config-${KIWI_VERSION}" || :
   KIWI_VERSION=$(cat "./src/${KIWI_VERSION_TAG}")
 
-  if [ -x "$(kiwi_executable)" ]; then
-    # after version update: no need to install
-    echo "kiwi-config v${KIWI_VERSION} found!"
-  else
-    # install this
-    mkdir -p "${KIWI_BASEDIR}"
-    ln -s "$(readlink -f .)" "$(kiwi_installdir)"
-    # cd
-    echo "OK"
-  fi
+  # install archive
+  mkdir -p "$(kiwi_installdir)"
+  mv "src" "Pipfile" "Pipfile.lock" "$(kiwi_installdir)/"
+
+  # discard temp dir
+  cd "${WORKDIR}" || :
+  rm -rf "${tmpdir}"
+
+  echo "OK"
 fi
 
 # check virtualenv
