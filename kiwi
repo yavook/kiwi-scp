@@ -72,7 +72,7 @@ done
 if [ -f "./${KIWI_CONF_NAME}" ]; then
   # determine needed kiwi-config version
   re_version_line='version\s*:\s*'
-  eval "$(grep -E "${re_version_line}" "./${KIWI_CONF_NAME}" | sed -r 's/'"${re_version_line}"'/KIWI_VERSION=/')"
+  eval "$(grep -E "${re_version_line}" "./${KIWI_CONF_NAME}" | sed -r "s/${re_version_line}/KIWI_VERSION=/")"
 fi
 
 # install if kiwi-config not found
