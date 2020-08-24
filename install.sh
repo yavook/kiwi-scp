@@ -35,7 +35,7 @@ valid="no"
 
 while [ "${valid}" = "no" ]; do
   printf "Select installation directory [Default: '%s']: " "${install_dir_default}"
-  read install_dir
+  read install_dir </dev/tty || install_dir="${install_dir_default}"
   install_dir="${install_dir:-${install_dir_default}}"
 
   # check
@@ -44,7 +44,7 @@ while [ "${valid}" = "no" ]; do
 
   else
     printf "Install directory doesn't exist. Try creating? [Y|n] "
-    read yesno
+    read yesno </dev/tty || yesno="yes"
     if [ ! "${yesno}" = "N" ] || [ ! "${yesno}" = "n" ]; then
 
       # check creation failure
@@ -66,13 +66,13 @@ printf "Installing into '%s' ... " "${install_dir}"
 uri="https://raw.githubusercontent.com/ldericher/kiwi-config/master/kiwi"
 tmp_file="$(mktemp)"
 
-if ! curl -o "${tmp_file}" "${uri}" >/dev/null 2>/dev/null; then
+if ! curl --proto '=https' --tlsv1.2 --silent --fail --output "${tmp_file}" "${uri}" >/dev/null 2>/dev/null; then
   rm "${tmp_file}"
   echo "Download 'kiwi' failed!" >/dev/stderr
   exit 1
 fi
 
-if ! install -m 0755 "${tmp_file}" "${install_dir}/kiwi"; then
+if ! install -m 0755 "${tmp_file}" "${install_dir}/kiwi" >/dev/null 2>/dev/null; then
   rm "${tmp_file}"
   echo "Install 'kiwi' failed!" >/dev/stderr
   exit 1
