@@ -13,7 +13,7 @@ The simple tool for managing container servers
 ## Installation
 
 ```shell script
-curl 'https://raw.githubusercontent.com/ldericher/kiwi-config/master/install.sh' | sh
+curl --proto '=https' --tlsv1.2 -sSf 'https://raw.githubusercontent.com/ldericher/kiwi-config/master/install.sh' | sh
 ```
 
 That script checks for the basic dependencies of the `kiwi` command, then downloads the main script and installs it to a location of your choice. Please consider installing `kiwi` into a directory inside your $PATH.

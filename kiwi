@@ -84,8 +84,8 @@ if [ ! -x "$(kiwi_executable)" ]; then
   cd "${tmpdir}" || :
 
   # download archive
-  curl -o "kiwi-config.zip" "${KIWI_REPO}/archive/${KIWI_VERSION}.zip"
-  unzip "kiwi-config.zip"
+  curl --proto '=https' --tlsv1.2 --silent --fail --location --output "kiwi-config.zip" "${KIWI_REPO}/archive/${KIWI_VERSION}.zip"
+  unzip -qq "kiwi-config.zip"
 
   # read archive version tag
   cd "kiwi-config-${KIWI_VERSION}" || :
