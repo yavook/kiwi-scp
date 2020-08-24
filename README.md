@@ -6,7 +6,7 @@ The simple tool for managing container servers
 
 - Learn to use `docker` with `docker-compose`
 - Install kiwi-config
-- Look at [the example instance](../example)
+- Look at [the example instance](./example/)
 - Look at the output of `kiwi --help`
 - Start building your own instances
 
