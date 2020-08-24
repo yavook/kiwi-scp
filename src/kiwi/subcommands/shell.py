@@ -84,13 +84,21 @@ class ShellCommand(ServiceCommand):
             help="shell to spawn"
         )
 
+        # -u argument: Run as user
+        self._sub_parser.add_argument(
+            '-u', '--user', type=str,
+            help="container user to run shell"
+        )
+
     def _run_services(self, runner, args, project, services):
         service = services[0]
         shell = _find_shell(args, project, service)
 
+        user_args = ['-u', args.user] if args.user else []
+
         if shell is not None:
             # spawn shell
-            project.compose_run(['exec', service, shell])
+            project.compose_run(['exec', *user_args, service, shell])
             return True
 
         return False
