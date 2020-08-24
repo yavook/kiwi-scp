@@ -24,7 +24,8 @@ class Runner:
                 ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             except subprocess.CalledProcessError:
-                raise PermissionError("Cannot access docker, please get into the docker group or run as root!")
+                logging.critical("Cannot access docker, please get into the docker group or run as root!")
+                quit(1)
 
             # setup all subcommands
             for className in subcommands.__all__:
