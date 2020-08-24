@@ -84,8 +84,7 @@ if [ ! -x "$(kiwi_executable)" ]; then
   cd "${tmpdir}" || :
 
   # download archive
-  curl --proto '=https' --tlsv1.2 --silent --fail --location --output "kiwi-config.zip" "${KIWI_REPO}/archive/${KIWI_VERSION}.zip"
-  unzip -qq "kiwi-config.zip"
+  curl --proto '=https' --tlsv1.2 -sSfL -o "kiwi-config.zip" "${KIWI_REPO}/archive/${KIWI_VERSION}.zip" | tar xz
 
   # read archive version tag
   cd "kiwi-config-${KIWI_VERSION}" || :
@@ -121,10 +120,13 @@ cd "${WORKDIR}" || :
 
 # setup main environment
 KIWI_ROOT="$(kiwi_root)"
+PIPENV_VERBOSITY=-1
+PIPENV_PIPFILE="$(kiwi_installdir)/Pipfile"
 
 export KIWI_ROOT
 export KIWI_CONF_NAME
-export PIPENV_VERBOSITY=-1
+export PIPENV_VERBOSITY
+export PIPENV_PIPFILE
 
 # run main script
 exec pipenv run "$(kiwi_executable)" "${@}"
