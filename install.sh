@@ -6,6 +6,8 @@
 
 # dependencies to run kiwi-config
 KIWI_DEPS="bash python3 pipenv less"
+# default install directory
+INSTALL_DIR_DEFAULT="/usr/local/bin"
 
 ##########
 # CHECKS #
@@ -30,13 +32,12 @@ echo "OK"
 ########
 
 # prompt for installation directory
-install_dir_default="/usr/local/bin"
 valid="no"
 
 while [ "${valid}" = "no" ]; do
-  printf "Select installation directory [Default: '%s']: " "${install_dir_default}"
-  read install_dir </dev/tty || install_dir="${install_dir_default}"
-  install_dir="${install_dir:-${install_dir_default}}"
+  printf "Select installation directory [Default: '%s']: " "${INSTALL_DIR_DEFAULT}"
+  read install_dir </dev/tty || install_dir="${INSTALL_DIR_DEFAULT}"
+  install_dir="${install_dir:-${INSTALL_DIR_DEFAULT}}"
 
   # check
   if [ -d "${install_dir}" ]; then
@@ -66,7 +67,7 @@ printf "Installing into '%s' ... " "${install_dir}"
 uri="https://raw.githubusercontent.com/ldericher/kiwi-config/master/kiwi"
 tmp_file="$(mktemp)"
 
-if ! curl --proto '=https' --tlsv1.2 --silent --fail --output "${tmp_file}" "${uri}" >/dev/null 2>/dev/null; then
+if ! curl --proto '=https' --tlsv1.2 -sSf -o "${tmp_file}" "${uri}" >/dev/null 2>/dev/null; then
   rm "${tmp_file}"
   echo "Download 'kiwi' failed!" >/dev/stderr
   exit 1
