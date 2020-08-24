@@ -10,13 +10,46 @@ networks:
       name: ${KIWI_HUB_NAME}
 
 services:
-  hello-world:
+  # simple loop producing (rather boring) logs
+  greeter:
     image: alpine:latest
     command: sh -c 'LOOP=1; while :; do echo Hello World "$$LOOP"; LOOP=$$(($$LOOP + 1)); sleep 10; done'
+
+  # basic webserver listening on localhost:8080
+  web:
+    build: web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+
+  # internal mariadb (mysql) instance with persistent storage
+  db:
+    image: mariadb:10
+    restart: unless-stopped
+    networks:
+      - kiwi_hub
+    environment:
+      MYSQL_ROOT_PASSWORD: changeme
+    volumes:
+      - "${TARGETDIR}/db:/var/lib/mysql"
+
+  # admin interface for databases
+  adminer:
+    image: adminer:standalone
+    restart: unless-stopped
     networks:
       - default
       - kiwi_hub
+    depends_on:
+      - db
+    ports:
+      - "8081:8080"
 
-  foo-bar:
-    image: alpine:latest
-    command: sh -c 'LOOP=1; while :; do echo Foo Bar "$$LOOP"; LOOP=$$(($$LOOP + 1)); sleep 20; done'
+  # Another webserver just to show off the ${CONFDIR} variable
+  another-web:
+    image: nginx:stable-alpine
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    volumes:
+      - "${CONFDIR}/html/index.html:/usr/share/nginx/html/index.html:ro"
