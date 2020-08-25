@@ -84,6 +84,7 @@ class Project:
         kwargs['env'].update({
             'COMPOSE_PROJECT_NAME': self.get_name(),
             'KIWI_HUB_NAME': config['network:name'],
+            'TARGETROOT': config['runtime:storage'],
             'CONFDIR': os.path.join(config['runtime:storage'], CONF_DIRECTORY_NAME),
             'TARGETDIR': self.target_dir_name()
         })
