@@ -4,61 +4,50 @@
 # CONSTANTS #
 #############
 
-# dependencies to run kiwi-config
-KIWI_DEPS="bash python3 pipenv less"
-# default install directory
+# default installation directory
 INSTALL_DIR_DEFAULT="/usr/local/bin"
 
-##########
-# CHECKS #
-##########
 
-printf "checking dependencies ... "
+############
+# CLI ARGS #
+############
 
-for dep in ${KIWI_DEPS}; do
-  printf "%s, " "${dep}"
+# installation directory
+install_dir="${1}"
+# adjust default if given
+INSTALL_DIR_DEFAULT="${1:-${INSTALL_DIR_DEFAULT}}"
 
-  if ! command -v "${dep}" >/dev/null 2>/dev/null; then
-    echo
-    echo "Dependency '${dep}' not found, please install!" >/dev/stderr
-    exit 1
-  fi
-done
-
-echo "OK"
 
 ########
 # MAIN #
 ########
 
 # prompt for installation directory
-valid="no"
-
-while [ "${valid}" = "no" ]; do
+while [ ! -d "${install_dir}" ]; do
   printf "Select installation directory [Default: '%s']: " "${INSTALL_DIR_DEFAULT}"
-  read install_dir </dev/tty || install_dir="${INSTALL_DIR_DEFAULT}"
+  read -r install_dir </dev/tty || install_dir="${INSTALL_DIR_DEFAULT}"
   install_dir="${install_dir:-${INSTALL_DIR_DEFAULT}}"
 
-  # check
-  if [ -d "${install_dir}" ]; then
-    valid="yes"
-
-  else
+  # check if given dir exists
+  if [ ! -d "${install_dir}" ]; then
     printf "Install directory doesn't exist. Try creating? [Y|n] "
-    read yesno </dev/tty || yesno="yes"
-    if [ ! "${yesno}" = "N" ] || [ ! "${yesno}" = "n" ]; then
+    read -r yesno </dev/tty || yesno="yes"
+    yesno=$(printf '%.1s' "${yesno}")
 
-      # check creation failure
-      if mkdir -p "${install_dir}"; then
-        valid="yes"
-
-      else
+    if [ ! "${yesno}" = "N" ] && [ ! "${yesno}" = "n" ]; then
+      # fail this script if we can't create the install dir
+      if ! mkdir -p "${install_dir}"; then
         echo "Invalid install directory." >/dev/stderr
         exit 1
       fi
     fi
   fi
 done
+
+if [ ! -d "${install_dir}" ]; then
+  echo "wtf?"
+  exit 1
+fi
 
 # start actual installation
 printf "Installing into '%s' ... " "${install_dir}"
