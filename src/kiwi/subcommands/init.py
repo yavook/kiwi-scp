@@ -8,14 +8,14 @@ from ..subcommand import SubCommand
 from ..config import DefaultConfig, LoadedConfig
 
 
-class ConfigCommand(SubCommand):
-    """kiwi config"""
+class InitCommand(SubCommand):
+    """kiwi init"""
 
     def __init__(self):
         super().__init__(
-            'config',
-            action=f"Configuring '{KIWI_CONF_NAME}' in",
-            description="Create or configure kiwi-config instance"
+            'init',
+            action=f"Initializing '{KIWI_CONF_NAME}' in",
+            description="Initialize or reconfigure kiwi-config instance"
         )
 
         # -f switch: Initialize with default config
