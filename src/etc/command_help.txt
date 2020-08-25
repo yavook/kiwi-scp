@@ -2,6 +2,7 @@ Commands for Operation:
   up          Bring up the whole instance, a project or service(s) inside a project
   down        Bring down the whole instance, a project or service(s) inside a project
   update      Update the whole instance, a project or service(s) inside a project
+  restart     Restart the whole instance, a project or service(s) inside a project
   purge       Remove all running docker artifacts of this instance
 
 Commands for Instance Management:
