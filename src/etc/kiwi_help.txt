@@ -1,4 +1,4 @@
-kiwi-config is the tool for container server management.
+kiwi-config is the simple tool for managing container servers.
 
 Features:
   - Group services into projects using their own docker-compose.yml
