@@ -25,6 +25,7 @@ class ConfCopyCommand(SubCommand):
         conf_dirs = [
             project.conf_dir_name()
             for project in Projects.from_dir().filter_enabled()
+            if project.has_configs()
         ]
 
         if conf_dirs:
@@ -33,29 +34,8 @@ class ConfCopyCommand(SubCommand):
             logging.info(f"Sync directories: {conf_dirs}")
 
             Rootkit('rsync').run([
-                'rsync', '-r', *prefix_path_mnt(conf_dirs)
+                'rsync', '-rpt', '--delete', *prefix_path_mnt(conf_dirs)
             ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        return True
-
-
-class ConfPurgeCommand(SubCommand):
-    """kiwi conf-purge"""
-
-    def __init__(self):
-        super().__init__(
-            'conf-purge',
-            action="Removing all configs for", add_parser=False,
-            description="Remove all config files in target directory"
-        )
-
-    def _run_instance(self, runner, args):
-        conf_target = f"{LoadedConfig.get()['runtime:storage']}/{CONF_DIRECTORY_NAME}"
-        logging.info(f"Purging directories: {conf_target}")
-
-        Rootkit().run([
-            'rm', '-rf', prefix_path_mnt(conf_target)
-        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         return True
 

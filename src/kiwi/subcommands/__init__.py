@@ -1,8 +1,7 @@
 # local
-from ._hidden import ConfCopyCommand, ConfPurgeCommand, NetUpCommand
+from ._hidden import ConfCopyCommand, NetUpCommand
 
 from .build import BuildCommand
-from .clean import CleanCommand
 from .cmd import CmdCommand
 from .config import ConfigCommand
 from .disable import DisableCommand
@@ -20,11 +19,9 @@ from .update import UpdateCommand
 
 __all__ = [
     'ConfCopyCommand',
-    'ConfPurgeCommand',
     'NetUpCommand',
 
     'BuildCommand',
-    'CleanCommand',
     'CmdCommand',
     'ConfigCommand',
     'DisableCommand',
