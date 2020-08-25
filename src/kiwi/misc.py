@@ -21,7 +21,7 @@ def are_you_sure(prompt, default="no"):
         suffix = "[yes|NO]"
 
     answer = input(
-        f"{_surround('MUST HAVE CAREFULING IN PROGRESS', '!')}\n"
+        f"{_surround('MUST HAVE CAREFULING IN PROCESS', '!')}\n"
         f"\n"
         f"{_emphasize(prompt)}\n"
         f"\n"

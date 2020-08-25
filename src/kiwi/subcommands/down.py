@@ -1,5 +1,12 @@
+# system
+import logging
+import subprocess
+
 # local
+from ._hidden import _find_net
 from ..subcommand import ServiceCommand
+from ..config import LoadedConfig
+from ..executable import Executable
 from ..misc import are_you_sure
 
 
@@ -14,13 +21,27 @@ class DownCommand(ServiceCommand):
         )
 
     def _run_instance(self, runner, args):
+        net_name = LoadedConfig.get()['network:name']
+
         if are_you_sure([
             "This will bring down the entire instance.",
             "",
             "This may not be what you intended, because:",
             " - Bringing down the instance stops ALL services in here",
         ]):
-            return super()._run_instance(runner, args)
+            if super()._run_instance(runner, args):
+                # remove the hub network afterwards
+                if _find_net(net_name):
+                    Executable('docker').run([
+                        'network', 'rm', net_name
+                    ], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+                    logging.info(f"Network '{net_name}' removed")
+
+                else:
+                    logging.info(f"Network '{net_name}' does not exist")
+
+                return True
 
         return False
 
