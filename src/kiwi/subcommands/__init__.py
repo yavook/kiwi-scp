@@ -13,6 +13,7 @@ from .new import NewCommand
 from .pull import PullCommand
 from .purge import PurgeCommand
 from .push import PushCommand
+from .restart import RestartCommand
 from .shell import ShellCommand
 from .up import UpCommand
 from .update import UpdateCommand
@@ -33,6 +34,7 @@ __all__ = [
     'PullCommand',
     'PurgeCommand',
     'PushCommand',
+    'RestartCommand',
     'ShellCommand',
     'UpCommand',
     'UpdateCommand',
