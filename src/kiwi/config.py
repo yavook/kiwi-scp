@@ -14,7 +14,7 @@ class Config:
 
     __yml_content = {}
     __keys = {
-        'version': "kiwi-config version to use in this instance",
+        'version': "kiwi-scp version to use in this instance",
 
         'runtime:storage': "local directory for service data",
         'runtime:shells': "shell preference for working in service containers",
