@@ -32,6 +32,9 @@ CANARY_MAX_AGE=600
 # DYNAMIC STRINGS #
 ###################
 
+# cache current work directory
+WORKDIR="$(pwd)"
+
 # uri of correct kiwi-scp archive
 kiwi_archive_uri() {
   echo "${KIWI_REPO}/archive/${KIWI_VERSION}.tar.gz"
@@ -51,9 +54,6 @@ kiwi_root() {
 kiwi_executable() {
   echo "$(kiwi_root)/kiwi-scp.py"
 }
-
-# cache current work directory
-WORKDIR="$(pwd)"
 
 #############
 # FUNCTIONS #
@@ -194,9 +194,6 @@ if [ ! -x "$(kiwi_executable)" ]; then
   rm -rf "${tmp_dir}"
 fi
 
-# go back to the original work directory
-cd "${WORKDIR}" || :
-
 # setup main environment
 KIWI_ROOT="$(kiwi_root)"
 PIPENV_VERBOSITY=-1
@@ -215,6 +212,9 @@ if ! pipenv --venv >/dev/null 2>/dev/null; then
   pipenv sync >/dev/null 2>/dev/null
   echo "OK"
 fi
+
+# go back to the original work directory
+cd "${WORKDIR}" || :
 
 # run main script
 exec pipenv run "$(kiwi_executable)" "${@}"
