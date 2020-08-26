@@ -25,7 +25,7 @@ KIWI_VERSION="master"
 KIWI_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/kiwi"
 INSTALLER_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/install.sh"
 # canary file: limit curl requests
-CANARY_FILENAME="/var/lock/kiwi-scp.canary"
+CANARY_FILENAME="/tmp/kiwi-scp.canary"
 CANARY_MAX_AGE=600
 
 ###################
@@ -141,6 +141,11 @@ if [ "${run_kiwi_check}" = "yes" ]; then
         echo "${installer}" | sh
       fi
 
+      echo ""
+      echo "####################"
+      echo "kiwi self-update finished, please re-run your last command."
+      exit 0
+
     else
       echo "" >/dev/stderr
       echo "####################" >/dev/stderr
@@ -152,8 +157,11 @@ if [ "${run_kiwi_check}" = "yes" ]; then
     fi
   fi
 
-  # refresh canary
-  touch "${CANARY_FILENAME}"
+  # refresh canary file
+  printf '' > "${CANARY_FILENAME}"
+  echo "Installed: '${hash_local}'" >> "${CANARY_FILENAME}"
+  echo "Available: '${hash_remote}'" >> "${CANARY_FILENAME}"
+  chmod 0777 "${CANARY_FILENAME}"
 fi
 
 # check if pwd is a kiwi folder
