@@ -40,9 +40,9 @@ In some cases, notably when using a multi-version system such as
 [CentOS SCL](https://wiki.centos.org/AdditionalResources/Repositories/SCL), not all of these are in your `$PATH`
 at login time.
 
-In those cases, you can simply create a `.kiwienv` file in your home directory.
+In those cases, you can simply create a `.kiwi_profile` file in your home directory.
 It will be sourced every time you use the `kiwi` command.
-For the aforementioned case where you installed `centos-release-scl` and `rh-python36`, your `~/.kiwienv` should
+For the aforementioned case where you installed `centos-release-scl` and `rh-python36`, your `~/.kiwi_profile` should
 contain:
 
 ```shell script
