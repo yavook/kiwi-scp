@@ -2,7 +2,7 @@
 # kiwi-scp instance configuration #
 ###################################
 
-version: '0.1.4'
+version: '0.1.5'
 
 runtime:
   storage: /tmp/kiwi
