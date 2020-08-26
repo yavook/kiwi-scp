@@ -21,10 +21,22 @@ KIWI_REPO="https://github.com/ldericher/kiwi-config"
 # use latest version by default
 KIWI_VERSION="master"
 
+# URI of "kiwi" launcher script
+KIWI_URI="https://raw.githubusercontent.com/ldericher/kiwi-config/master/kiwi"
+INSTALLER_URI="https://raw.githubusercontent.com/ldericher/kiwi-config/master/install.sh"
+# canary file: limit curl requests
+CANARY_FILENAME="/var/lock/kiwi-config.canary"
+CANARY_MAXAGE=600
+
 
 ###################
 # DYNAMIC STRINGS #
 ###################
+
+# uri of correct kiwi-config archive
+kiwi_archive_uri() {
+  echo "${KIWI_REPO}/archive/${KIWI_VERSION}.tar.gz"
+}
 
 # directory of correct installation
 kiwi_installdir() {
@@ -43,6 +55,28 @@ kiwi_executable() {
 
 # cache current work directory
 WORKDIR="$(pwd)"
+
+
+#############
+# FUNCTIONS #
+#############
+
+# prompt yes/no question (default yes)
+yes_no() {
+  # prompt and read from terminal
+  printf "%s [Y|n] " "${1}"
+  read -r answer </dev/tty || answer=""
+
+  # check first character
+  answer="$(printf '%.1s' "${answer}")"
+  if [ "${answer}" = "N" ] || [ "${answer}" = "n" ]; then
+    # negative
+    return 1
+  else
+    # positive
+    return 0
+  fi
+}
 
 
 ##################
@@ -72,6 +106,61 @@ done
 # MAIN #
 ########
 
+# check if we should check for new kiwi version
+if [ -f "${CANARY_FILENAME}" ]; then
+  # check canary age
+  current_time="$(date '+%s')"
+  canary_mtime="$(date -r "${CANARY_FILENAME}" '+%s')"
+  canary_age="$(( current_time - canary_mtime ))"
+
+  if [ ${canary_age} -gt ${CANARY_MAXAGE} ]; then
+    # canary file too old!
+    run_kiwi_check="yes"
+  fi
+
+else
+  # no canary file!
+  run_kiwi_check="yes"
+
+fi
+
+# run check for new kiwi version
+if [ "${run_kiwi_check}" = "yes" ]; then
+  # hash this script and the master version
+  hash_local="$(md5sum < "$(readlink "${0}")")"
+  hash_remote="$(curl --proto '=https' --tlsv1.2 -sSfL "${KIWI_URI}" | md5sum)"
+
+  # warn if different
+  if [ "${hash_local}" != "${hash_remote}" ]; then
+
+    if yes_no "Your kiwi launcher is outdated. Update now?" >/dev/stderr; then
+      # should reinstall, so download installer
+      installer="$(curl --proto '=https' --tlsv1.2 -sSfL "${INSTALLER_URI}")"
+
+      if yes_no "Use sudo to run as root?"; then
+        # enable system-wide install
+        echo "${installer}" | sudo sh
+
+      else
+        # per-user install
+        echo "${installer}" | sh
+      fi
+
+    else
+      echo "" >/dev/stderr
+      echo "####################" >/dev/stderr
+      echo "Please manually update your kiwi launcher by re-running the installation process:" >/dev/stderr
+      echo "https://github.com/ldericher/kiwi-config/#installation" >/dev/stderr
+      echo "####################" >/dev/stderr
+      echo "" >/dev/stderr
+
+    fi
+  fi
+
+  # refresh canary
+  touch "${CANARY_FILENAME}"
+fi
+
 # check if pwd is a kiwi folder
 if [ -f "./${KIWI_CONF_NAME}" ]; then
   # determine needed kiwi-config version
@@ -88,7 +177,7 @@ if [ ! -x "$(kiwi_executable)" ]; then
   cd "${tmpdir}" || :
 
   # download archive
-  curl --proto '=https' --tlsv1.2 -sSfL "${KIWI_REPO}/archive/${KIWI_VERSION}.tar.gz" | tar xz
+  curl --proto '=https' --tlsv1.2 -sSfL "$(kiwi_archive_uri)" | tar xz
 
   # read archive version tag
   cd "kiwi-config-${KIWI_VERSION}" || :
