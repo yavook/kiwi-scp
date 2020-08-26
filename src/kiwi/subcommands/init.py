@@ -15,7 +15,7 @@ class InitCommand(SubCommand):
         super().__init__(
             'init',
             action=f"Initializing '{KIWI_CONF_NAME}' in",
-            description="Initialize or reconfigure kiwi-config instance"
+            description="Initialize or reconfigure kiwi-scp instance"
         )
 
         # -f switch: Initialize with default config

@@ -9,23 +9,23 @@ KIWI_CONF_NAME="kiwi.yml"
 # version tag filename
 KIWI_VERSION_TAG="etc/version_tag"
 
-# dependencies to run kiwi-config
+# dependencies to run kiwi-scp
 KIWI_DEPS="python3 pipenv less docker docker-compose"
 # base install dir
-KIWI_BASEDIR="${HOME}/.local/lib/kiwi-config"
+KIWI_BASEDIR="${HOME}/.local/lib/kiwi-scp"
 # per-user env setup script
 KIWI_ENVFILE="${HOME}/.kiwienv"
 
 # repository uri
-KIWI_REPO="https://github.com/ldericher/kiwi-config"
+KIWI_REPO="https://github.com/ldericher/kiwi-scp"
 # use latest version by default
 KIWI_VERSION="master"
 
 # URI of "kiwi" launcher script
-KIWI_URI="https://raw.githubusercontent.com/ldericher/kiwi-config/master/kiwi"
-INSTALLER_URI="https://raw.githubusercontent.com/ldericher/kiwi-config/master/install.sh"
+KIWI_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/kiwi"
+INSTALLER_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/install.sh"
 # canary file: limit curl requests
-CANARY_FILENAME="/var/lock/kiwi-config.canary"
+CANARY_FILENAME="/var/lock/kiwi-scp.canary"
 CANARY_MAXAGE=600
 
 
@@ -33,7 +33,7 @@ CANARY_MAXAGE=600
 # DYNAMIC STRINGS #
 ###################
 
-# uri of correct kiwi-config archive
+# uri of correct kiwi-scp archive
 kiwi_archive_uri() {
   echo "${KIWI_REPO}/archive/${KIWI_VERSION}.tar.gz"
 }
@@ -50,7 +50,7 @@ kiwi_root() {
 
 # main script in installed version
 kiwi_executable() {
-  echo "$(kiwi_root)/kiwi-config.py"
+  echo "$(kiwi_root)/kiwi-scp.py"
 }
 
 # cache current work directory
@@ -150,7 +150,7 @@ if [ "${run_kiwi_check}" = "yes" ]; then
       echo "" >/dev/stderr
       echo "####################" >/dev/stderr
       echo "Please manually update your kiwi launcher by re-running the installation process:" >/dev/stderr
-      echo "https://github.com/ldericher/kiwi-config/#installation" >/dev/stderr
+      echo "https://github.com/ldericher/kiwi-scp/#installation" >/dev/stderr
       echo "####################" >/dev/stderr
       echo "" >/dev/stderr
 
@@ -163,14 +163,14 @@ fi
 
 # check if pwd is a kiwi folder
 if [ -f "./${KIWI_CONF_NAME}" ]; then
-  # determine needed kiwi-config version
+  # determine needed kiwi-scp version
   re_version_line='version\s*:\s*'
   eval "$(grep -E "${re_version_line}" "./${KIWI_CONF_NAME}" | sed -r "s/${re_version_line}/KIWI_VERSION=/")"
 fi
 
-# install if kiwi-config not found
+# install if kiwi-scp not found
 if [ ! -x "$(kiwi_executable)" ]; then
-  printf "Installing kiwi-config v%s into %s ... " "${KIWI_VERSION}" "${KIWI_BASEDIR}"
+  printf "Installing kiwi-scp v%s into %s ... " "${KIWI_VERSION}" "${KIWI_BASEDIR}"
 
   # switch to temp dir
   tmpdir=$(mktemp -d)
@@ -180,7 +180,7 @@ if [ ! -x "$(kiwi_executable)" ]; then
   curl --proto '=https' --tlsv1.2 -sSfL "$(kiwi_archive_uri)" | tar xz
 
   # read archive version tag
-  cd "kiwi-config-${KIWI_VERSION}" || :
+  cd "kiwi-scp-${KIWI_VERSION}" || :
   KIWI_VERSION=$(cat "./src/${KIWI_VERSION_TAG}")
 
   if [ -x "$(kiwi_executable)" ]; then

@@ -5,7 +5,7 @@ Commands for Operation:
   restart     Restart the whole instance, a project or service(s) inside a project
 
 Commands for Instance Management:
-  init        Initialize or reconfigure kiwi-config instance
+  init        Initialize or reconfigure kiwi-scp instance
   show        Show projects in this instance, services inside a project or service(s) inside a project
   cmd         Run raw docker-compose command in a project
 
