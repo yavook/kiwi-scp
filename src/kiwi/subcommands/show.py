@@ -35,7 +35,7 @@ class ShowCommand(ServiceCommand):
         )
 
     def _run_instance(self, runner, args):
-        print(f"kiwi-config instance at '{os.getcwd()}'")
+        print(f"kiwi-scp instance at '{os.getcwd()}'")
         print("#########")
         projects = Projects.from_dir()
 

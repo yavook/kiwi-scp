@@ -9,89 +9,173 @@ KIWI_CONF_NAME="kiwi.yml"
 # version tag filename
 KIWI_VERSION_TAG="etc/version_tag"
 
-# dependencies to run kiwi-config
-KIWI_DEPS="python3 pipenv less docker docker-compose"
+# dependencies to run kiwi-scp
+KIWI_DEPENDENCIES="python3 pipenv less docker docker-compose"
 # base install dir
-KIWI_BASEDIR="${HOME}/.local/lib/kiwi-config"
+KIWI_BASEDIR="${HOME}/.local/lib/kiwi-scp"
 # per-user env setup script
-KIWI_ENVFILE="${HOME}/.kiwienv"
+KIWI_PROFILE="${HOME}/.kiwi_profile"
 
 # repository uri
-KIWI_REPO="https://github.com/ldericher/kiwi-config"
+KIWI_REPO="https://github.com/ldericher/kiwi-scp"
 # use latest version by default
 KIWI_VERSION="master"
 
+# URI of "kiwi" launcher script
+KIWI_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/kiwi"
+INSTALLER_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/install.sh"
+# canary file: limit curl requests
+CANARY_FILENAME="/var/lock/kiwi-scp.canary"
+CANARY_MAX_AGE=600
 
 ###################
 # DYNAMIC STRINGS #
 ###################
 
+# uri of correct kiwi-scp archive
+kiwi_archive_uri() {
+  echo "${KIWI_REPO}/archive/${KIWI_VERSION}.tar.gz"
+}
+
 # directory of correct installation
-kiwi_installdir() {
+kiwi_install_dir() {
   echo "${KIWI_BASEDIR}/${KIWI_VERSION}"
 }
 
 # src directory in installed version
 kiwi_root() {
-  echo "$(kiwi_installdir)/src"
+  echo "$(kiwi_install_dir)/src"
 }
 
 # main script in installed version
 kiwi_executable() {
-  echo "$(kiwi_root)/kiwi-config.py"
+  echo "$(kiwi_root)/kiwi-scp.py"
 }
 
 # cache current work directory
 WORKDIR="$(pwd)"
 
+#############
+# FUNCTIONS #
+#############
+
+# prompt yes/no question (default yes)
+yes_no() {
+  # prompt and read from terminal
+  printf "%s [Y|n] " "${1}"
+  read -r answer </dev/tty || answer=""
+
+  # check first character
+  answer="$(printf '%.1s' "${answer}")"
+  if [ "${answer}" = "N" ] || [ "${answer}" = "n" ]; then
+    # negative
+    return 1
+  else
+    # positive
+    return 0
+  fi
+}
 
 ##################
 # PER-USER SETUP #
 ##################
 
 # add in environment setup
-if [ -f "${KIWI_ENVFILE}" ]; then
-  # shellcheck source=$HOME/.kiwienv
-  . "${KIWI_ENVFILE}"
+if [ -f "${KIWI_PROFILE}" ]; then
+  # shellcheck source=$HOME/.kiwi_profile
+  . "${KIWI_PROFILE}"
 fi
-
 
 ##########
 # CHECKS #
 ##########
 
-for dep in ${KIWI_DEPS}; do
+for dep in ${KIWI_DEPENDENCIES}; do
   if ! command -v "${dep}" >/dev/null 2>/dev/null; then
     echo "Dependency '${dep}' not found, please install!" >/dev/stderr
     exit 1
   fi
 done
 
-
 ########
 # MAIN #
 ########
 
+# check if we should check for new kiwi version
+if [ -f "${CANARY_FILENAME}" ]; then
+  # check canary age
+  current_time="$(date '+%s')"
+  canary_mod_time="$(date -r "${CANARY_FILENAME}" '+%s')"
+  canary_age="$((current_time - canary_mod_time))"
+
+  if [ ${canary_age} -gt ${CANARY_MAX_AGE} ]; then
+    # canary file too old!
+    run_kiwi_check="yes"
+  fi
+
+else
+  # no canary file!
+  run_kiwi_check="yes"
+
+fi
+
+# run check for new kiwi version
+if [ "${run_kiwi_check}" = "yes" ]; then
+  # hash this script and the master version
+  hash_local="$(md5sum <"$(readlink "${0}")")"
+  hash_remote="$(curl --proto '=https' --tlsv1.2 -sSfL "${KIWI_URI}" | md5sum)"
+
+  # warn if different
+  if [ "${hash_local}" != "${hash_remote}" ]; then
+
+    if yes_no "Your kiwi launcher is outdated. Update now?" >/dev/stderr; then
+      # should reinstall, so download installer
+      installer="$(curl --proto '=https' --tlsv1.2 -sSfL "${INSTALLER_URI}")"
+
+      if yes_no "Use sudo to run as root?"; then
+        # enable system-wide install
+        echo "${installer}" | sudo sh
+
+      else
+        # per-user install
+        echo "${installer}" | sh
+      fi
+
+    else
+      echo "" >/dev/stderr
+      echo "####################" >/dev/stderr
+      echo "Please manually update your kiwi launcher by re-running the installation process:" >/dev/stderr
+      echo "https://github.com/ldericher/kiwi-scp/#installation" >/dev/stderr
+      echo "####################" >/dev/stderr
+      echo "" >/dev/stderr
+
+    fi
+  fi
+
+  # refresh canary
+  touch "${CANARY_FILENAME}"
+fi
+
 # check if pwd is a kiwi folder
 if [ -f "./${KIWI_CONF_NAME}" ]; then
-  # determine needed kiwi-config version
+  # determine needed kiwi-scp version
   re_version_line='version\s*:\s*'
   eval "$(grep -E "${re_version_line}" "./${KIWI_CONF_NAME}" | sed -r "s/${re_version_line}/KIWI_VERSION=/")"
 fi
 
-# install if kiwi-config not found
+# install if kiwi-scp not found
 if [ ! -x "$(kiwi_executable)" ]; then
-  printf "Installing kiwi-config v%s into %s ... " "${KIWI_VERSION}" "${KIWI_BASEDIR}"
+  printf "Installing kiwi-scp v%s into %s ... " "${KIWI_VERSION}" "${KIWI_BASEDIR}"
 
   # switch to temp dir
-  tmpdir=$(mktemp -d)
-  cd "${tmpdir}" || :
+  tmp_dir=$(mktemp -d)
+  cd "${tmp_dir}" || :
 
   # download archive
-  curl --proto '=https' --tlsv1.2 -sSfL "${KIWI_REPO}/archive/${KIWI_VERSION}.tar.gz" | tar xz
+  curl --proto '=https' --tlsv1.2 -sSfL "$(kiwi_archive_uri)" | tar xz
 
   # read archive version tag
-  cd "kiwi-config-${KIWI_VERSION}" || :
+  cd "kiwi-scp-${KIWI_VERSION}" || :
   KIWI_VERSION=$(cat "./src/${KIWI_VERSION_TAG}")
 
   if [ -x "$(kiwi_executable)" ]; then
@@ -100,14 +184,14 @@ if [ ! -x "$(kiwi_executable)" ]; then
 
   else
     # install archive
-    mkdir -p "$(kiwi_installdir)"
-    mv "src" "Pipfile" "Pipfile.lock" "$(kiwi_installdir)/"
+    mkdir -p "$(kiwi_install_dir)"
+    mv "src" "Pipfile" "Pipfile.lock" "$(kiwi_install_dir)/"
     echo "OK"
   fi
 
   # discard temp dir
   cd "${WORKDIR}" || :
-  rm -rf "${tmpdir}"
+  rm -rf "${tmp_dir}"
 fi
 
 # go back to the original work directory
@@ -116,7 +200,7 @@ cd "${WORKDIR}" || :
 # setup main environment
 KIWI_ROOT="$(kiwi_root)"
 PIPENV_VERBOSITY=-1
-PIPENV_PIPFILE="$(kiwi_installdir)/Pipfile"
+PIPENV_PIPFILE="$(kiwi_install_dir)/Pipfile"
 
 export KIWI_CONF_NAME
 export KIWI_ROOT
@@ -124,7 +208,7 @@ export PIPENV_VERBOSITY
 export PIPENV_PIPFILE
 
 # check virtualenv
-cd "$(kiwi_installdir)" || :
+cd "$(kiwi_install_dir)" || :
 if ! pipenv --venv >/dev/null 2>/dev/null; then
   # install virtualenv
   printf "Preparing virtualenv ... "
