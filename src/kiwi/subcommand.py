@@ -37,7 +37,7 @@ class SubCommand:
         """actually run command with parsed CLI args"""
 
         # run for entire instance
-        logging.info(f"{self._action} kiwi-config instance at '{os.getcwd()}'")
+        logging.info(f"{self._action} kiwi-scp instance at '{os.getcwd()}'")
         return self._run_instance(runner, args)
 
 

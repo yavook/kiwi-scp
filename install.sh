@@ -7,7 +7,7 @@
 # default installation directory
 INSTALL_DIR_DEFAULT="/usr/local/bin"
 # URI of "kiwi" launcher script
-KIWI_URI="https://raw.githubusercontent.com/ldericher/kiwi-config/master/kiwi"
+KIWI_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/kiwi"
 
 #############
 # FUNCTIONS #
@@ -47,7 +47,7 @@ if [ -x "${install_kiwi}" ]; then
   # kiwi is installed: Choose that directory
   install_dir="$(dirname "${install_kiwi}")"
 
-  if ! yes_no "kiwi-config found in '${install_dir}'. Overwrite?"; then
+  if ! yes_no "kiwi executable found in '${install_dir}'. Overwrite?"; then
     die "Uninstall existing '${install_kiwi}' first"
   fi
 

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/kiwi-config.iml" filepath="$PROJECT_DIR$/.idea/kiwi-config.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/kiwi-scp.iml" filepath="$PROJECT_DIR$/.idea/kiwi-scp.iml" />
     </modules>
   </component>
 </project>
