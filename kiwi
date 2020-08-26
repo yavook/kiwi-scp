@@ -10,11 +10,11 @@ KIWI_CONF_NAME="kiwi.yml"
 KIWI_VERSION_TAG="etc/version_tag"
 
 # dependencies to run kiwi-scp
-KIWI_DEPS="python3 pipenv less docker docker-compose"
+KIWI_DEPENDENCIES="python3 pipenv less docker docker-compose"
 # base install dir
 KIWI_BASEDIR="${HOME}/.local/lib/kiwi-scp"
 # per-user env setup script
-KIWI_ENVFILE="${HOME}/.kiwienv"
+KIWI_PROFILE="${HOME}/.kiwi_profile"
 
 # repository uri
 KIWI_REPO="https://github.com/ldericher/kiwi-scp"
@@ -26,8 +26,7 @@ KIWI_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/kiwi"
 INSTALLER_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/install.sh"
 # canary file: limit curl requests
 CANARY_FILENAME="/var/lock/kiwi-scp.canary"
-CANARY_MAXAGE=600
-
+CANARY_MAX_AGE=600
 
 ###################
 # DYNAMIC STRINGS #
@@ -39,13 +38,13 @@ kiwi_archive_uri() {
 }
 
 # directory of correct installation
-kiwi_installdir() {
+kiwi_install_dir() {
   echo "${KIWI_BASEDIR}/${KIWI_VERSION}"
 }
 
 # src directory in installed version
 kiwi_root() {
-  echo "$(kiwi_installdir)/src"
+  echo "$(kiwi_install_dir)/src"
 }
 
 # main script in installed version
@@ -55,7 +54,6 @@ kiwi_executable() {
 
 # cache current work directory
 WORKDIR="$(pwd)"
-
 
 #############
 # FUNCTIONS #
@@ -78,29 +76,26 @@ yes_no() {
   fi
 }
 
-
 ##################
 # PER-USER SETUP #
 ##################
 
 # add in environment setup
-if [ -f "${KIWI_ENVFILE}" ]; then
-  # shellcheck source=$HOME/.kiwienv
-  . "${KIWI_ENVFILE}"
+if [ -f "${KIWI_PROFILE}" ]; then
+  # shellcheck source=$HOME/.kiwi_profile
+  . "${KIWI_PROFILE}"
 fi
-
 
 ##########
 # CHECKS #
 ##########
 
-for dep in ${KIWI_DEPS}; do
+for dep in ${KIWI_DEPENDENCIES}; do
   if ! command -v "${dep}" >/dev/null 2>/dev/null; then
     echo "Dependency '${dep}' not found, please install!" >/dev/stderr
     exit 1
   fi
 done
-
 
 ########
 # MAIN #
@@ -110,10 +105,10 @@ done
 if [ -f "${CANARY_FILENAME}" ]; then
   # check canary age
   current_time="$(date '+%s')"
-  canary_mtime="$(date -r "${CANARY_FILENAME}" '+%s')"
-  canary_age="$(( current_time - canary_mtime ))"
+  canary_mod_time="$(date -r "${CANARY_FILENAME}" '+%s')"
+  canary_age="$((current_time - canary_mod_time))"
 
-  if [ ${canary_age} -gt ${CANARY_MAXAGE} ]; then
+  if [ ${canary_age} -gt ${CANARY_MAX_AGE} ]; then
     # canary file too old!
     run_kiwi_check="yes"
   fi
@@ -127,7 +122,7 @@ fi
 # run check for new kiwi version
 if [ "${run_kiwi_check}" = "yes" ]; then
   # hash this script and the master version
-  hash_local="$(md5sum < "$(readlink "${0}")")"
+  hash_local="$(md5sum <"$(readlink "${0}")")"
   hash_remote="$(curl --proto '=https' --tlsv1.2 -sSfL "${KIWI_URI}" | md5sum)"
 
   # warn if different
@@ -173,8 +168,8 @@ if [ ! -x "$(kiwi_executable)" ]; then
   printf "Installing kiwi-scp v%s into %s ... " "${KIWI_VERSION}" "${KIWI_BASEDIR}"
 
   # switch to temp dir
-  tmpdir=$(mktemp -d)
-  cd "${tmpdir}" || :
+  tmp_dir=$(mktemp -d)
+  cd "${tmp_dir}" || :
 
   # download archive
   curl --proto '=https' --tlsv1.2 -sSfL "$(kiwi_archive_uri)" | tar xz
@@ -189,14 +184,14 @@ if [ ! -x "$(kiwi_executable)" ]; then
 
   else
     # install archive
-    mkdir -p "$(kiwi_installdir)"
-    mv "src" "Pipfile" "Pipfile.lock" "$(kiwi_installdir)/"
+    mkdir -p "$(kiwi_install_dir)"
+    mv "src" "Pipfile" "Pipfile.lock" "$(kiwi_install_dir)/"
     echo "OK"
   fi
 
   # discard temp dir
   cd "${WORKDIR}" || :
-  rm -rf "${tmpdir}"
+  rm -rf "${tmp_dir}"
 fi
 
 # go back to the original work directory
@@ -205,7 +200,7 @@ cd "${WORKDIR}" || :
 # setup main environment
 KIWI_ROOT="$(kiwi_root)"
 PIPENV_VERBOSITY=-1
-PIPENV_PIPFILE="$(kiwi_installdir)/Pipfile"
+PIPENV_PIPFILE="$(kiwi_install_dir)/Pipfile"
 
 export KIWI_CONF_NAME
 export KIWI_ROOT
@@ -213,7 +208,7 @@ export PIPENV_VERBOSITY
 export PIPENV_PIPFILE
 
 # check virtualenv
-cd "$(kiwi_installdir)" || :
+cd "$(kiwi_install_dir)" || :
 if ! pipenv --venv >/dev/null 2>/dev/null; then
   # install virtualenv
   printf "Preparing virtualenv ... "
