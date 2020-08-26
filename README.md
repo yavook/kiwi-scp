@@ -1,4 +1,6 @@
-# kiwi: simple, consistent, powerful
+# kiwi-scp
+
+> `kiwi` - simple, consistent, powerful
 
 The simple tool for managing container servers
 
@@ -31,16 +33,16 @@ This downloads the latest version of the main kiwi-scp executable and sets it up
 
 ### Adjusting environment for `kiwi`
 
-`kiwi-scp` depends on Python 3.6 (or later), [pipenv](https://pipenv.pypa.io/), and 
+The `kiwi` executable depends on [Python](https://www.python.org/) 3.6 (or later), [pipenv](https://pipenv.pypa.io/), and
 [less](http://www.greenwoodsoftware.com/less/) being in your `$PATH`.
 
-In some cases, notably when using a multi-version system such as 
-[CentOS SCL](https://wiki.centos.org/AdditionalResources/Repositories/SCL), not all of these are in your `$PATH` 
+In some cases, notably when using a multi-version system such as
+[CentOS SCL](https://wiki.centos.org/AdditionalResources/Repositories/SCL), not all of these are in your `$PATH`
 at login time.
 
 In those cases, you can simply create a `.kiwienv` file in your home directory.
 It will be sourced every time you use the `kiwi` command.
-For the aforementioned case where you installed `centos-release-scl` and `rh-python36`, your `~/.kiwienv` should 
+For the aforementioned case where you installed `centos-release-scl` and `rh-python36`, your `~/.kiwienv` should
 contain:
 
 ```shell script
@@ -54,27 +56,27 @@ contain:
 
 ### Create a kiwi-scp instance
 
-Any directory is implicitly a valid `kiwi-scp` instance using the default configuration.
-To prevent surprises however, you should run `kiwi init` in an empty directory and follow its directions before 
-actually using `kiwi` more.
+Any directory is implicitly a valid kiwi-scp instance using the default configuration.
+To prevent surprises however, you should run `kiwi init` in an empty directory and follow its directions to
+create a `kiwi.yml` before using `kiwi` more.
 
 
 ### Concept
 
-A `kiwi-scp` instance is a directory containing a bunch of static configuration files.
+A kiwi-scp instance is a directory containing a bunch of static configuration files.
 "Static" there as in "those don't change during normal service operation".
 These files  could be anything from actual `.conf` files to entire html-web-roots.
 
 Non-static, but persistent files are to be kept in a "service data directory", by default `/var/kiwi`.
 In your `docker-compose.yml` files, you can refer to that directory as **${TARGETROOT}**.
 
-Start the current directory as a `kiwi-scp` instance using `kiwi up`, or stop it using `kiwi down`.
+Start the current directory as a kiwi-scp instance using `kiwi up`, or stop it using `kiwi down`.
 This also creates kiwi's internal hub network, which you can use as **kiwi_hub** in your `docker-compose.yml` files.
 
 
 ### Projects
 
-A `kiwi-scp` instance usually contains several projects.
+A kiwi-scp instance usually contains several projects.
 A project is a collection of dependent or at least logically connected services, described by a `docker-compose.yml`.
 A well-known example would be webserver + php + database.
 
@@ -89,9 +91,9 @@ Each project will have its own place in the service data directory, which you ca
 Finally, start a project using `kiwi up <project-name>`.
 
 
-### Advanced kiwi-scp
+### Advanced kiwi usage
 
-`kiwi-scp` extends the logical bounds of `docker-compose` to handling multiple projects.
+kiwi-scp extends the logical bounds of `docker-compose` to handling multiple projects.
 
 
 #### The `kiwi_hub`
@@ -105,7 +107,7 @@ In most cases, you will want to use this:
 networks:
   - default
   - kiwi_hub
-``` 
+```
 
 
 #### The `CONFDIR`
@@ -114,5 +116,40 @@ Sometimes, it's convenient to re-use configuration files across projects.
 For this use case, create a directory named `conf` in a project.
 Those will all be combined into a directory available as **${CONFDIR}** in your `docker-compose.yml` files.
 
-#### For everything else, look at `kiwi --help` 
-#### Happy admin-ing!
+
+#### `kiwi.yml` options
+
+##### `version`
+Version of kiwi-scp to use for this instance.  
+Default: Latest version.
+
+##### `runtime:storage`
+Path of the service data directory, available as **${TARGETROOT}** in projects.  
+Default: `/var/kiwi`
+
+##### `runtime:shells`
+List of additionally preferable shell executables when entering service containers.  
+Default: `- /bin/bash`  
+Example:
+
+```yaml
+runtime:
+  shells:
+    - /bin/zsh
+    - /bin/fish
+```
+
+##### `runtime:env`
+Associative array of custom variables available in projects' `docker-compose.yml` files.   
+Default: `null`  
+Example:
+
+```yaml
+runtime:
+  env:
+    HELLO: "World"
+    FOO: "Bar"
+```
+
+#### For everything else, look at `kiwi --help`
+#### Happy kiwi-ing!
