@@ -1,6 +1,6 @@
 # local
-from ..subcommand import ServiceCommand
 from ..misc import are_you_sure
+from ..subcommand import ServiceCommand
 
 
 class RestartCommand(ServiceCommand):

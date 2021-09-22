@@ -2,9 +2,9 @@
 import logging
 import subprocess
 
+from ..config import LoadedConfig
 # local
 from ..subcommand import ServiceCommand
-from ..config import LoadedConfig
 
 
 def _service_has_executable(project, service, exe_name):
@@ -52,7 +52,7 @@ def _find_shell(args, project, service):
 
         elif i + 1 < len(shells):
             # try next in list
-            logging.info(f"Shell '{shell}' not found in container, trying '{shells[i+1]}'")
+            logging.info(f"Shell '{shell}' not found in container, trying '{shells[i + 1]}'")
 
         elif args.shell:
             # not found, user suggestion provided

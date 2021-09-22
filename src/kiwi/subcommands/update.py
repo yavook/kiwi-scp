@@ -1,6 +1,6 @@
 # local
-from ..subcommand import ServiceCommand
 from ..misc import are_you_sure
+from ..subcommand import ServiceCommand
 
 
 class UpdateCommand(ServiceCommand):
@@ -8,7 +8,7 @@ class UpdateCommand(ServiceCommand):
 
     def __init__(self):
         super().__init__(
-            'update',  num_projects='?', num_services='*',
+            'update', num_projects='?', num_services='*',
             action="Updating",
             description="Update the whole instance, a project or service(s) inside a project"
         )

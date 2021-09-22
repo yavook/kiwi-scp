@@ -4,11 +4,11 @@ import subprocess
 
 # local
 from .._constants import CONF_DIRECTORY_NAME
-from ..executable import Executable
-from ..subcommand import SubCommand
 from ..config import LoadedConfig
+from ..executable import Executable
 from ..projects import Projects
 from ..rootkit import Rootkit, prefix_path_mnt
+from ..subcommand import SubCommand
 
 
 class ConfCopyCommand(SubCommand):
