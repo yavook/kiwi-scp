@@ -1,7 +1,6 @@
 # system
 import os
 
-
 #############
 # ENVIRONMENT
 
@@ -9,7 +8,6 @@ import os
 KIWI_ROOT = os.getenv('KIWI_ROOT', ".")
 # default name of kiwi-scp file
 KIWI_CONF_NAME = os.getenv('KIWI_CONF_NAME', "kiwi.yml")
-
 
 ############
 # FILE NAMES
@@ -26,7 +24,6 @@ COMMAND_HELP_TEXT_NAME = f"{KIWI_ROOT}/etc/command_help.txt"
 CONF_DIRECTORY_NAME = 'conf'
 # location for auxiliary Dockerfiles
 IMAGES_DIRECTORY_NAME = f"{KIWI_ROOT}/images"
-
 
 ####################
 # DOCKER IMAGE NAMES

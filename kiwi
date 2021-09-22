@@ -25,7 +25,7 @@ KIWI_VERSION="master"
 KIWI_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/kiwi"
 INSTALLER_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/install.sh"
 # canary file: limit curl requests
-CANARY_FILENAME="/tmp/kiwi-scp.canary"
+CANARY_FILENAME="/tmp/kiwi-scp-$(id -u).canary"
 CANARY_MAX_AGE=600
 
 ###################

@@ -1,6 +1,6 @@
 def _surround(string, bang):
     midlane = f"{bang * 3} {string} {bang * 3}"
-    sidelane = bang*len(midlane)
+    sidelane = bang * len(midlane)
 
     return f"{sidelane}\n{midlane}\n{sidelane}"
 

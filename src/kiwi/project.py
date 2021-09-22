@@ -1,10 +1,9 @@
 import logging
 import os
 
-from .executable import Executable
-
 from ._constants import CONF_DIRECTORY_NAME
 from .config import LoadedConfig
+from .executable import Executable
 
 
 class Project:

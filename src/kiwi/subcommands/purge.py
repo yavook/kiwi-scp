@@ -4,10 +4,10 @@ import subprocess
 
 # local
 from ._hidden import _find_net
-from ..subcommand import SubCommand
 from ..config import LoadedConfig
 from ..executable import Executable
 from ..misc import are_you_sure
+from ..subcommand import SubCommand
 
 
 class PurgeCommand(SubCommand):

@@ -4,8 +4,8 @@ import os
 
 # local
 from .._constants import KIWI_CONF_NAME
-from ..subcommand import SubCommand
 from ..config import DefaultConfig, LoadedConfig
+from ..subcommand import SubCommand
 
 
 class InitCommand(SubCommand):
@@ -42,7 +42,6 @@ class InitCommand(SubCommand):
 
         # check force switch
         if args.force and os.path.isfile(KIWI_CONF_NAME):
-
             logging.warning(f"Overwriting existing '{KIWI_CONF_NAME}'!")
             config = DefaultConfig.get()
 

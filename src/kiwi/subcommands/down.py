@@ -4,10 +4,10 @@ import subprocess
 
 # local
 from ._hidden import _find_net
-from ..subcommand import ServiceCommand
 from ..config import LoadedConfig
 from ..executable import Executable
 from ..misc import are_you_sure
+from ..subcommand import ServiceCommand
 
 
 class DownCommand(ServiceCommand):

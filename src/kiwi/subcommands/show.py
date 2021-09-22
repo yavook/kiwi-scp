@@ -3,10 +3,10 @@ import logging
 import os
 import yaml
 
-# local
-from ..subcommand import ServiceCommand
 from ..project import Project
 from ..projects import Projects
+# local
+from ..subcommand import ServiceCommand
 
 
 def _print_list(strings):
