@@ -9,7 +9,8 @@ steps:
     repo: ldericher/kind
     # auto_tag: true
     tags:
-    - latest
+    - edge
+    purge: false
     username:
       from_secret: DOCKER_USERNAME
     password:
