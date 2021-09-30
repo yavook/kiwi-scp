@@ -35,7 +35,7 @@ This downloads the latest version of the main kiwi-scp executable and sets it up
 
 ### Adjusting environment for `kiwi`
 
-The `kiwi` executable depends on [Python](https://www.python.org/) 3.6 (or later), [pipenv](https://pipenv.pypa.io/), and
+The `kiwi` executable depends on [Python](https://www.python.org/) 3.6 (or later) and 
 [less](http://www.greenwoodsoftware.com/less/) being in your `$PATH`.
 
 In some cases, notably when using a multi-version system such as
