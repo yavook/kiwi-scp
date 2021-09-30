@@ -1,5 +1,7 @@
 # kiwi-scp
 
+[![Build Status](https://github.drone.yavook.de/api/badges/ldericher/kiwi-scp/status.svg)](https://github.drone.yavook.de/ldericher/kiwi-scp)
+
 > `kiwi` - simple, consistent, powerful
 
 The simple tool for managing container servers

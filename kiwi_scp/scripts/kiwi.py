@@ -4,7 +4,7 @@
 import logging
 
 # local
-import kiwi
+import kiwi_scp
 
 
 def set_verbosity(logger, handler, verbosity):
@@ -28,10 +28,10 @@ def main():
     # add a new handler (needed to set the level)
     log_handler = logging.StreamHandler()
     logging.getLogger().addHandler(log_handler)
-    set_verbosity(logging.getLogger(), log_handler, kiwi.verbosity())
+    set_verbosity(logging.getLogger(), log_handler, kiwi_scp.verbosity())
 
     # run the app
-    if not kiwi.run():
+    if not kiwi_scp.run():
         quit(1)
 
 

@@ -3,9 +3,6 @@ import logging
 import os
 import subprocess
 
-# local
-from .config import LoadedConfig
-
 
 def _is_executable(filename):
     if filename is None:

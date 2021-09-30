@@ -3,7 +3,6 @@ import logging
 import subprocess
 
 # local
-from .._constants import CONF_DIRECTORY_NAME
 from ..config import LoadedConfig
 from ..executable import Executable
 from ..projects import Projects

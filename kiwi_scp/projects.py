@@ -1,6 +1,6 @@
 import os
 
-from kiwi.project import Project
+from .project import Project
 
 
 class Projects:
