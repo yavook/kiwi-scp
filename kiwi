@@ -7,10 +7,10 @@
 # base config filename
 KIWI_CONF_NAME="kiwi.yml"
 # version tag filename
-KIWI_VERSION_TAG="etc/version_tag"
+KIWI_VERSION_TAG="kiwi_scp/data/etc/version_tag"
 
 # dependencies to run kiwi-scp
-KIWI_DEPENDENCIES="python3 pipenv less docker docker-compose"
+KIWI_DEPENDENCIES="python3 less docker docker-compose"
 # base install dir
 KIWI_BASEDIR="${HOME}/.cache/kiwi-scp"
 # per-user env setup script
@@ -32,12 +32,9 @@ CANARY_MAX_AGE=600
 # DYNAMIC STRINGS #
 ###################
 
-# cache current work directory
-WORKDIR="$(pwd)"
-
 # uri of correct kiwi-scp archive
 kiwi_archive_uri() {
-  echo "${KIWI_REPO}/archive/${KIWI_VERSION}.tar.gz"
+  echo "${KIWI_REPO}/archive/refs/heads/${KIWI_VERSION}.tar.gz"
 }
 
 # directory of correct installation
@@ -45,14 +42,9 @@ kiwi_install_dir() {
   echo "${KIWI_BASEDIR}/${KIWI_VERSION}"
 }
 
-# src directory in installed version
-kiwi_root() {
-  echo "$(kiwi_install_dir)/src"
-}
-
 # main script in installed version
 kiwi_executable() {
-  echo "$(kiwi_root)/kiwi-scp.py"
+  echo "$(kiwi_install_dir)/bin/kiwi"
 }
 
 #############
@@ -175,54 +167,32 @@ fi
 if [ ! -x "$(kiwi_executable)" ]; then
   printf "Installing kiwi-scp v%s into %s ... " "${KIWI_VERSION}" "${KIWI_BASEDIR}"
 
-  # switch to temp dir
-  tmp_dir=$(mktemp -d)
-  cd "${tmp_dir}" || :
-
-  # download archive
-  curl --proto '=https' --tlsv1.2 -sSfL "$(kiwi_archive_uri)" | tar xz
-
-  # read archive version tag
-  cd "kiwi-scp-${KIWI_VERSION}" || :
-  KIWI_VERSION=$(cat "./src/${KIWI_VERSION_TAG}")
+  # read version tag
+  KIWI_VERSION="$( \
+    curl \
+      --proto '=https' \
+      --tlsv1.2 \
+      -sSfL \
+      "https://raw.githubusercontent.com/ldericher/kiwi-scp/${KIWI_VERSION}/${KIWI_VERSION_TAG}" \
+  )"
 
   if [ -x "$(kiwi_executable)" ]; then
-    # after version update: no need to install
+    # after version tag update: no need to install
     echo "v${KIWI_VERSION} already installed!"
 
   else
     # install archive
-    mkdir -p "$(kiwi_install_dir)"
-    mv "src" "Pipfile" "Pipfile.lock" "$(kiwi_install_dir)/"
+    python3 -m virtualenv "$(kiwi_install_dir)" >/dev/null 2>/dev/null
+    . "$(kiwi_install_dir)/bin/activate"
+    python3 -m pip install "git+${KIWI_REPO}@${KIWI_VERSION}" >/dev/null 2>/dev/null
+
     echo "OK"
   fi
-
-  # discard temp dir
-  cd "${WORKDIR}" || :
-  rm -rf "${tmp_dir}"
 fi
 
 # setup main environment
-KIWI_ROOT="$(kiwi_root)"
-PIPENV_VERBOSITY=-1
-PIPENV_PIPFILE="$(kiwi_install_dir)/Pipfile"
-
 export KIWI_CONF_NAME
-export KIWI_ROOT
-export PIPENV_VERBOSITY
-export PIPENV_PIPFILE
-
-# check virtualenv
-cd "$(kiwi_install_dir)" || :
-if ! pipenv --venv >/dev/null 2>/dev/null; then
-  # install virtualenv
-  printf "Preparing virtualenv ... "
-  pipenv sync >/dev/null 2>/dev/null
-  echo "OK"
-fi
-
-# go back to the original work directory
-cd "${WORKDIR}" || :
+. "$(kiwi_install_dir)/bin/activate"
 
 # run main script
-exec pipenv run "$(kiwi_executable)" "${@}"
+exec "$(kiwi_executable)" "${@}"
