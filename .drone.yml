@@ -7,10 +7,9 @@ steps:
   image: plugins/docker
   settings:
     repo: ldericher/kind
-    # auto_tag: true
-    tags:
-    - edge
-    purge: false
+    auto_tag: true
+#    tags:
+#    - edge
     username:
       from_secret: DOCKER_USERNAME
     password:
