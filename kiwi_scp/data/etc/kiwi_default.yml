@@ -1,12 +1,13 @@
-version:
-runtime:
-  storage: /var/kiwi
-  shells:
-    - /bin/bash
-  env: null
-markers:
-  project: .project
-  disabled: .disabled
+version: 0.2.0
+shells:
+  - /bin/bash
+projects:
+  - name: admin
+    enabled: true
+  - test:
+  - test2: false
+storage:
+  directory: /var/local/kiwi
 network:
   name: kiwi_hub
   cidr: 10.22.46.0/24
