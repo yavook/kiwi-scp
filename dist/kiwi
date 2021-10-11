@@ -156,12 +156,20 @@ if [ "${run_kiwi_check}" = "yes" ]; then
   chmod 0777 "${CANARY_FILENAME}"
 fi
 
-# check if pwd is a kiwi folder
-if [ -f "./${KIWI_CONF_NAME}" ]; then
-  # determine needed kiwi-scp version
-  re_version_line='version\s*:\s*'
-  eval "$(grep -E "${re_version_line}" "./${KIWI_CONF_NAME}" | sed -r "s/${re_version_line}/KIWI_VERSION=/")"
-fi
+# check if pwd is a kiwi instance
+path="$(pwd)"
+while [ "${path}" != "" ]; do
+  if [ -e "${path}/${KIWI_CONF_NAME}" ]; then
+    # cd into kiwi instance
+    cd "${path}" || yes_no "Could not enter kiwi instance at '${path}'. Continue anyway?" || exit 1
+
+    # determine needed kiwi-scp version
+    re_version_line='version\s*:\s*'
+    eval "$(grep -E "${re_version_line}" "./${KIWI_CONF_NAME}" | sed -r "s/${re_version_line}/KIWI_VERSION=/")"
+    break;
+  fi
+  path="${path%/*}"
+done
 
 # install if kiwi-scp not found
 if [ ! -x "$(kiwi_executable)" ]; then

@@ -5,10 +5,11 @@ description = "kiwi is the simple tool for managing container servers."
 authors = ["ldericher <40151420+ldericher@users.noreply.github.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.6.1"
 PyYAML = "^5.4.1"
 
 [tool.poetry.dev-dependencies]
+virtualenv = "^20.8.1"
 
 [tool.poetry.scripts]
 kiwi = "kiwi_scp.scripts.kiwi:main"
