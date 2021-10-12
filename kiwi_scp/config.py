@@ -2,27 +2,27 @@ from ipaddress import IPv4Network
 from pathlib import Path
 from typing import Optional, Dict, List
 
-import pydantic
+from pydantic import BaseModel, constr, root_validator, validator
 
 from ._constants import RE_SEMVER, RE_VARNAME
 
 
-class _Storage(pydantic.BaseModel):
+class _Storage(BaseModel):
     """a storage subsection"""
 
     directory: Path
 
 
-class _Project(pydantic.BaseModel):
+class _Project(BaseModel):
     """a project subsection"""
 
-    name: pydantic.constr(
+    name: constr(
         regex=RE_VARNAME
     )
     enabled: bool = True
     override_storage: Optional[_Storage]
 
-    @pydantic.root_validator(pre=True)
+    @root_validator(pre=True)
     @classmethod
     def unify_project(cls, values):
         """parse different project notations"""
@@ -46,20 +46,20 @@ class _Project(pydantic.BaseModel):
             raise ValueError
 
 
-class _Network(pydantic.BaseModel):
+class _Network(BaseModel):
     """a network subsection"""
 
-    name: pydantic.constr(
+    name: constr(
         to_lower=True,
         regex=RE_VARNAME
     )
     cidr: IPv4Network
 
 
-class Config(pydantic.BaseModel):
+class Config(BaseModel):
     """represents a kiwi.yml"""
 
-    version: pydantic.constr(
+    version: constr(
         regex=RE_SEMVER
     )
     shells: Optional[List[str]]
@@ -69,7 +69,7 @@ class Config(pydantic.BaseModel):
     storage: _Storage
     network: _Network
 
-    @pydantic.validator("environment", pre=True)
+    @validator("environment", pre=True)
     @classmethod
     def unify_environment(cls, value) -> Optional[Dict[str, Optional[str]]]:
         """parse different environment notations"""
