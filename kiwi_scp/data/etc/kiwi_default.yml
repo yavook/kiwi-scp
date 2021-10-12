@@ -4,7 +4,7 @@ shells:
 projects:
   - name: admin
     enabled: true
-  - test:
+  - Test:
   - test2: false
 storage:
   directory: /var/local/kiwi

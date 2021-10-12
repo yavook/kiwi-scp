@@ -2,6 +2,18 @@
 import os
 
 #############
+# REGEX PARTS
+
+# regex part for a number with no leading zeroes
+_RE_NUMBER: str = r"[0-9]|[1-9][0-9]*"
+
+# regex for a semantic version string
+RE_SEMVER = rf"^{_RE_NUMBER}(?:\.{_RE_NUMBER}(?:\.{_RE_NUMBER})?)?$"
+
+# regex for a lowercase variable name
+RE_VARNAME = r"^[A-Za-z](?:[A-Za-z0-9_-]*[A-Za-z0-9])$"
+
+#############
 # ENVIRONMENT
 
 # location of "kiwi_scp" module
