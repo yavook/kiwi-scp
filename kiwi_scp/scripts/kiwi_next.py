@@ -3,11 +3,14 @@ import yaml
 
 
 def main():
-    with open("./kiwi_scp/data/etc/kiwi_default.yml") as kc:
+    with open("./example/kiwi.yml") as kc:
         yml = yaml.safe_load(kc)
         kiwi = Config(**yml)
 
         print(repr(kiwi))
+
+    kiwi = Config()
+    print(repr(kiwi))
 
 
 if __name__ == "__main__":

@@ -49,29 +49,35 @@ class _Project(BaseModel):
 class _Network(BaseModel):
     """a network subsection"""
 
-    name: constr(
-        to_lower=True,
-        regex=RE_VARNAME
-    )
+    name: constr(to_lower=True, regex=RE_VARNAME)
     cidr: IPv4Network
 
 
 class Config(BaseModel):
     """represents a kiwi.yml"""
 
-    version: constr(
-        regex=RE_SEMVER
-    )
-    shells: Optional[List[str]]
-    environment: Optional[Dict[str, Optional[str]]]
+    version: constr(regex=RE_SEMVER) = "0.2.0"
+
+    shells: Optional[List[str]] = [
+        "/bin/bash",
+    ]
+
+    environment: Dict[str, Optional[str]] = {}
 
     projects: Optional[List[_Project]]
-    storage: _Storage
-    network: _Network
+
+    storage: _Storage = _Storage.parse_obj({
+        "directory": "/var/local/kiwi",
+    })
+
+    network: _Network = _Network.parse_obj({
+        "name": "kiwi_hub",
+        "cidr": "10.22.46.0/24",
+    })
 
     @validator("environment", pre=True)
     @classmethod
-    def unify_environment(cls, value) -> Optional[Dict[str, Optional[str]]]:
+    def unify_environment(cls, value) -> Dict[str, Optional[str]]:
         """parse different environment notations"""
 
         def parse_str(var_val: str) -> (str, Optional[str]):
@@ -87,7 +93,7 @@ class Config(BaseModel):
 
         if value is None:
             # empty environment
-            return None
+            return {}
 
         elif isinstance(value, dict):
             # native dict format

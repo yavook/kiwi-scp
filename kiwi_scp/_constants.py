@@ -11,7 +11,7 @@ _RE_NUMBER: str = r"[0-9]|[1-9][0-9]*"
 RE_SEMVER = rf"^{_RE_NUMBER}(?:\.{_RE_NUMBER}(?:\.{_RE_NUMBER})?)?$"
 
 # regex for a lowercase variable name
-RE_VARNAME = r"^[A-Za-z](?:[A-Za-z0-9_-]*[A-Za-z0-9])$"
+RE_VARNAME = r"^[A-Za-z](?:[A-Za-z0-9\._-]*[A-Za-z0-9])$"
 
 #############
 # ENVIRONMENT
