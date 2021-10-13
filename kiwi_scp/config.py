@@ -1,10 +1,18 @@
+import re
 from ipaddress import IPv4Network
 from pathlib import Path
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Any
 
+import yaml
 from pydantic import BaseModel, constr, root_validator, validator
 
-from ._constants import RE_SEMVER, RE_VARNAME
+from ._constants import RE_SEMVER, RE_VARNAME, HEADER_KIWI_CONF_NAME
+
+
+# indent yaml lists
+class _KiwiDumper(yaml.Dumper):
+    def increase_indent(self, flow=False, indentless=False):
+        return super().increase_indent(flow, False)
 
 
 class _Storage(BaseModel):
@@ -12,15 +20,31 @@ class _Storage(BaseModel):
 
     directory: Path
 
+    @property
+    def kiwi_dict(self) -> Dict[str, Any]:
+        """write this object as a dictionary of strings"""
+
+        return {"directory": str(self.directory)}
+
 
 class _Project(BaseModel):
     """a project subsection"""
 
-    name: constr(
-        regex=RE_VARNAME
-    )
+    name: constr(regex=RE_VARNAME)
     enabled: bool = True
     override_storage: Optional[_Storage]
+
+    @property
+    def kiwi_dict(self) -> Dict[str, Any]:
+        """write this object as a dictionary of strings"""
+
+        if self.override_storage is None:
+            return {self.name: self.enabled}
+
+        else:
+            result = self.dict(exclude={"override_storage"})
+            result["override_storage"] = self.override_storage.kiwi_dict
+            return result
 
     @root_validator(pre=True)
     @classmethod
@@ -52,6 +76,15 @@ class _Network(BaseModel):
     name: constr(to_lower=True, regex=RE_VARNAME)
     cidr: IPv4Network
 
+    @property
+    def kiwi_dict(self) -> Dict[str, Any]:
+        """write this object as a dictionary of strings"""
+
+        return {
+            "name": self.name,
+            "cidr": str(self.cidr)
+        }
+
 
 class Config(BaseModel):
     """represents a kiwi.yml"""
@@ -62,9 +95,9 @@ class Config(BaseModel):
         Path("/bin/bash"),
     ]
 
-    environment: Dict[str, Optional[str]] = {}
-
     projects: Optional[List[_Project]]
+
+    environment: Dict[str, Optional[str]] = {}
 
     storage: _Storage = _Storage(
         directory="/var/local/kiwi",
@@ -74,6 +107,50 @@ class Config(BaseModel):
         name="kiwi_hub",
         cidr="10.22.46.0/24",
     )
+
+    @property
+    def kiwi_dict(self) -> Dict[str, Any]:
+        """write this object as a dictionary of strings"""
+
+        result = {
+            "version": self.version,
+            "shells": [str(shell) for shell in self.shells],
+        }
+
+        if self.projects:
+            result["projects"] = [
+                project.kiwi_dict
+                for project in self.projects
+            ]
+
+        if self.environment:
+            result["environment"] = self.environment
+
+        result["storage"] = self.storage.kiwi_dict
+
+        result["network"] = self.network.kiwi_dict
+
+        return result
+
+    @property
+    def kiwi_yml(self) -> str:
+        """dump a kiwi.yml file"""
+
+        yml_string = yaml.dump(
+            self.kiwi_dict,
+            Dumper=_KiwiDumper,
+            default_flow_style=False,
+            sort_keys=False,
+        )
+
+        # insert newline before every main key
+        yml_string = re.sub(r'^(\S)', r'\n\1', yml_string, flags=re.MULTILINE)
+
+        # load header comment from file
+        with open(HEADER_KIWI_CONF_NAME, 'r') as stream:
+            yml_string = stream.read() + yml_string
+
+        return yml_string
 
     @validator("environment", pre=True)
     @classmethod

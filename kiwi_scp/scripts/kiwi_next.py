@@ -8,9 +8,7 @@ def main():
         kiwi = Config(**yml)
 
         print(repr(kiwi))
-
-    kiwi = Config()
-    print(repr(kiwi))
+        print(kiwi.kiwi_yml)
 
 
 if __name__ == "__main__":
