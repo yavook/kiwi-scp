@@ -58,22 +58,22 @@ class Config(BaseModel):
 
     version: constr(regex=RE_SEMVER) = "0.2.0"
 
-    shells: Optional[List[str]] = [
-        "/bin/bash",
+    shells: Optional[List[Path]] = [
+        Path("/bin/bash"),
     ]
 
     environment: Dict[str, Optional[str]] = {}
 
     projects: Optional[List[_Project]]
 
-    storage: _Storage = _Storage.parse_obj({
-        "directory": "/var/local/kiwi",
-    })
+    storage: _Storage = _Storage(
+        directory="/var/local/kiwi",
+    )
 
-    network: _Network = _Network.parse_obj({
-        "name": "kiwi_hub",
-        "cidr": "10.22.46.0/24",
-    })
+    network: _Network = _Network(
+        name="kiwi_hub",
+        cidr="10.22.46.0/24",
+    )
 
     @validator("environment", pre=True)
     @classmethod
