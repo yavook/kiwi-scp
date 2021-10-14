@@ -181,7 +181,7 @@ class Config(BaseModel):
 
             result: Dict[str, Optional[str]] = {}
             for item in value:
-                key, value = parse_str(item)
+                key, value = parse_str(str(item))
                 result[key] = value
 
             return result
@@ -193,10 +193,12 @@ class Config(BaseModel):
             key, value = parse_str(value)
             return {key: value}
 
-        elif isinstance(value, int):
-            # integer format (just define single oddly named variable)
-            return {str(value): None}
-
         else:
-            # undefined format
-            raise ValueError
+            # any other format (try to coerce to str first)
+            try:
+                key, value = parse_str(str(value))
+                return {key: value}
+
+            except Exception as e:
+                # undefined format
+                raise ValueError("Invalid Environment Format")
