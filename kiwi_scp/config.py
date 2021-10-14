@@ -62,7 +62,7 @@ class _Project(BaseModel):
             name, enabled = list(values.items())[0]
             return {
                 "name": name,
-                "enabled": True if enabled is None else enabled
+                "enabled": True if enabled is None else enabled,
             }
 
         else:
@@ -82,7 +82,7 @@ class _Network(BaseModel):
 
         return {
             "name": self.name,
-            "cidr": str(self.cidr)
+            "cidr": str(self.cidr),
         }
 
 
