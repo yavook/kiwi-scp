@@ -3,6 +3,13 @@ kind: pipeline
 name: default
 
 steps:
+- name: pytest
+  image: python:3.6-alpine3.13
+  commands:
+    - wget -O- https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3 -
+    - source $HOME/.poetry/env && poetry install
+    - source $HOME/.poetry/env && poetry run pytest
+
 - name: docker
   image: plugins/docker
   settings:
