@@ -15,11 +15,76 @@ def test_default():
     assert c.version == version
     assert len(c.shells) == 1
     assert c.shells[0] == Path("/bin/bash")
-    assert c.projects is None
+    assert c.projects == []
     assert c.environment == {}
     assert c.storage.directory == Path("/var/local/kiwi")
     assert c.network.name == "kiwi_hub"
     assert c.network.cidr == IPv4Network("10.22.46.0/24")
+
+
+##########
+# PROJECTS
+##########
+
+def test_proj_empty():
+    c = Config(projects=None)
+
+    assert c.projects == []
+
+    c = Config(projects=[])
+
+    assert c.projects == []
+
+
+def test_proj_long():
+    c = Config(projects=[{
+        "name": "project",
+        "enabled": False,
+        "override_storage": {"directory": "/test/directory"},
+    }])
+
+    assert len(c.projects) == 1
+    p = c.projects[0]
+    assert p.name == "project"
+    assert not p.enabled
+    assert p.override_storage is not None
+    assert p.override_storage.directory == Path("/test/directory")
+
+
+def test_proj_short():
+    c = Config(projects=[{
+        "project": False,
+    }])
+
+    assert len(c.projects) == 1
+    p = c.projects[0]
+    assert p.name == "project"
+    assert not p.enabled
+    assert p.override_storage is None
+
+
+def test_proj_dict():
+    c = Config(projects={"name": "project"})
+
+    assert c == Config(projects=[{"name": "project"}])
+
+    assert len(c.projects) == 1
+    p = c.projects[0]
+    assert p.name == "project"
+    assert p.enabled
+    assert p.override_storage is None
+
+
+def test_proj_name():
+    c = Config(projects="project")
+
+    assert c == Config(projects=["project"])
+
+    assert len(c.projects) == 1
+    p = c.projects[0]
+    assert p.name == "project"
+    assert p.enabled
+    assert p.override_storage is None
 
 
 #############
@@ -37,9 +102,7 @@ def test_env_dict():
 
     assert c.environment == {}
 
-    c = Config(environment={
-        "variable": "value"
-    })
+    c = Config(environment={"variable": "value"})
 
     assert len(c.environment) == 1
     assert "variable" in c.environment

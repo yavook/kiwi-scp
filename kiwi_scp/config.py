@@ -95,7 +95,7 @@ class Config(BaseModel):
         Path("/bin/bash"),
     ]
 
-    projects: Optional[List[_Project]]
+    projects: List[_Project] = []
 
     environment: Dict[str, Optional[str]] = {}
 
@@ -151,6 +151,40 @@ class Config(BaseModel):
             yml_string = stream.read() + yml_string
 
         return yml_string
+
+    @validator("projects", pre=True)
+    @classmethod
+    def unify_projects(cls, value):
+        """parse different projects notations"""
+
+        if value is None:
+            # empty projects list
+            return []
+
+        elif isinstance(value, list):
+            # handle projects list
+
+            result = []
+            for entry in value:
+                # ignore empties
+                if entry is not None:
+                    if isinstance(entry, dict):
+                        # handle single project dict
+                        result.append(entry)
+
+                    else:
+                        # handle single project name
+                        result.append({"name": str(entry)})
+
+            return result
+
+        elif isinstance(value, dict):
+            # handle single project dict
+            return [value]
+
+        else:
+            # handle single project name
+            return [{"name": str(value)}]
 
     @validator("environment", pre=True)
     @classmethod
