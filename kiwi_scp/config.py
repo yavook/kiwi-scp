@@ -48,7 +48,7 @@ class _Project(BaseModel):
 
     @root_validator(pre=True)
     @classmethod
-    def unify_project(cls, values):
+    def unify_project(cls, values) -> Dict[str, Any]:
         """parse different project notations"""
 
         if "name" in values:
@@ -91,7 +91,7 @@ class Config(BaseModel):
 
     version: constr(regex=RE_SEMVER) = "0.2.0"
 
-    shells: Optional[List[Path]] = [
+    shells: List[Path] = [
         Path("/bin/bash"),
     ]
 
@@ -152,9 +152,32 @@ class Config(BaseModel):
 
         return yml_string
 
+    @validator("shells", pre=True)
+    @classmethod
+    def unify_shells(cls, value) -> List[str]:
+        """parse different shells notations"""
+
+        if value is None:
+            return []
+
+        elif isinstance(value, list):
+            return value
+
+        elif isinstance(value, dict):
+            return list(value)
+
+        else:
+            # any other format (try to coerce to str first)
+            try:
+                return [str(value)]
+
+            except Exception as e:
+                # undefined format
+                raise ValueError("Invalid Shells Format")
+
     @validator("projects", pre=True)
     @classmethod
-    def unify_projects(cls, value):
+    def unify_projects(cls, value) -> List[Dict[str, str]]:
         """parse different projects notations"""
 
         if value is None:
@@ -173,8 +196,13 @@ class Config(BaseModel):
                         result.append(entry)
 
                     else:
-                        # handle single project name
-                        result.append({"name": str(entry)})
+                        try:
+                            # handle single project name
+                            result.append({"name": str(entry)})
+
+                        except Exception as e:
+                            # undefined format
+                            raise ValueError("Invalid Projects Format")
 
             return result
 
@@ -183,8 +211,14 @@ class Config(BaseModel):
             return [value]
 
         else:
-            # handle single project name
-            return [{"name": str(value)}]
+            # any other format (try to coerce to str first)
+            try:
+                # handle as a single project name
+                return [{"name": str(value)}]
+
+            except Exception as e:
+                # undefined format
+                raise ValueError("Invalid Projects Format")
 
     @validator("environment", pre=True)
     @classmethod
@@ -215,20 +249,20 @@ class Config(BaseModel):
 
             result: Dict[str, Optional[str]] = {}
             for item in value:
-                key, value = parse_str(str(item))
-                result[key] = value
+                try:
+                    key, value = parse_str(str(item))
+                    result[key] = value
+
+                except Exception as e:
+                    # undefined format
+                    raise ValueError("Invalid Environment Format")
 
             return result
 
-        elif isinstance(value, str):
-            # string format (single variable):
-            # "<var>=<value>"
-
-            key, value = parse_str(value)
-            return {key: value}
-
         else:
             # any other format (try to coerce to str first)
+            # string format (single variable):
+            # "<var>=<value>"
             try:
                 key, value = parse_str(str(value))
                 return {key: value}

@@ -8,6 +8,12 @@ from pydantic import ValidationError
 from kiwi_scp.config import Config
 
 
+class UnCoercible:
+    """A class that doesn't have a string representation"""
+    def __str__(self):
+        raise ValueError
+
+
 def test_default():
     c = Config()
     version = toml.load("./pyproject.toml")["tool"]["poetry"]["version"]
@@ -22,6 +28,70 @@ def test_default():
     assert c.network.cidr == IPv4Network("10.22.46.0/24")
 
 
+########
+# SHELLS
+########
+
+def test_shells_empty():
+    c = Config(shells=None)
+
+    assert c == Config(shells=[])
+
+    assert c.shells == []
+
+
+def test_shells_list():
+    c = Config(shells=["/bin/sh", "sh"])
+
+    assert len(c.shells) == 2
+    assert c.shells[0] == Path("/bin/sh")
+    assert c.shells[1] == Path("sh")
+
+    c = Config(shells=["/bin/bash"])
+
+    assert len(c.shells) == 1
+    assert c.shells[0] == Path("/bin/bash")
+
+
+def test_shells_dict():
+    c = Config(shells={"/bin/bash": None})
+
+    assert len(c.shells) == 1
+    assert c.shells[0] == Path("/bin/bash")
+
+
+def test_shells_coercible():
+    c = Config(shells="/bin/bash")
+
+    assert c == Config(shells=Path("/bin/bash"))
+
+    assert len(c.shells) == 1
+    assert c.shells[0] == Path("/bin/bash")
+
+    c = Config(shells=123)
+
+    assert len(c.shells) == 1
+    assert c.shells[0] == Path("123")
+
+
+def test_shells_uncoercible():
+    with pytest.raises(ValidationError) as exc_info:
+        Config(shells=UnCoercible())
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "Invalid Shells Format"
+    assert error["type"] == "value_error"
+
+    with pytest.raises(ValidationError) as exc_info:
+        Config(shells=["/bin/bash", UnCoercible()])
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "value is not a valid path"
+    assert error["type"] == "type_error.path"
+
+
 ##########
 # PROJECTS
 ##########
@@ -29,9 +99,7 @@ def test_default():
 def test_proj_empty():
     c = Config(projects=None)
 
-    assert c.projects == []
-
-    c = Config(projects=[])
+    assert c == Config(projects=[])
 
     assert c.projects == []
 
@@ -75,7 +143,7 @@ def test_proj_dict():
     assert p.override_storage is None
 
 
-def test_proj_name():
+def test_proj_coercible():
     c = Config(projects="project")
 
     assert c == Config(projects=["project"])
@@ -85,6 +153,24 @@ def test_proj_name():
     assert p.name == "project"
     assert p.enabled
     assert p.override_storage is None
+
+
+def test_proj_uncoercible():
+    with pytest.raises(ValidationError) as exc_info:
+        Config(projects=["valid", UnCoercible()])
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "Invalid Projects Format"
+    assert error["type"] == "value_error"
+
+    with pytest.raises(ValidationError) as exc_info:
+        Config(projects=UnCoercible())
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "Invalid Projects Format"
+    assert error["type"] == "value_error"
 
 
 #############
@@ -139,7 +225,7 @@ def test_env_list():
     assert c.environment["123"] is None
 
 
-def test_env_str():
+def test_env_coercible():
     c = Config(environment="variable=value")
 
     assert len(c.environment) == 1
@@ -152,8 +238,6 @@ def test_env_str():
     assert "variable" in c.environment
     assert c.environment["variable"] is None
 
-
-def test_env_coercible():
     c = Config(environment=123)
 
     assert len(c.environment) == 1
@@ -167,13 +251,17 @@ def test_env_coercible():
     assert c.environment["123.4"] is None
 
 
-def test_env_undef():
-    class UnCoercible:
-        def __str__(self):
-            raise ValueError
-
+def test_env_uncoercible():
     with pytest.raises(ValidationError) as exc_info:
         Config(environment=UnCoercible())
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "Invalid Environment Format"
+    assert error["type"] == "value_error"
+
+    with pytest.raises(ValidationError) as exc_info:
+        Config(environment=["valid", UnCoercible()])
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
