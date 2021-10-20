@@ -19,6 +19,8 @@ def test_default():
     c = Config()
     version = toml.load("./pyproject.toml")["tool"]["poetry"]["version"]
 
+    assert c == Config.from_default()
+
     assert c.version == version
     assert len(c.shells) == 1
     assert c.shells[0] == Path("/bin/bash")

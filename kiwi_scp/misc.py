@@ -1,3 +1,26 @@
+from typing import Any, Type
+
+import click
+
+
+def user_query(description: str, default: Any, cast_to: Type[Any] = str):
+    # prompt user as per argument
+    while True:
+        try:
+            str_value = input(f"Enter {description} [{default}] ").strip()
+            if str_value:
+                return cast_to(str_value)
+            else:
+                return default
+
+        except EOFError:
+            click.echo("Input aborted.")
+            return default
+
+        except Exception as e:
+            click.echo(f"Invalid input: {e}")
+
+
 def _surround(string, bang):
     midlane = f"{bang * 3} {string} {bang * 3}"
     sidelane = bang * len(midlane)

@@ -142,7 +142,7 @@ class Config(BaseModel):
     @classmethod
     @functools.lru_cache(maxsize=5)
     def from_instance(cls, instance: Path):
-        """parses an actual kiwi.yml from disk"""
+        """parses an actual kiwi.yml from disk (cached)"""
 
         try:
             with open(instance.joinpath(KIWI_CONF_NAME)) as kc:
@@ -151,7 +151,14 @@ class Config(BaseModel):
 
         except FileNotFoundError:
             # return the defaults if no kiwi.yml found
-            return cls()
+            return cls.from_default()
+
+    @classmethod
+    @functools.lru_cache(maxsize=1)
+    def from_default(cls):
+        """returns the default config (cached)"""
+
+        return cls()
 
     @property
     def kiwi_dict(self) -> Dict[str, Any]:
@@ -352,4 +359,3 @@ class Config(BaseModel):
         else:
             # undefined format
             raise ValueError("Invalid Network Format")
-
