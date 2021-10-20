@@ -8,6 +8,7 @@ authors = ["ldericher <40151420+ldericher@users.noreply.github.com>"]
 python = "^3.6.1"
 PyYAML = "^5.4.1"
 pydantic = "^1.8.2"
+click = "^8.0.3"
 
 [tool.poetry.dev-dependencies]
 virtualenv = "^20.8.1"

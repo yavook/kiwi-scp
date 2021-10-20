@@ -1,14 +1,21 @@
-from kiwi_scp.config import Config
+import click
 import yaml
 
+from kiwi_scp.commands.cli import KiwiCLI
+from kiwi_scp.config import Config
 
-def main():
-    with open("./example/kiwi.yml") as kc:
+
+@click.command(cls=KiwiCLI)
+@click.pass_context
+def main(ctx):
+    """A complex command line interface."""
+
+    with open("./kiwi.yml") as kc:
         yml = yaml.safe_load(kc)
-        kiwi = Config(**yml)
+        ctx.ensure_object(dict)
+        ctx.obj["cfg"] = Config(**yml)
 
-        print(repr(kiwi))
-        print(kiwi.kiwi_yml)
+    click.echo("Hello main")
 
 
 if __name__ == "__main__":
