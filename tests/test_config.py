@@ -10,6 +10,7 @@ from kiwi_scp.config import Config
 
 class UnCoercible:
     """A class that doesn't have a string representation"""
+
     def __str__(self):
         raise ValueError
 
@@ -26,6 +27,53 @@ def test_default():
     assert c.storage.directory == Path("/var/local/kiwi")
     assert c.network.name == "kiwi_hub"
     assert c.network.cidr == IPv4Network("10.22.46.0/24")
+
+
+#########
+# VERSION
+#########
+
+def test_version_valid():
+    c = Config(version="0.0.0")
+
+    assert c.version == "0.0.0"
+
+    c = Config(version="0.0")
+
+    assert c.version == "0.0"
+
+    c = Config(version="0")
+
+    assert c.version == "0"
+
+    c = Config(version=1.0)
+
+    assert c.version == "1.0"
+
+    c = Config(version=1)
+
+    assert c.version == "1"
+
+
+def test_version_invalid():
+    # definitely not a version
+    with pytest.raises(ValidationError) as exc_info:
+        Config(version="dnaf")
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"].find("string does not match regex") != -1
+    assert error["type"] == "value_error.str.regex"
+
+    # barely a version
+    with pytest.raises(ValidationError) as exc_info:
+        c = Config(version="0.0.0alpha")
+        print(c.version)
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"].find("string does not match regex") != -1
+    assert error["type"] == "value_error.str.regex"
 
 
 ########
@@ -141,6 +189,19 @@ def test_proj_dict():
     assert p.name == "project"
     assert p.enabled
     assert p.override_storage is None
+
+
+def test_proj_invalid_dict():
+    with pytest.raises(ValidationError) as exc_info:
+        Config(projects={
+            "random key 1": "random value 1",
+            "random key 2": "random value 2",
+        })
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "Invalid Project Format"
+    assert error["type"] == "value_error"
 
 
 def test_proj_coercible():
@@ -266,4 +327,116 @@ def test_env_uncoercible():
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
     assert error["msg"] == "Invalid Environment Format"
+    assert error["type"] == "value_error"
+
+
+#########
+# STORAGE
+#########
+
+def test_storage_empty():
+    with pytest.raises(ValidationError) as exc_info:
+        Config(storage=None)
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "No Storage Given"
+    assert error["type"] == "value_error"
+
+
+def test_storage_dict():
+    c = Config(storage={"directory": "/test/directory"})
+
+    assert c.storage.directory == Path("/test/directory")
+
+
+def test_storage_invalid_dict():
+    with pytest.raises(ValidationError) as exc_info:
+        Config(storage={"random key": "random value"})
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "Invalid Storage Format"
+    assert error["type"] == "value_error"
+
+
+def test_storage_str():
+    c = Config(storage="/test/directory")
+
+    assert c.storage.directory == Path("/test/directory")
+
+
+def test_storage_list():
+    c = Config(storage=["/test/directory"])
+
+    assert c.storage.directory == Path("/test/directory")
+
+
+def test_storage_invalid():
+    with pytest.raises(ValidationError) as exc_info:
+        Config(storage=True)
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "Invalid Storage Format"
+    assert error["type"] == "value_error"
+
+
+#########
+# NETWORK
+#########
+
+def test_network_empty():
+    with pytest.raises(ValidationError) as exc_info:
+        Config(network=None)
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "No Network Given"
+    assert error["type"] == "value_error"
+
+
+def test_network_dict():
+    c = Config(network={
+        "name": "test_hub",
+        "cidr": "1.2.3.4/32",
+    })
+
+    assert c == Config(network={
+        "name": "TEST_HUB",
+        "cidr": "1.2.3.4/32",
+    })
+
+    assert c.network.name == "test_hub"
+    assert c.network.cidr == IPv4Network("1.2.3.4/32")
+
+
+def test_network_invalid_dict():
+    with pytest.raises(ValidationError) as exc_info:
+        Config(network={"name": "test_hub"})
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "field required"
+    assert error["type"] == "value_error.missing"
+
+    with pytest.raises(ValidationError) as exc_info:
+        Config(network={
+            "name": "test_hub",
+            "cidr": "1.2.3.4/123",
+        })
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "value is not a valid IPv4 network"
+    assert error["type"] == "value_error.ipv4network"
+
+
+def test_network_invalid():
+    with pytest.raises(ValidationError) as exc_info:
+        Config(network=True)
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "Invalid Network Format"
     assert error["type"] == "value_error"

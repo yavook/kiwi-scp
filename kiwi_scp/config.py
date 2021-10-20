@@ -26,6 +26,19 @@ class _Storage(BaseModel):
 
         return {"directory": str(self.directory)}
 
+    @root_validator(pre=True)
+    @classmethod
+    def unify_storage(cls, values) -> Dict[str, Any]:
+        """parse different storage notations"""
+
+        if "directory" in values:
+            # default format
+            return values
+
+        else:
+            # undefined format
+            raise ValueError("Invalid Storage Format")
+
 
 class _Project(BaseModel):
     """a project subsection"""
@@ -45,6 +58,21 @@ class _Project(BaseModel):
             result = self.dict(exclude={"override_storage"})
             result["override_storage"] = self.override_storage.kiwi_dict
             return result
+
+    @validator("override_storage", pre=True)
+    @classmethod
+    def unify_storage(cls, value):
+        if value is None or isinstance(value, dict):
+            return value
+
+        elif isinstance(value, str):
+            return {"directory": value}
+
+        elif isinstance(value, list) and len(value) == 1:
+            return {"directory": value[0]}
+
+        else:
+            raise ValueError("Invalid Storage Format")
 
     @root_validator(pre=True)
     @classmethod
@@ -67,7 +95,7 @@ class _Project(BaseModel):
 
         else:
             # undefined format
-            raise ValueError
+            raise ValueError("Invalid Project Format")
 
 
 class _Network(BaseModel):
@@ -225,10 +253,15 @@ class Config(BaseModel):
     def unify_environment(cls, value) -> Dict[str, Optional[str]]:
         """parse different environment notations"""
 
-        def parse_str(var_val: str) -> (str, Optional[str]):
+        def parse_str(var_val: Any) -> (str, Optional[str]):
             """parse a "<variable>=<value>" string"""
 
-            idx = var_val.find("=")
+            try:
+                idx = str(var_val).find("=")
+            except Exception:
+                # undefined format
+                raise ValueError("Invalid Environment Format")
+
             if idx == -1:
                 # don't split, just define the variable
                 return var_val, None
@@ -249,13 +282,8 @@ class Config(BaseModel):
 
             result: Dict[str, Optional[str]] = {}
             for item in value:
-                try:
-                    key, value = parse_str(str(item))
-                    result[key] = value
-
-                except Exception as e:
-                    # undefined format
-                    raise ValueError("Invalid Environment Format")
+                key, value = parse_str(item)
+                result[key] = value
 
             return result
 
@@ -263,10 +291,40 @@ class Config(BaseModel):
             # any other format (try to coerce to str first)
             # string format (single variable):
             # "<var>=<value>"
-            try:
-                key, value = parse_str(str(value))
-                return {key: value}
+            key, value = parse_str(value)
+            return {key: value}
 
-            except Exception as e:
-                # undefined format
-                raise ValueError("Invalid Environment Format")
+    @validator("storage", pre=True)
+    @classmethod
+    def unify_storage(cls, value):
+        """parse different storage notations"""
+
+        if value is None:
+            raise ValueError("No Storage Given")
+
+        elif isinstance(value, dict):
+            return value
+
+        elif isinstance(value, str):
+            return {"directory": value}
+
+        elif isinstance(value, list) and len(value) == 1:
+            return {"directory": value[0]}
+
+        else:
+            raise ValueError("Invalid Storage Format")
+
+    @validator("network", pre=True)
+    @classmethod
+    def unify_network(cls, value):
+        """parse different network notations"""
+
+        if value is None:
+            raise ValueError("No Network Given")
+
+        elif isinstance(value, dict):
+            return value
+
+        else:
+            raise ValueError("Invalid Network Format")
+
