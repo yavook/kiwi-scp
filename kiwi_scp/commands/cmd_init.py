@@ -1,21 +1,20 @@
 import click
 
-from ..config import Config
+from .cli import KiwiCTX, pass_kiwi_ctx
 
 
 @click.command(
     "init",
-    short_help="Initializes a repo."
+    short_help="Initializes kiwi-scp"
 )
 @click.argument(
     "path",
     required=False,
     type=click.Path(resolve_path=True)
 )
-@click.pass_context
-def cmd(ctx, path):
-    """Initializes a repository."""
-    kiwi: Config = ctx.obj["cfg"]
-    click.echo("Hello init")
-    click.echo(kiwi.kiwi_yml)
+@pass_kiwi_ctx
+def cmd(ctx: KiwiCTX, path):
+    """Initialize or reconfigure a kiwi-scp instance"""
+
+    click.echo(f"Hello init, kiwi version {ctx.config.version}")
     pass

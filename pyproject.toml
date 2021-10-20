@@ -6,14 +6,15 @@ authors = ["ldericher <40151420+ldericher@users.noreply.github.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.6.1"
-PyYAML = "^5.4.1"
-pydantic = "^1.8.2"
+attrs = "^21.2.0"
 click = "^8.0.3"
+pydantic = "^1.8.2"
+PyYAML = "^5.4.1"
 
 [tool.poetry.dev-dependencies]
-virtualenv = "^20.8.1"
 pytest = "^6.2.5"
 toml = "^0.10.2"
+virtualenv = "^20.8.1"
 
 [tool.poetry.scripts]
 kiwi = "kiwi_scp.scripts.kiwi:main"

@@ -1,3 +1,4 @@
+import functools
 import re
 from ipaddress import IPv4Network
 from pathlib import Path
@@ -6,7 +7,7 @@ from typing import Optional, Dict, List, Any
 import yaml
 from pydantic import BaseModel, constr, root_validator, validator
 
-from ._constants import RE_SEMVER, RE_VARNAME, HEADER_KIWI_CONF_NAME
+from ._constants import RE_SEMVER, RE_VARNAME, HEADER_KIWI_CONF_NAME, KIWI_CONF_NAME
 
 
 # indent yaml lists
@@ -138,6 +139,20 @@ class Config(BaseModel):
         cidr="10.22.46.0/24",
     )
 
+    @classmethod
+    @functools.lru_cache(maxsize=5)
+    def from_instance(cls, instance: Path):
+        """parses an actual kiwi.yml from disk"""
+
+        try:
+            with open(instance.joinpath(KIWI_CONF_NAME)) as kc:
+                yml = yaml.safe_load(kc)
+                return cls.parse_obj(yml)
+
+        except FileNotFoundError:
+            # return the defaults if no kiwi.yml found
+            return cls()
+
     @property
     def kiwi_dict(self) -> Dict[str, Any]:
         """write this object as a dictionary of strings"""
@@ -201,7 +216,7 @@ class Config(BaseModel):
             try:
                 return [str(value)]
 
-            except Exception as e:
+            except Exception:
                 # undefined format
                 raise ValueError("Invalid Shells Format")
 
@@ -230,7 +245,7 @@ class Config(BaseModel):
                             # handle single project name
                             result.append({"name": str(entry)})
 
-                        except Exception as e:
+                        except Exception:
                             # undefined format
                             raise ValueError("Invalid Projects Format")
 
@@ -246,7 +261,7 @@ class Config(BaseModel):
                 # handle as a single project name
                 return [{"name": str(value)}]
 
-            except Exception as e:
+            except Exception:
                 # undefined format
                 raise ValueError("Invalid Projects Format")
 
