@@ -62,6 +62,8 @@ class _Project(BaseModel):
     @validator("override_storage", pre=True)
     @classmethod
     def unify_storage(cls, value):
+        """parse different storage notations"""
+
         if value is None or isinstance(value, dict):
             return value
 
@@ -300,18 +302,23 @@ class Config(BaseModel):
         """parse different storage notations"""
 
         if value is None:
+            # empty storage
             raise ValueError("No Storage Given")
 
         elif isinstance(value, dict):
+            # native dict format
             return value
 
         elif isinstance(value, str):
+            # just the directory string
             return {"directory": value}
 
-        elif isinstance(value, list) and len(value) == 1:
+        elif isinstance(value, list) and len(value) == 1 and isinstance(value[0], str):
+            # directory string as a single-item list
             return {"directory": value[0]}
 
         else:
+            # undefined format
             raise ValueError("Invalid Storage Format")
 
     @validator("network", pre=True)
@@ -320,11 +327,14 @@ class Config(BaseModel):
         """parse different network notations"""
 
         if value is None:
+            # empty network
             raise ValueError("No Network Given")
 
         elif isinstance(value, dict):
+            # native dict format
             return value
 
         else:
+            # undefined format
             raise ValueError("Invalid Network Format")
 
