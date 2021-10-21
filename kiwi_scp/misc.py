@@ -16,32 +16,23 @@ class _MultiDecorator:
         return target
 
 
-_instance_args = []
+_project_arg = click.argument(
+    "project",
+    required=False,
+    type=click.Path(exists=True),
+    default=".",
+)
 
-instance_command = _MultiDecorator(_instance_args)
+_service_arg = click.argument(
+    "service",
+    required=False,
+    type=str,
+)
 
-_project_args = [
-    *_instance_args,
-    click.argument(
-        "project",
-        required=False,
-        type=click.Path(exists=True),
-        default=".",
-    ),
-]
+instance_command = _MultiDecorator([])
+project_command = _MultiDecorator([_project_arg])
+service_command = _MultiDecorator([_project_arg, _service_arg])
 
-project_command = _MultiDecorator(_project_args)
-
-_service_args = [
-    *_project_args,
-    click.argument(
-        "service",
-        required=False,
-        type=str,
-    ),
-]
-
-service_command = _MultiDecorator(_service_args)
 
 
 def user_query(description: str, default: Any, cast_to: Type[Any] = str):
