@@ -34,7 +34,6 @@ project_command = _MultiDecorator([_project_arg])
 service_command = _MultiDecorator([_project_arg, _service_arg])
 
 
-
 def user_query(description: str, default: Any, cast_to: Type[Any] = str):
     # prompt user as per argument
     while True:

@@ -13,7 +13,7 @@ from ..misc import user_query
 
 @click.command(
     "init",
-    short_help="Initializes kiwi-scp"
+    short_help="Initializes kiwi-scp",
 )
 @click.option(
     "-f/-F",
