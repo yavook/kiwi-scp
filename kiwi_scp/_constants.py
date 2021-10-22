@@ -19,6 +19,8 @@ RE_VARNAME = r"^[A-Za-z](?:[A-Za-z0-9\._-]*[A-Za-z0-9])$"
 KIWI_ROOT = os.path.dirname(__file__)
 # default name of kiwi-scp file
 KIWI_CONF_NAME = os.getenv('KIWI_CONF_NAME', "kiwi.yml")
+# default name of compose files
+COMPOSE_FILE_NAME = "docker-compose.yml"
 
 ############
 # FILE NAMES
