@@ -2,7 +2,6 @@ from ipaddress import IPv4Network
 from pathlib import Path
 
 import pytest
-import toml
 from pydantic import ValidationError
 
 from kiwi_scp.config import Config
@@ -16,6 +15,8 @@ class UnCoercible:
 
 
 def test_default():
+    import toml
+
     c = Config()
     version = toml.load("./pyproject.toml")["tool"]["poetry"]["version"]
 
