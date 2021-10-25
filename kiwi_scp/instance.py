@@ -1,7 +1,7 @@
 import functools
 import re
 from pathlib import Path
-from typing import Iterable, List, Dict, Any
+from typing import List, Dict, Any, Generator
 
 import attr
 import yaml
@@ -68,5 +68,8 @@ class Instance:
         return Config.from_instance(self.directory)
 
     @property
-    def projects(self) -> Iterable[Project]:
-        return []
+    def projects(self) -> Generator[Project, None, None]:
+        return (
+            Project.from_directory(self.directory.joinpath(project.name))
+            for project in self.config.projects
+        )
