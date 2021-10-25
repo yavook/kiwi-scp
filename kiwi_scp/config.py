@@ -13,7 +13,7 @@ from ._constants import RE_SEMVER, RE_VARNAME, HEADER_KIWI_CONF_NAME, KIWI_CONF_
 # indent yaml lists
 class _KiwiDumper(yaml.Dumper):
     def increase_indent(self, flow=False, indentless=False):
-        return super().increase_indent(flow, False)
+        return super().increase_indent(flow, False)  # pragma: no cover
 
 
 class _Storage(BaseModel):

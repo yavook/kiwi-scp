@@ -10,9 +10,9 @@
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <option name="_new_keywords" value="&quot;&quot;" />
     <option name="_new_parameters" value="&quot;&quot;" />
-    <option name="_new_additionalArguments" value="&quot;&quot;" />
+    <option name="_new_additionalArguments" value="&quot;--cov\u003dkiwi_scp --cov-report\u003dhtml&quot;" />
     <option name="_new_target" value="&quot;tests&quot;" />
-    <option name="_new_targetType" value="&quot;PATH&quot;" />
+    <option name="_new_targetType" value="&quot;PYTHON&quot;" />
     <method v="2" />
   </configuration>
 </component>
