@@ -5,15 +5,25 @@ from pathlib import Path
 
 import click
 
-from .cli import KiwiCTX, pass_kiwi_ctx
 from .._constants import KIWI_CONF_NAME
 from ..config import Config
+from ..instance import Instance, pass_instance
 from ..misc import user_query
 
 
 @click.command(
     "init",
     short_help="Initializes kiwi-scp",
+)
+@click.option(
+    "-o",
+    "--output",
+    help=f"initialize a kiwi-scp instance in another directory",
+    type=click.Path(
+        path_type=Path,
+        dir_okay=True,
+        writable=True,
+    ),
 )
 @click.option(
     "-f/-F",
@@ -25,9 +35,12 @@ from ..misc import user_query
     "--show/--no-show",
     help=f"show effective {KIWI_CONF_NAME} contents instead",
 )
-@pass_kiwi_ctx
-def cmd(ctx: KiwiCTX, force: bool, show: bool):
+@pass_instance
+def cmd(ctx: Instance, output: Path, force: bool, show: bool):
     """Initialize or reconfigure a kiwi-scp instance"""
+
+    if output is not None:
+        ctx.directory = output
 
     current_config = Config() if force else ctx.config
 
@@ -53,6 +66,10 @@ def cmd(ctx: KiwiCTX, force: bool, show: bool):
         },
     })
 
-    # write out as new kiwi.yml
-    with open(ctx.instance.joinpath(KIWI_CONF_NAME), "w") as file:
+    # ensure output directory exists
+    if not os.path.isdir(ctx.directory):
+        os.mkdir(ctx.directory)
+
+    # write out the new kiwi.yml
+    with open(ctx.directory.joinpath(KIWI_CONF_NAME), "w") as file:
         file.write(Config.parse_obj(kiwi_dict).kiwi_yml)

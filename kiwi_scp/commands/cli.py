@@ -1,10 +1,6 @@
 import os
-from pathlib import Path
 
-import attr
 import click
-
-from ..config import Config
 
 
 class KiwiCLI(click.MultiCommand):
@@ -27,19 +23,3 @@ class KiwiCLI(click.MultiCommand):
         except ImportError:
             return
         return mod.cmd
-
-
-@attr.s
-class KiwiCTX:
-    """this class is used as the commands' shared context"""
-
-    instance: Path = attr.ib(factory=lambda: Path('.'))
-
-    @property
-    def config(self) -> Config:
-        """shorthand: get the current configuration"""
-
-        return Config.from_instance(self.instance)
-
-
-pass_kiwi_ctx = click.make_pass_decorator(KiwiCTX, ensure=True)

@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Generator
 
 import attr
+import click
 import yaml
 
 from ._constants import COMPOSE_FILE_NAME
@@ -73,3 +74,6 @@ class Instance:
             Project.from_directory(self.directory.joinpath(project.name))
             for project in self.config.projects
         )
+
+
+pass_instance = click.make_pass_decorator(Instance, ensure=True)
