@@ -4,14 +4,14 @@ from ipaddress import IPv4Network
 from pathlib import Path
 from typing import Optional, Dict, List, Any, TextIO
 
-import ruamel.yaml
 from pydantic import BaseModel, constr, root_validator, validator
+from ruamel.yaml import YAML
 
 from ._constants import RE_SEMVER, RE_VARNAME, KIWI_CONF_NAME
 from .misc import _format_kiwi_yml
 
 
-class _Storage(BaseModel):
+class StorageConfig(BaseModel):
     """a storage subsection"""
 
     directory: Path
@@ -36,12 +36,12 @@ class _Storage(BaseModel):
             raise ValueError("Invalid Storage Format")
 
 
-class _Project(BaseModel):
+class ProjectConfig(BaseModel):
     """a project subsection"""
 
     name: constr(regex=RE_VARNAME)
     enabled: bool = True
-    override_storage: Optional[_Storage]
+    override_storage: Optional[StorageConfig]
 
     @property
     def kiwi_dict(self) -> Dict[str, Any]:
@@ -97,7 +97,7 @@ class _Project(BaseModel):
             raise ValueError("Invalid Project Format")
 
 
-class _Network(BaseModel):
+class NetworkConfig(BaseModel):
     """a network subsection"""
 
     name: constr(to_lower=True, regex=RE_VARNAME)
@@ -113,7 +113,7 @@ class _Network(BaseModel):
         }
 
 
-class Config(BaseModel):
+class KiwiConfig(BaseModel):
     """represents a kiwi.yml"""
 
     version: constr(regex=RE_SEMVER) = "0.2.0"
@@ -122,28 +122,27 @@ class Config(BaseModel):
         Path("/bin/bash"),
     ]
 
-    projects: List[_Project] = []
+    projects: List[ProjectConfig] = []
 
     environment: Dict[str, Optional[str]] = {}
 
-    storage: _Storage = _Storage(
+    storage: StorageConfig = StorageConfig(
         directory="/var/local/kiwi",
     )
 
-    network: _Network = _Network(
+    network: NetworkConfig = NetworkConfig(
         name="kiwi_hub",
         cidr="10.22.46.0/24",
     )
 
     @classmethod
     @functools.lru_cache(maxsize=5)
-    def from_directory(cls, instance: Path):
+    def from_directory(cls, directory: Path):
         """parses an actual kiwi.yml from disk (cached)"""
 
         try:
-            with open(instance.joinpath(KIWI_CONF_NAME)) as kc:
-                yml = ruamel.yaml.round_trip_load(kc)
-                return cls.parse_obj(yml)
+            with open(directory.joinpath(KIWI_CONF_NAME)) as kc:
+                return cls.parse_obj(YAML().load(kc))
 
         except FileNotFoundError:
             # return the defaults if no kiwi.yml found
@@ -183,7 +182,7 @@ class Config(BaseModel):
     def dump_kiwi_yml(self, stream: TextIO) -> None:
         """dump a kiwi.yml file"""
 
-        yml = ruamel.yaml.YAML()
+        yml = YAML()
         yml.indent(offset=2)
         yml.dump(self.kiwi_dict, stream=stream, transform=_format_kiwi_yml)
 

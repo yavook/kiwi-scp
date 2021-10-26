@@ -6,7 +6,7 @@ from pathlib import Path
 import click
 
 from .._constants import KIWI_CONF_NAME
-from ..config import Config
+from ..config import KiwiConfig
 from ..instance import Instance, pass_instance
 from ..misc import user_query
 
@@ -42,7 +42,7 @@ def cmd(ctx: Instance, output: Path, force: bool, show: bool):
     if output is not None:
         ctx.directory = output
 
-    current_config = Config() if force else ctx.config
+    current_config = KiwiConfig() if force else ctx.config
 
     if show:
         # just show the currently effective kiwi.yml
@@ -72,4 +72,4 @@ def cmd(ctx: Instance, output: Path, force: bool, show: bool):
 
     # write out the new kiwi.yml
     with open(ctx.directory.joinpath(KIWI_CONF_NAME), "w") as file:
-        Config.parse_obj(kiwi_dict).dump_kiwi_yml(file)
+        KiwiConfig.parse_obj(kiwi_dict).dump_kiwi_yml(file)

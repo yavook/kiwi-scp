@@ -6,7 +6,7 @@ import pytest
 import ruamel.yaml
 from pydantic import ValidationError
 
-from kiwi_scp.config import Config
+from kiwi_scp.config import KiwiConfig
 
 
 class UnCoercible:
@@ -19,10 +19,10 @@ class UnCoercible:
 def test_default():
     import toml
 
-    c = Config()
+    c = KiwiConfig()
     version = toml.load("./pyproject.toml")["tool"]["poetry"]["version"]
 
-    assert c == Config.from_default()
+    assert c == KiwiConfig.from_default()
 
     assert c.version == version
     assert len(c.shells) == 1
@@ -61,23 +61,23 @@ def test_default():
 #########
 
 def test_version_valid():
-    c = Config(version="0.0.0")
+    c = KiwiConfig(version="0.0.0")
 
     assert c.version == "0.0.0"
 
-    c = Config(version="0.0")
+    c = KiwiConfig(version="0.0")
 
     assert c.version == "0.0"
 
-    c = Config(version="0")
+    c = KiwiConfig(version="0")
 
     assert c.version == "0"
 
-    c = Config(version=1.0)
+    c = KiwiConfig(version=1.0)
 
     assert c.version == "1.0"
 
-    c = Config(version=1)
+    c = KiwiConfig(version=1)
 
     assert c.version == "1"
 
@@ -85,7 +85,7 @@ def test_version_valid():
 def test_version_invalid():
     # definitely not a version
     with pytest.raises(ValidationError) as exc_info:
-        Config(version="dnaf")
+        KiwiConfig(version="dnaf")
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -94,7 +94,7 @@ def test_version_invalid():
 
     # barely a version
     with pytest.raises(ValidationError) as exc_info:
-        c = Config(version="0.0.0alpha")
+        c = KiwiConfig(version="0.0.0alpha")
         print(c.version)
 
     assert len(exc_info.value.errors()) == 1
@@ -108,42 +108,42 @@ def test_version_invalid():
 ########
 
 def test_shells_empty():
-    c = Config(shells=None)
+    c = KiwiConfig(shells=None)
 
-    assert c == Config(shells=[])
+    assert c == KiwiConfig(shells=[])
 
     assert c.shells == []
 
 
 def test_shells_list():
-    c = Config(shells=["/bin/sh", "sh"])
+    c = KiwiConfig(shells=["/bin/sh", "sh"])
 
     assert len(c.shells) == 2
     assert c.shells[0] == Path("/bin/sh")
     assert c.shells[1] == Path("sh")
 
-    c = Config(shells=["/bin/bash"])
+    c = KiwiConfig(shells=["/bin/bash"])
 
     assert len(c.shells) == 1
     assert c.shells[0] == Path("/bin/bash")
 
 
 def test_shells_dict():
-    c = Config(shells={"/bin/bash": None})
+    c = KiwiConfig(shells={"/bin/bash": None})
 
     assert len(c.shells) == 1
     assert c.shells[0] == Path("/bin/bash")
 
 
 def test_shells_coercible():
-    c = Config(shells="/bin/bash")
+    c = KiwiConfig(shells="/bin/bash")
 
-    assert c == Config(shells=Path("/bin/bash"))
+    assert c == KiwiConfig(shells=Path("/bin/bash"))
 
     assert len(c.shells) == 1
     assert c.shells[0] == Path("/bin/bash")
 
-    c = Config(shells=123)
+    c = KiwiConfig(shells=123)
 
     assert len(c.shells) == 1
     assert c.shells[0] == Path("123")
@@ -151,7 +151,7 @@ def test_shells_coercible():
 
 def test_shells_uncoercible():
     with pytest.raises(ValidationError) as exc_info:
-        Config(shells=UnCoercible())
+        KiwiConfig(shells=UnCoercible())
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -159,7 +159,7 @@ def test_shells_uncoercible():
     assert error["type"] == "value_error"
 
     with pytest.raises(ValidationError) as exc_info:
-        Config(shells=["/bin/bash", UnCoercible()])
+        KiwiConfig(shells=["/bin/bash", UnCoercible()])
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -172,9 +172,9 @@ def test_shells_uncoercible():
 ##########
 
 def test_proj_empty():
-    c = Config(projects=None)
+    c = KiwiConfig(projects=None)
 
-    assert c == Config(projects=[])
+    assert c == KiwiConfig(projects=[])
 
     assert c.projects == []
 
@@ -185,7 +185,7 @@ def test_proj_long():
         "enabled": False,
         "override_storage": {"directory": "/test/directory"},
     }
-    c = Config(projects=[kiwi_dict])
+    c = KiwiConfig(projects=[kiwi_dict])
 
     assert len(c.projects) == 1
     p = c.projects[0]
@@ -202,7 +202,7 @@ def test_proj_storage_str():
         "enabled": False,
         "override_storage": "/test/directory",
     }
-    c = Config(projects=[kiwi_dict])
+    c = KiwiConfig(projects=[kiwi_dict])
 
     assert len(c.projects) == 1
     p = c.projects[0]
@@ -217,7 +217,7 @@ def test_proj_storage_list():
         "enabled": False,
         "override_storage": ["/test/directory"],
     }
-    c = Config(projects=[kiwi_dict])
+    c = KiwiConfig(projects=[kiwi_dict])
 
     assert len(c.projects) == 1
     p = c.projects[0]
@@ -233,7 +233,7 @@ def test_proj_storage_invalid():
         "override_storage": True,
     }
     with pytest.raises(ValidationError) as exc_info:
-        Config(projects=[kiwi_dict])
+        KiwiConfig(projects=[kiwi_dict])
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -245,7 +245,7 @@ def test_proj_short():
     kiwi_dict = {
         "project": False,
     }
-    c = Config(projects=[kiwi_dict])
+    c = KiwiConfig(projects=[kiwi_dict])
 
     assert len(c.projects) == 1
     p = c.projects[0]
@@ -256,9 +256,9 @@ def test_proj_short():
 
 
 def test_proj_dict():
-    c = Config(projects={"name": "project"})
+    c = KiwiConfig(projects={"name": "project"})
 
-    assert c == Config(projects=[{"name": "project"}])
+    assert c == KiwiConfig(projects=[{"name": "project"}])
 
     assert len(c.projects) == 1
     p = c.projects[0]
@@ -269,7 +269,7 @@ def test_proj_dict():
 
 def test_proj_invalid_dict():
     with pytest.raises(ValidationError) as exc_info:
-        Config(projects={
+        KiwiConfig(projects={
             "random key 1": "random value 1",
             "random key 2": "random value 2",
         })
@@ -281,9 +281,9 @@ def test_proj_invalid_dict():
 
 
 def test_proj_coercible():
-    c = Config(projects="project")
+    c = KiwiConfig(projects="project")
 
-    assert c == Config(projects=["project"])
+    assert c == KiwiConfig(projects=["project"])
 
     assert len(c.projects) == 1
     p = c.projects[0]
@@ -294,7 +294,7 @@ def test_proj_coercible():
 
 def test_proj_uncoercible():
     with pytest.raises(ValidationError) as exc_info:
-        Config(projects=["valid", UnCoercible()])
+        KiwiConfig(projects=["valid", UnCoercible()])
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -302,7 +302,7 @@ def test_proj_uncoercible():
     assert error["type"] == "value_error"
 
     with pytest.raises(ValidationError) as exc_info:
-        Config(projects=UnCoercible())
+        KiwiConfig(projects=UnCoercible())
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -315,18 +315,18 @@ def test_proj_uncoercible():
 #############
 
 def test_env_empty():
-    c = Config(environment=None)
+    c = KiwiConfig(environment=None)
 
     assert c.environment == {}
 
 
 def test_env_dict():
-    c = Config(environment={})
+    c = KiwiConfig(environment={})
 
     assert c.environment == {}
 
     kiwi_dict = {"variable": "value"}
-    c = Config(environment=kiwi_dict)
+    c = KiwiConfig(environment=kiwi_dict)
 
     assert len(c.environment) == 1
     assert "variable" in c.environment
@@ -336,11 +336,11 @@ def test_env_dict():
 
 
 def test_env_list():
-    c = Config(environment=[])
+    c = KiwiConfig(environment=[])
 
     assert c.environment == {}
 
-    c = Config(environment=[
+    c = KiwiConfig(environment=[
         "variable=value",
     ])
 
@@ -348,7 +348,7 @@ def test_env_list():
     assert "variable" in c.environment
     assert c.environment["variable"] == "value"
 
-    c = Config(environment=[
+    c = KiwiConfig(environment=[
         "variable",
     ])
 
@@ -356,7 +356,7 @@ def test_env_list():
     assert "variable" in c.environment
     assert c.environment["variable"] is None
 
-    c = Config(environment=[
+    c = KiwiConfig(environment=[
         123,
     ])
 
@@ -366,25 +366,25 @@ def test_env_list():
 
 
 def test_env_coercible():
-    c = Config(environment="variable=value")
+    c = KiwiConfig(environment="variable=value")
 
     assert len(c.environment) == 1
     assert "variable" in c.environment
     assert c.environment["variable"] == "value"
 
-    c = Config(environment="variable")
+    c = KiwiConfig(environment="variable")
 
     assert len(c.environment) == 1
     assert "variable" in c.environment
     assert c.environment["variable"] is None
 
-    c = Config(environment=123)
+    c = KiwiConfig(environment=123)
 
     assert len(c.environment) == 1
     assert "123" in c.environment
     assert c.environment["123"] is None
 
-    c = Config(environment=123.4)
+    c = KiwiConfig(environment=123.4)
 
     assert len(c.environment) == 1
     assert "123.4" in c.environment
@@ -393,7 +393,7 @@ def test_env_coercible():
 
 def test_env_uncoercible():
     with pytest.raises(ValidationError) as exc_info:
-        Config(environment=UnCoercible())
+        KiwiConfig(environment=UnCoercible())
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -401,7 +401,7 @@ def test_env_uncoercible():
     assert error["type"] == "value_error"
 
     with pytest.raises(ValidationError) as exc_info:
-        Config(environment=["valid", UnCoercible()])
+        KiwiConfig(environment=["valid", UnCoercible()])
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -415,7 +415,7 @@ def test_env_uncoercible():
 
 def test_storage_empty():
     with pytest.raises(ValidationError) as exc_info:
-        Config(storage=None)
+        KiwiConfig(storage=None)
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -425,7 +425,7 @@ def test_storage_empty():
 
 def test_storage_dict():
     kiwi_dict = {"directory": "/test/directory"}
-    c = Config(storage=kiwi_dict)
+    c = KiwiConfig(storage=kiwi_dict)
 
     assert c.storage.directory == Path("/test/directory")
     assert c.storage.kiwi_dict == kiwi_dict
@@ -433,7 +433,7 @@ def test_storage_dict():
 
 def test_storage_invalid_dict():
     with pytest.raises(ValidationError) as exc_info:
-        Config(storage={"random key": "random value"})
+        KiwiConfig(storage={"random key": "random value"})
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -442,20 +442,20 @@ def test_storage_invalid_dict():
 
 
 def test_storage_str():
-    c = Config(storage="/test/directory")
+    c = KiwiConfig(storage="/test/directory")
 
     assert c.storage.directory == Path("/test/directory")
 
 
 def test_storage_list():
-    c = Config(storage=["/test/directory"])
+    c = KiwiConfig(storage=["/test/directory"])
 
     assert c.storage.directory == Path("/test/directory")
 
 
 def test_storage_invalid():
     with pytest.raises(ValidationError) as exc_info:
-        Config(storage=True)
+        KiwiConfig(storage=True)
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -469,7 +469,7 @@ def test_storage_invalid():
 
 def test_network_empty():
     with pytest.raises(ValidationError) as exc_info:
-        Config(network=None)
+        KiwiConfig(network=None)
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -482,9 +482,9 @@ def test_network_dict():
         "name": "test_hub",
         "cidr": "1.2.3.4/32",
     }
-    c = Config(network=kiwi_dict)
+    c = KiwiConfig(network=kiwi_dict)
 
-    assert c == Config(network={
+    assert c == KiwiConfig(network={
         "name": "TEST_HUB",
         "cidr": "1.2.3.4/32",
     })
@@ -496,7 +496,7 @@ def test_network_dict():
 
 def test_network_invalid_dict():
     with pytest.raises(ValidationError) as exc_info:
-        Config(network={"name": "test_hub"})
+        KiwiConfig(network={"name": "test_hub"})
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
@@ -504,7 +504,7 @@ def test_network_invalid_dict():
     assert error["type"] == "value_error.missing"
 
     with pytest.raises(ValidationError) as exc_info:
-        Config(network={
+        KiwiConfig(network={
             "name": "test_hub",
             "cidr": "1.2.3.4/123",
         })
@@ -517,7 +517,7 @@ def test_network_invalid_dict():
 
 def test_network_invalid():
     with pytest.raises(ValidationError) as exc_info:
-        Config(network=True)
+        KiwiConfig(network=True)
 
     assert len(exc_info.value.errors()) == 1
     error = exc_info.value.errors()[0]
