@@ -7,19 +7,18 @@ def test_example():
     i = Instance(Path("example"))
 
     assert i.config is not None
-    assert len(list(i.projects)) == 1
+    assert len(i.config.projects) == 1
 
-    p = next(i.projects)
+    p = i.config.projects[0]
 
-    assert p.directory == Path("example/hello-world.project")
+    assert p.name == "hello-world.project"
 
 
 def test_empty():
     i = Instance()
 
-    assert i.directory == Path(".")
     assert i.config is not None
-    assert len(list(i.projects)) == 0
+    assert len(i.config.projects) == 0
 
 
 def test_no_such_dir():
@@ -28,4 +27,4 @@ def test_no_such_dir():
 
     assert i.directory == nonexistent_path
     assert i.config is not None
-    assert len(list(i.projects)) == 0
+    assert len(i.config.projects) == 0

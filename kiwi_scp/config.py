@@ -155,6 +155,15 @@ class KiwiConfig(BaseModel):
 
         return cls()
 
+    def get_project_config(self, name: str) -> ProjectConfig:
+        """returns the config of a project with a given name"""
+
+        for project in self.projects:
+            if project.name == name:
+                return project
+
+        raise ValueError("No Such Project")
+
     @property
     def kiwi_dict(self) -> Dict[str, Any]:
         """write this object as a dictionary of strings"""

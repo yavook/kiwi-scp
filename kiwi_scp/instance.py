@@ -5,10 +5,10 @@ from typing import List, Dict, Any, Generator
 
 import attr
 import click
-import ruamel.yaml
+from ruamel.yaml import YAML
 
 from ._constants import COMPOSE_FILE_NAME
-from .config import Config
+from .config import KiwiConfig, ProjectConfig
 
 _RE_CONFDIR = re.compile(r"^\s*\$(?:CONFDIR|{CONFDIR})/+(.*)$", flags=re.UNICODE)
 
@@ -39,43 +39,28 @@ class Service:
 
 
 @attr.s
-class Project:
-    directory: Path = attr.ib()
-    services: List[Service] = attr.ib()
-
-    @classmethod
-    @functools.lru_cache(maxsize=10)
-    def from_directory(cls, directory: Path):
-        with open(directory.joinpath(COMPOSE_FILE_NAME), "r") as cf:
-            yml = ruamel.yaml.round_trip_load(cf)
-
-        return cls(
-            directory=directory,
-            services=[
-                Service.from_description(name, description)
-                for name, description in yml["services"].items()
-            ],
-        )
-
-
-@attr.s
 class Instance:
     directory: Path = attr.ib(default=Path('.'))
 
     @property
-    def config(self) -> Config:
+    def config(self) -> KiwiConfig:
         """shorthand: get the current configuration"""
 
-        return Config.from_directory(self.directory)
+        return KiwiConfig.from_directory(self.directory)
 
-    def get_project(self, name: str) -> Project:
-        return Project.from_directory(self.directory.joinpath(name))
+    @classmethod
+    @functools.lru_cache(maxsize=10)
+    def _parse_compose_file(cls, directory: Path):
+        with open(directory.joinpath(COMPOSE_FILE_NAME), "r") as cf:
+            yml = YAML()
+            return yml.load(cf)
 
-    @property
-    def projects(self) -> Generator[Project, None, None]:
+    def get_services(self, project_name: str) -> Generator[Service, None, None]:
+        yml = Instance._parse_compose_file(self.directory.joinpath(project_name))
+
         return (
-            self.get_project(project.name)
-            for project in self.config.projects
+            Service.from_description(name, description)
+            for name, description in yml["services"].items()
         )
 
 
