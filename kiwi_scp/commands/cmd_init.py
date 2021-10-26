@@ -72,4 +72,4 @@ def cmd(ctx: Instance, output: Path, force: bool, show: bool):
 
     # write out the new kiwi.yml
     with open(ctx.directory.joinpath(KIWI_CONF_NAME), "w") as file:
-        file.write(Config.parse_obj(kiwi_dict).kiwi_yml)
+        Config.parse_obj(kiwi_dict).dump_kiwi_yml(file)

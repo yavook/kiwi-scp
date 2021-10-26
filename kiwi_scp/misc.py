@@ -1,8 +1,11 @@
+import re
 from typing import Any, Type, List, Callable
 
 import attr
 import click
 from click.decorators import FC
+
+from ._constants import HEADER_KIWI_CONF_NAME
 
 
 @attr.s
@@ -19,8 +22,7 @@ class _MultiDecorator:
 _project_arg = click.argument(
     "project",
     required=False,
-    type=click.Path(exists=True),
-    default=".",
+    type=str,
 )
 
 _service_arg = click.argument(
@@ -50,6 +52,17 @@ def user_query(description: str, default: Any, cast_to: Type[Any] = str):
 
         except Exception as e:
             click.echo(f"Invalid input: {e}")
+
+
+def _format_kiwi_yml(yml_string: str):
+    # insert newline before every main key
+    yml_string = re.sub(r'^(\S)', r'\n\1', yml_string, flags=re.MULTILINE)
+
+    # load header comment from file
+    with open(HEADER_KIWI_CONF_NAME, 'r') as stream:
+        yml_string = stream.read() + yml_string
+
+    return yml_string
 
 
 def _surround(string, bang):

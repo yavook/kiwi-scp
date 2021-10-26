@@ -1,19 +1,14 @@
 import functools
-import re
+import io
 from ipaddress import IPv4Network
 from pathlib import Path
-from typing import Optional, Dict, List, Any
+from typing import Optional, Dict, List, Any, TextIO
 
-import yaml
+import ruamel.yaml
 from pydantic import BaseModel, constr, root_validator, validator
 
-from ._constants import RE_SEMVER, RE_VARNAME, HEADER_KIWI_CONF_NAME, KIWI_CONF_NAME
-
-
-# indent yaml lists
-class _KiwiDumper(yaml.Dumper):
-    def increase_indent(self, flow=False, indentless=False):
-        return super().increase_indent(flow, False)  # pragma: no cover
+from ._constants import RE_SEMVER, RE_VARNAME, KIWI_CONF_NAME
+from .misc import _format_kiwi_yml
 
 
 class _Storage(BaseModel):
@@ -75,7 +70,8 @@ class _Project(BaseModel):
             return {"directory": value[0]}
 
         else:
-            raise ValueError("Invalid Storage Format")
+            # undefined format
+            return {}
 
     @root_validator(pre=True)
     @classmethod
@@ -141,12 +137,12 @@ class Config(BaseModel):
 
     @classmethod
     @functools.lru_cache(maxsize=5)
-    def from_instance(cls, instance: Path):
+    def from_directory(cls, instance: Path):
         """parses an actual kiwi.yml from disk (cached)"""
 
         try:
             with open(instance.joinpath(KIWI_CONF_NAME)) as kc:
-                yml = yaml.safe_load(kc)
+                yml = ruamel.yaml.round_trip_load(kc)
                 return cls.parse_obj(yml)
 
         except FileNotFoundError:
@@ -184,25 +180,23 @@ class Config(BaseModel):
 
         return result
 
-    @property
-    def kiwi_yml(self) -> str:
+    def dump_kiwi_yml(self, stream: TextIO) -> None:
         """dump a kiwi.yml file"""
 
-        yml_string = yaml.dump(
-            self.kiwi_dict,
-            Dumper=_KiwiDumper,
-            default_flow_style=False,
-            sort_keys=False,
-        )
+        yml = ruamel.yaml.YAML()
+        yml.indent(offset=2)
+        yml.dump(self.kiwi_dict, stream=stream, transform=_format_kiwi_yml)
 
-        # insert newline before every main key
-        yml_string = re.sub(r'^(\S)', r'\n\1', yml_string, flags=re.MULTILINE)
+    @property
+    def kiwi_yml(self) -> str:
+        """get a kiwi.yml dump as a string"""
 
-        # load header comment from file
-        with open(HEADER_KIWI_CONF_NAME, 'r') as stream:
-            yml_string = stream.read() + yml_string
+        sio = io.StringIO()
+        self.dump_kiwi_yml(sio)
+        result: str = sio.getvalue()
+        sio.close()
 
-        return yml_string
+        return result
 
     @validator("shells", pre=True)
     @classmethod
@@ -341,7 +335,7 @@ class Config(BaseModel):
 
         else:
             # undefined format
-            raise ValueError("Invalid Storage Format")
+            return {}
 
     @validator("network", pre=True)
     @classmethod

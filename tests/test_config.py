@@ -1,7 +1,9 @@
+import io
 from ipaddress import IPv4Network
 from pathlib import Path
 
 import pytest
+import ruamel.yaml
 from pydantic import ValidationError
 
 from kiwi_scp.config import Config
@@ -30,6 +32,28 @@ def test_default():
     assert c.storage.directory == Path("/var/local/kiwi")
     assert c.network.name == "kiwi_hub"
     assert c.network.cidr == IPv4Network("10.22.46.0/24")
+
+    kiwi_dict = {
+        "version": version,
+        "shells": ["/bin/bash"],
+        "storage": {"directory": "/var/local/kiwi"},
+        "network": {
+            "name": "kiwi_hub",
+            "cidr": "10.22.46.0/24",
+        },
+    }
+    assert c.kiwi_dict == kiwi_dict
+
+    yml = ruamel.yaml.YAML()
+    yml.indent(offset=2)
+
+    sio = io.StringIO()
+    from kiwi_scp.misc import _format_kiwi_yml
+    yml.dump(kiwi_dict, stream=sio, transform=_format_kiwi_yml)
+    yml_string = sio.getvalue()
+    sio.close()
+
+    assert c.kiwi_yml == yml_string
 
 
 #########
@@ -156,30 +180,79 @@ def test_proj_empty():
 
 
 def test_proj_long():
-    c = Config(projects=[{
+    kiwi_dict = {
         "name": "project",
         "enabled": False,
         "override_storage": {"directory": "/test/directory"},
-    }])
+    }
+    c = Config(projects=[kiwi_dict])
 
     assert len(c.projects) == 1
     p = c.projects[0]
     assert p.name == "project"
     assert not p.enabled
     assert p.override_storage is not None
-    assert p.override_storage.directory == Path("/test/directory")
+
+    assert c.kiwi_dict["projects"][0] == kiwi_dict
+
+
+def test_proj_storage_str():
+    kiwi_dict = {
+        "name": "project",
+        "enabled": False,
+        "override_storage": "/test/directory",
+    }
+    c = Config(projects=[kiwi_dict])
+
+    assert len(c.projects) == 1
+    p = c.projects[0]
+    assert p.name == "project"
+    assert not p.enabled
+    assert p.override_storage is not None
+
+
+def test_proj_storage_list():
+    kiwi_dict = {
+        "name": "project",
+        "enabled": False,
+        "override_storage": ["/test/directory"],
+    }
+    c = Config(projects=[kiwi_dict])
+
+    assert len(c.projects) == 1
+    p = c.projects[0]
+    assert p.name == "project"
+    assert not p.enabled
+    assert p.override_storage is not None
+
+
+def test_proj_storage_invalid():
+    kiwi_dict = {
+        "name": "project",
+        "enabled": False,
+        "override_storage": True,
+    }
+    with pytest.raises(ValidationError) as exc_info:
+        Config(projects=[kiwi_dict])
+
+    assert len(exc_info.value.errors()) == 1
+    error = exc_info.value.errors()[0]
+    assert error["msg"] == "Invalid Storage Format"
+    assert error["type"] == "value_error"
 
 
 def test_proj_short():
-    c = Config(projects=[{
+    kiwi_dict = {
         "project": False,
-    }])
+    }
+    c = Config(projects=[kiwi_dict])
 
     assert len(c.projects) == 1
     p = c.projects[0]
     assert p.name == "project"
     assert not p.enabled
     assert p.override_storage is None
+    assert p.kiwi_dict == kiwi_dict
 
 
 def test_proj_dict():
@@ -252,11 +325,14 @@ def test_env_dict():
 
     assert c.environment == {}
 
-    c = Config(environment={"variable": "value"})
+    kiwi_dict = {"variable": "value"}
+    c = Config(environment=kiwi_dict)
 
     assert len(c.environment) == 1
     assert "variable" in c.environment
     assert c.environment["variable"] == "value"
+
+    assert c.kiwi_dict["environment"] == kiwi_dict
 
 
 def test_env_list():
@@ -348,9 +424,11 @@ def test_storage_empty():
 
 
 def test_storage_dict():
-    c = Config(storage={"directory": "/test/directory"})
+    kiwi_dict = {"directory": "/test/directory"}
+    c = Config(storage=kiwi_dict)
 
     assert c.storage.directory == Path("/test/directory")
+    assert c.storage.kiwi_dict == kiwi_dict
 
 
 def test_storage_invalid_dict():
@@ -400,10 +478,11 @@ def test_network_empty():
 
 
 def test_network_dict():
-    c = Config(network={
+    kiwi_dict = {
         "name": "test_hub",
         "cidr": "1.2.3.4/32",
-    })
+    }
+    c = Config(network=kiwi_dict)
 
     assert c == Config(network={
         "name": "TEST_HUB",
@@ -412,6 +491,7 @@ def test_network_dict():
 
     assert c.network.name == "test_hub"
     assert c.network.cidr == IPv4Network("1.2.3.4/32")
+    assert c.network.kiwi_dict == kiwi_dict
 
 
 def test_network_invalid_dict():
