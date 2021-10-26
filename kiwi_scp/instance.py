@@ -5,7 +5,7 @@ from typing import List, Dict, Any, Generator
 
 import attr
 import click
-import yaml
+import ruamel.yaml
 
 from ._constants import COMPOSE_FILE_NAME
 from .config import Config
@@ -47,7 +47,7 @@ class Project:
     @functools.lru_cache(maxsize=10)
     def from_directory(cls, directory: Path):
         with open(directory.joinpath(COMPOSE_FILE_NAME), "r") as cf:
-            yml = yaml.safe_load(cf)
+            yml = ruamel.yaml.round_trip_load(cf)
 
         return cls(
             directory=directory,
@@ -66,12 +66,15 @@ class Instance:
     def config(self) -> Config:
         """shorthand: get the current configuration"""
 
-        return Config.from_instance(self.directory)
+        return Config.from_directory(self.directory)
+
+    def get_project(self, name: str) -> Project:
+        return Project.from_directory(self.directory.joinpath(name))
 
     @property
     def projects(self) -> Generator[Project, None, None]:
         return (
-            Project.from_directory(self.directory.joinpath(project.name))
+            self.get_project(project.name)
             for project in self.config.projects
         )
 
