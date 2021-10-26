@@ -16,510 +16,462 @@ class UnCoercible:
         raise ValueError
 
 
-def test_default():
-    import toml
+class TestDefault:
+    def test(self):
+        import toml
 
-    c = KiwiConfig()
-    version = toml.load("./pyproject.toml")["tool"]["poetry"]["version"]
+        c = KiwiConfig()
+        version = toml.load("./pyproject.toml")["tool"]["poetry"]["version"]
 
-    assert c == KiwiConfig.from_default()
+        assert c == KiwiConfig.from_default()
 
-    assert c.version == version
-    assert len(c.shells) == 1
-    assert c.shells[0] == Path("/bin/bash")
-    assert c.projects == []
-    assert c.environment == {}
-    assert c.storage.directory == Path("/var/local/kiwi")
-    assert c.network.name == "kiwi_hub"
-    assert c.network.cidr == IPv4Network("10.22.46.0/24")
+        assert c.version == version
+        assert len(c.shells) == 1
+        assert c.shells[0] == Path("/bin/bash")
+        assert c.projects == []
+        assert c.environment == {}
+        assert c.storage.directory == Path("/var/local/kiwi")
+        assert c.network.name == "kiwi_hub"
+        assert c.network.cidr == IPv4Network("10.22.46.0/24")
 
-    kiwi_dict = {
-        "version": version,
-        "shells": ["/bin/bash"],
-        "storage": {"directory": "/var/local/kiwi"},
-        "network": {
-            "name": "kiwi_hub",
-            "cidr": "10.22.46.0/24",
-        },
-    }
-    assert c.kiwi_dict == kiwi_dict
+        kiwi_dict = {
+            "version": version,
+            "shells": ["/bin/bash"],
+            "storage": {"directory": "/var/local/kiwi"},
+            "network": {
+                "name": "kiwi_hub",
+                "cidr": "10.22.46.0/24",
+            },
+        }
+        assert c.kiwi_dict == kiwi_dict
 
-    yml = ruamel.yaml.YAML()
-    yml.indent(offset=2)
+        yml = ruamel.yaml.YAML()
+        yml.indent(offset=2)
 
-    sio = io.StringIO()
-    from kiwi_scp.misc import _format_kiwi_yml
-    yml.dump(kiwi_dict, stream=sio, transform=_format_kiwi_yml)
-    yml_string = sio.getvalue()
-    sio.close()
+        sio = io.StringIO()
+        from kiwi_scp.misc import _format_kiwi_yml
+        yml.dump(kiwi_dict, stream=sio, transform=_format_kiwi_yml)
+        yml_string = sio.getvalue()
+        sio.close()
 
-    assert c.kiwi_yml == yml_string
+        assert c.kiwi_yml == yml_string
 
 
-#########
-# VERSION
-#########
+class TestVersion:
+    def test_valid(self):
+        c = KiwiConfig(version="0.0.0")
+        assert c.version == "0.0.0"
 
-def test_version_valid():
-    c = KiwiConfig(version="0.0.0")
+        c = KiwiConfig(version="0.0")
+        assert c.version == "0.0"
 
-    assert c.version == "0.0.0"
+        c = KiwiConfig(version="0")
+        assert c.version == "0"
 
-    c = KiwiConfig(version="0.0")
+        c = KiwiConfig(version=1.0)
+        assert c.version == "1.0"
 
-    assert c.version == "0.0"
+        c = KiwiConfig(version=1)
+        assert c.version == "1"
 
-    c = KiwiConfig(version="0")
+    def test_invalid(self):
+        # definitely not a version
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(version="dnaf")
 
-    assert c.version == "0"
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"].find("string does not match regex") != -1
+        assert error["type"] == "value_error.str.regex"
 
-    c = KiwiConfig(version=1.0)
+        # almost a version
+        with pytest.raises(ValidationError) as exc_info:
+            c = KiwiConfig(version="0.0.0alpha")
+            print(c.version)
 
-    assert c.version == "1.0"
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"].find("string does not match regex") != -1
+        assert error["type"] == "value_error.str.regex"
 
-    c = KiwiConfig(version=1)
 
-    assert c.version == "1"
+class TestShells:
+    def test_empty(self):
+        c = KiwiConfig(shells=None)
 
+        assert c == KiwiConfig(shells=[])
 
-def test_version_invalid():
-    # definitely not a version
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(version="dnaf")
+        assert c.shells == []
 
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"].find("string does not match regex") != -1
-    assert error["type"] == "value_error.str.regex"
+    def test_list(self):
+        c = KiwiConfig(shells=["/bin/sh", "sh"])
 
-    # barely a version
-    with pytest.raises(ValidationError) as exc_info:
-        c = KiwiConfig(version="0.0.0alpha")
-        print(c.version)
+        assert len(c.shells) == 2
+        assert c.shells[0] == Path("/bin/sh")
+        assert c.shells[1] == Path("sh")
+
+        c = KiwiConfig(shells=["/bin/bash"])
+
+        assert len(c.shells) == 1
+        assert c.shells[0] == Path("/bin/bash")
+
+    def test_dict(self):
+        c = KiwiConfig(shells={"/bin/bash": None})
+
+        assert len(c.shells) == 1
+        assert c.shells[0] == Path("/bin/bash")
+
+    def test_coercible(self):
+        c = KiwiConfig(shells="/bin/bash")
+
+        assert c == KiwiConfig(shells=Path("/bin/bash"))
+
+        assert len(c.shells) == 1
+        assert c.shells[0] == Path("/bin/bash")
+
+        c = KiwiConfig(shells=123)
+
+        assert len(c.shells) == 1
+        assert c.shells[0] == Path("123")
+
+    def test_uncoercible(self):
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(shells=UnCoercible())
+
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "Invalid Shells Format"
+        assert error["type"] == "value_error"
+
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(shells=["/bin/bash", UnCoercible()])
+
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "value is not a valid path"
+        assert error["type"] == "type_error.path"
+
+
+class TestProject:
+    def test_empty(self):
+        c = KiwiConfig(projects=None)
+
+        assert c == KiwiConfig(projects=[])
+
+        assert c.projects == []
+
+    def test_long(self):
+        kiwi_dict = {
+            "name": "project",
+            "enabled": False,
+            "override_storage": {"directory": "/test/directory"},
+        }
+        c = KiwiConfig(projects=[kiwi_dict])
+
+        assert len(c.projects) == 1
+        p = c.projects[0]
+        assert p.name == "project"
+        assert not p.enabled
+        assert p.override_storage is not None
+
+        assert c.kiwi_dict["projects"][0] == kiwi_dict
+
+    def test_storage_str(self):
+        kiwi_dict = {
+            "name": "project",
+            "enabled": False,
+            "override_storage": "/test/directory",
+        }
+        c = KiwiConfig(projects=[kiwi_dict])
+
+        assert len(c.projects) == 1
+        p = c.projects[0]
+        assert p.name == "project"
+        assert not p.enabled
+        assert p.override_storage is not None
+
+    def test_storage_list(self):
+        kiwi_dict = {
+            "name": "project",
+            "enabled": False,
+            "override_storage": ["/test/directory"],
+        }
+        c = KiwiConfig(projects=[kiwi_dict])
+
+        assert len(c.projects) == 1
+        p = c.projects[0]
+        assert p.name == "project"
+        assert not p.enabled
+        assert p.override_storage is not None
+
+    def test_storage_invalid(self):
+        kiwi_dict = {
+            "name": "project",
+            "enabled": False,
+            "override_storage": True,
+        }
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(projects=[kiwi_dict])
 
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"].find("string does not match regex") != -1
-    assert error["type"] == "value_error.str.regex"
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "Invalid Storage Format"
+        assert error["type"] == "value_error"
+
+    def test_short(self):
+        kiwi_dict = {
+            "project": False,
+        }
+        c = KiwiConfig(projects=[kiwi_dict])
+
+        assert len(c.projects) == 1
+        p = c.projects[0]
+        assert p.name == "project"
+        assert not p.enabled
+        assert p.override_storage is None
+        assert p.kiwi_dict == kiwi_dict
+
+    def test_dict(self):
+        c = KiwiConfig(projects={"name": "project"})
+
+        assert c == KiwiConfig(projects=[{"name": "project"}])
 
+        assert len(c.projects) == 1
+        p = c.projects[0]
+        assert p.name == "project"
+        assert p.enabled
+        assert p.override_storage is None
 
-########
-# SHELLS
-########
+    def test_invalid_dict(self):
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(projects={
+                "random key 1": "random value 1",
+                "random key 2": "random value 2",
+            })
 
-def test_shells_empty():
-    c = KiwiConfig(shells=None)
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "Invalid Project Format"
+        assert error["type"] == "value_error"
 
-    assert c == KiwiConfig(shells=[])
+    def test_coercible(self):
+        c = KiwiConfig(projects="project")
 
-    assert c.shells == []
+        assert c == KiwiConfig(projects=["project"])
 
+        assert len(c.projects) == 1
+        p = c.projects[0]
+        assert p.name == "project"
+        assert p.enabled
+        assert p.override_storage is None
 
-def test_shells_list():
-    c = KiwiConfig(shells=["/bin/sh", "sh"])
+    def test_uncoercible(self):
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(projects=["valid", UnCoercible()])
 
-    assert len(c.shells) == 2
-    assert c.shells[0] == Path("/bin/sh")
-    assert c.shells[1] == Path("sh")
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "Invalid Projects Format"
+        assert error["type"] == "value_error"
 
-    c = KiwiConfig(shells=["/bin/bash"])
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(projects=UnCoercible())
 
-    assert len(c.shells) == 1
-    assert c.shells[0] == Path("/bin/bash")
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "Invalid Projects Format"
+        assert error["type"] == "value_error"
 
 
-def test_shells_dict():
-    c = KiwiConfig(shells={"/bin/bash": None})
+class TestEnvironment:
+    def test_empty(self):
+        c = KiwiConfig(environment=None)
 
-    assert len(c.shells) == 1
-    assert c.shells[0] == Path("/bin/bash")
+        assert c.environment == {}
 
+    def test_dict(self):
+        c = KiwiConfig(environment={})
 
-def test_shells_coercible():
-    c = KiwiConfig(shells="/bin/bash")
+        assert c.environment == {}
 
-    assert c == KiwiConfig(shells=Path("/bin/bash"))
+        kiwi_dict = {"variable": "value"}
+        c = KiwiConfig(environment=kiwi_dict)
 
-    assert len(c.shells) == 1
-    assert c.shells[0] == Path("/bin/bash")
+        assert len(c.environment) == 1
+        assert "variable" in c.environment
+        assert c.environment["variable"] == "value"
 
-    c = KiwiConfig(shells=123)
+        assert c.kiwi_dict["environment"] == kiwi_dict
 
-    assert len(c.shells) == 1
-    assert c.shells[0] == Path("123")
+    def test_list(self):
+        c = KiwiConfig(environment=[])
 
+        assert c.environment == {}
 
-def test_shells_uncoercible():
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(shells=UnCoercible())
+        c = KiwiConfig(environment=[
+            "variable=value",
+        ])
 
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "Invalid Shells Format"
-    assert error["type"] == "value_error"
+        assert len(c.environment) == 1
+        assert "variable" in c.environment
+        assert c.environment["variable"] == "value"
 
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(shells=["/bin/bash", UnCoercible()])
+        c = KiwiConfig(environment=[
+            "variable",
+        ])
 
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "value is not a valid path"
-    assert error["type"] == "type_error.path"
+        assert len(c.environment) == 1
+        assert "variable" in c.environment
+        assert c.environment["variable"] is None
 
+        c = KiwiConfig(environment=[
+            123,
+        ])
 
-##########
-# PROJECTS
-##########
+        assert len(c.environment) == 1
+        assert "123" in c.environment
+        assert c.environment["123"] is None
 
-def test_proj_empty():
-    c = KiwiConfig(projects=None)
+    def test_coercible(self):
+        c = KiwiConfig(environment="variable=value")
 
-    assert c == KiwiConfig(projects=[])
+        assert len(c.environment) == 1
+        assert "variable" in c.environment
+        assert c.environment["variable"] == "value"
 
-    assert c.projects == []
+        c = KiwiConfig(environment="variable")
 
+        assert len(c.environment) == 1
+        assert "variable" in c.environment
+        assert c.environment["variable"] is None
 
-def test_proj_long():
-    kiwi_dict = {
-        "name": "project",
-        "enabled": False,
-        "override_storage": {"directory": "/test/directory"},
-    }
-    c = KiwiConfig(projects=[kiwi_dict])
+        c = KiwiConfig(environment=123)
 
-    assert len(c.projects) == 1
-    p = c.projects[0]
-    assert p.name == "project"
-    assert not p.enabled
-    assert p.override_storage is not None
+        assert len(c.environment) == 1
+        assert "123" in c.environment
+        assert c.environment["123"] is None
 
-    assert c.kiwi_dict["projects"][0] == kiwi_dict
+        c = KiwiConfig(environment=123.4)
 
+        assert len(c.environment) == 1
+        assert "123.4" in c.environment
+        assert c.environment["123.4"] is None
 
-def test_proj_storage_str():
-    kiwi_dict = {
-        "name": "project",
-        "enabled": False,
-        "override_storage": "/test/directory",
-    }
-    c = KiwiConfig(projects=[kiwi_dict])
+    def test_uncoercible(self):
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(environment=UnCoercible())
 
-    assert len(c.projects) == 1
-    p = c.projects[0]
-    assert p.name == "project"
-    assert not p.enabled
-    assert p.override_storage is not None
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "Invalid Environment Format"
+        assert error["type"] == "value_error"
 
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(environment=["valid", UnCoercible()])
 
-def test_proj_storage_list():
-    kiwi_dict = {
-        "name": "project",
-        "enabled": False,
-        "override_storage": ["/test/directory"],
-    }
-    c = KiwiConfig(projects=[kiwi_dict])
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "Invalid Environment Format"
+        assert error["type"] == "value_error"
 
-    assert len(c.projects) == 1
-    p = c.projects[0]
-    assert p.name == "project"
-    assert not p.enabled
-    assert p.override_storage is not None
 
+class TestStorage:
+    def test_empty(self):
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(storage=None)
 
-def test_proj_storage_invalid():
-    kiwi_dict = {
-        "name": "project",
-        "enabled": False,
-        "override_storage": True,
-    }
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(projects=[kiwi_dict])
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "No Storage Given"
+        assert error["type"] == "value_error"
 
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "Invalid Storage Format"
-    assert error["type"] == "value_error"
+    def test_dict(self):
+        kiwi_dict = {"directory": "/test/directory"}
+        c = KiwiConfig(storage=kiwi_dict)
 
+        assert c.storage.directory == Path("/test/directory")
+        assert c.storage.kiwi_dict == kiwi_dict
 
-def test_proj_short():
-    kiwi_dict = {
-        "project": False,
-    }
-    c = KiwiConfig(projects=[kiwi_dict])
+    def test_invalid_dict(self):
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(storage={"random key": "random value"})
 
-    assert len(c.projects) == 1
-    p = c.projects[0]
-    assert p.name == "project"
-    assert not p.enabled
-    assert p.override_storage is None
-    assert p.kiwi_dict == kiwi_dict
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "Invalid Storage Format"
+        assert error["type"] == "value_error"
 
+    def test_str(self):
+        c = KiwiConfig(storage="/test/directory")
 
-def test_proj_dict():
-    c = KiwiConfig(projects={"name": "project"})
+        assert c.storage.directory == Path("/test/directory")
 
-    assert c == KiwiConfig(projects=[{"name": "project"}])
+    def test_list(self):
+        c = KiwiConfig(storage=["/test/directory"])
 
-    assert len(c.projects) == 1
-    p = c.projects[0]
-    assert p.name == "project"
-    assert p.enabled
-    assert p.override_storage is None
+        assert c.storage.directory == Path("/test/directory")
 
+    def test_invalid(self):
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(storage=True)
 
-def test_proj_invalid_dict():
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(projects={
-            "random key 1": "random value 1",
-            "random key 2": "random value 2",
-        })
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "Invalid Storage Format"
+        assert error["type"] == "value_error"
 
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "Invalid Project Format"
-    assert error["type"] == "value_error"
 
+class TestNetwork:
+    def test_empty(self):
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(network=None)
 
-def test_proj_coercible():
-    c = KiwiConfig(projects="project")
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "No Network Given"
+        assert error["type"] == "value_error"
 
-    assert c == KiwiConfig(projects=["project"])
-
-    assert len(c.projects) == 1
-    p = c.projects[0]
-    assert p.name == "project"
-    assert p.enabled
-    assert p.override_storage is None
-
-
-def test_proj_uncoercible():
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(projects=["valid", UnCoercible()])
-
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "Invalid Projects Format"
-    assert error["type"] == "value_error"
-
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(projects=UnCoercible())
-
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "Invalid Projects Format"
-    assert error["type"] == "value_error"
-
-
-#############
-# ENVIRONMENT
-#############
-
-def test_env_empty():
-    c = KiwiConfig(environment=None)
-
-    assert c.environment == {}
-
-
-def test_env_dict():
-    c = KiwiConfig(environment={})
-
-    assert c.environment == {}
-
-    kiwi_dict = {"variable": "value"}
-    c = KiwiConfig(environment=kiwi_dict)
-
-    assert len(c.environment) == 1
-    assert "variable" in c.environment
-    assert c.environment["variable"] == "value"
-
-    assert c.kiwi_dict["environment"] == kiwi_dict
-
-
-def test_env_list():
-    c = KiwiConfig(environment=[])
-
-    assert c.environment == {}
-
-    c = KiwiConfig(environment=[
-        "variable=value",
-    ])
-
-    assert len(c.environment) == 1
-    assert "variable" in c.environment
-    assert c.environment["variable"] == "value"
-
-    c = KiwiConfig(environment=[
-        "variable",
-    ])
-
-    assert len(c.environment) == 1
-    assert "variable" in c.environment
-    assert c.environment["variable"] is None
-
-    c = KiwiConfig(environment=[
-        123,
-    ])
-
-    assert len(c.environment) == 1
-    assert "123" in c.environment
-    assert c.environment["123"] is None
-
-
-def test_env_coercible():
-    c = KiwiConfig(environment="variable=value")
-
-    assert len(c.environment) == 1
-    assert "variable" in c.environment
-    assert c.environment["variable"] == "value"
-
-    c = KiwiConfig(environment="variable")
-
-    assert len(c.environment) == 1
-    assert "variable" in c.environment
-    assert c.environment["variable"] is None
-
-    c = KiwiConfig(environment=123)
-
-    assert len(c.environment) == 1
-    assert "123" in c.environment
-    assert c.environment["123"] is None
-
-    c = KiwiConfig(environment=123.4)
-
-    assert len(c.environment) == 1
-    assert "123.4" in c.environment
-    assert c.environment["123.4"] is None
-
-
-def test_env_uncoercible():
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(environment=UnCoercible())
-
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "Invalid Environment Format"
-    assert error["type"] == "value_error"
-
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(environment=["valid", UnCoercible()])
-
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "Invalid Environment Format"
-    assert error["type"] == "value_error"
-
-
-#########
-# STORAGE
-#########
-
-def test_storage_empty():
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(storage=None)
-
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "No Storage Given"
-    assert error["type"] == "value_error"
-
-
-def test_storage_dict():
-    kiwi_dict = {"directory": "/test/directory"}
-    c = KiwiConfig(storage=kiwi_dict)
-
-    assert c.storage.directory == Path("/test/directory")
-    assert c.storage.kiwi_dict == kiwi_dict
-
-
-def test_storage_invalid_dict():
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(storage={"random key": "random value"})
-
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "Invalid Storage Format"
-    assert error["type"] == "value_error"
-
-
-def test_storage_str():
-    c = KiwiConfig(storage="/test/directory")
-
-    assert c.storage.directory == Path("/test/directory")
-
-
-def test_storage_list():
-    c = KiwiConfig(storage=["/test/directory"])
-
-    assert c.storage.directory == Path("/test/directory")
-
-
-def test_storage_invalid():
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(storage=True)
-
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "Invalid Storage Format"
-    assert error["type"] == "value_error"
-
-
-#########
-# NETWORK
-#########
-
-def test_network_empty():
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(network=None)
-
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "No Network Given"
-    assert error["type"] == "value_error"
-
-
-def test_network_dict():
-    kiwi_dict = {
-        "name": "test_hub",
-        "cidr": "1.2.3.4/32",
-    }
-    c = KiwiConfig(network=kiwi_dict)
-
-    assert c == KiwiConfig(network={
-        "name": "TEST_HUB",
-        "cidr": "1.2.3.4/32",
-    })
-
-    assert c.network.name == "test_hub"
-    assert c.network.cidr == IPv4Network("1.2.3.4/32")
-    assert c.network.kiwi_dict == kiwi_dict
-
-
-def test_network_invalid_dict():
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(network={"name": "test_hub"})
-
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "field required"
-    assert error["type"] == "value_error.missing"
-
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(network={
+    def test_dict(self):
+        kiwi_dict = {
             "name": "test_hub",
-            "cidr": "1.2.3.4/123",
+            "cidr": "1.2.3.4/32",
+        }
+        c = KiwiConfig(network=kiwi_dict)
+
+        assert c == KiwiConfig(network={
+            "name": "TEST_HUB",
+            "cidr": "1.2.3.4/32",
         })
 
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "value is not a valid IPv4 network"
-    assert error["type"] == "value_error.ipv4network"
+        assert c.network.name == "test_hub"
+        assert c.network.cidr == IPv4Network("1.2.3.4/32")
+        assert c.network.kiwi_dict == kiwi_dict
 
+    def test_invalid_dict(self):
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(network={"name": "test_hub"})
 
-def test_network_invalid():
-    with pytest.raises(ValidationError) as exc_info:
-        KiwiConfig(network=True)
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "field required"
+        assert error["type"] == "value_error.missing"
 
-    assert len(exc_info.value.errors()) == 1
-    error = exc_info.value.errors()[0]
-    assert error["msg"] == "Invalid Network Format"
-    assert error["type"] == "value_error"
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(network={
+                "name": "test_hub",
+                "cidr": "1.2.3.4/123",
+            })
+
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "value is not a valid IPv4 network"
+        assert error["type"] == "value_error.ipv4network"
+
+    def test_invalid(self):
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(network=True)
+
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "Invalid Network Format"
+        assert error["type"] == "value_error"
