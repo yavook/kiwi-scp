@@ -14,6 +14,10 @@ class TestDefault:
 
         assert p.name == "hello-world.project"
 
+        s = list(i.get_services(p.name))
+
+        assert len(s) == 5
+
     def test_empty(self):
         i = Instance()
 

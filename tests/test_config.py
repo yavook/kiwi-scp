@@ -157,8 +157,12 @@ class TestProject:
         c = KiwiConfig(projects=None)
 
         assert c == KiwiConfig(projects=[])
-
         assert c.projects == []
+
+        with pytest.raises(ValueError) as exc_info:
+            c.get_project_config("invalid")
+
+        assert str(exc_info.value) == "No Such Project"
 
     def test_long(self):
         kiwi_dict = {
@@ -171,6 +175,7 @@ class TestProject:
         assert len(c.projects) == 1
         p = c.projects[0]
         assert p.name == "project"
+        assert p == c.get_project_config("project")
         assert not p.enabled
         assert p.override_storage is not None
 
