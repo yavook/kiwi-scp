@@ -3,10 +3,10 @@ from ipaddress import IPv4Network
 from pathlib import Path
 
 import pytest
-import ruamel.yaml
 from pydantic import ValidationError
 
 from kiwi_scp.config import KiwiConfig
+from kiwi_scp.misc import YAML
 
 
 class UnCoercible:
@@ -45,12 +45,9 @@ class TestDefault:
         }
         assert c.kiwi_dict == kiwi_dict
 
-        yml = ruamel.yaml.YAML()
-        yml.indent(offset=2)
-
         sio = io.StringIO()
         from kiwi_scp.misc import _format_kiwi_yml
-        yml.dump(kiwi_dict, stream=sio, transform=_format_kiwi_yml)
+        YAML(typ="safe").dump(kiwi_dict, stream=sio, transform=_format_kiwi_yml)
         yml_string = sio.getvalue()
         sio.close()
 

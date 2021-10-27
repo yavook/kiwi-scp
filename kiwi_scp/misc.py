@@ -3,6 +3,7 @@ from typing import Any, Type, List, Callable
 
 import attr
 import click
+import ruamel.yaml
 from click.decorators import FC
 
 from ._constants import HEADER_KIWI_CONF_NAME
@@ -52,6 +53,12 @@ def user_query(description: str, default: Any, cast_to: Type[Any] = str):
 
         except Exception as e:
             click.echo(f"Invalid input: {e}")
+
+
+class YAML(ruamel.yaml.YAML):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.indent(offset=2)
 
 
 def _format_kiwi_yml(yml_string: str):

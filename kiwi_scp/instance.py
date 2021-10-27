@@ -5,10 +5,10 @@ from typing import List, Dict, Any, Generator
 
 import attr
 import click
-from ruamel.yaml import YAML
 
 from ._constants import COMPOSE_FILE_NAME
-from .config import KiwiConfig, ProjectConfig
+from .config import KiwiConfig
+from .misc import YAML
 
 _RE_CONFDIR = re.compile(r"^\s*\$(?:CONFDIR|{CONFDIR})/+(.*)$", flags=re.UNICODE)
 
@@ -52,8 +52,7 @@ class Instance:
     @functools.lru_cache(maxsize=10)
     def _parse_compose_file(cls, directory: Path):
         with open(directory.joinpath(COMPOSE_FILE_NAME), "r") as cf:
-            yml = YAML()
-            return yml.load(cf)
+            return YAML().load(cf)
 
     def get_services(self, project_name: str) -> Generator[Service, None, None]:
         yml = Instance._parse_compose_file(self.directory.joinpath(project_name))

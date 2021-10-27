@@ -5,10 +5,9 @@ from pathlib import Path
 from typing import Optional, Dict, List, Any, TextIO
 
 from pydantic import BaseModel, constr, root_validator, validator
-from ruamel.yaml import YAML
 
 from ._constants import RE_SEMVER, RE_VARNAME, KIWI_CONF_NAME
-from .misc import _format_kiwi_yml
+from .misc import YAML, _format_kiwi_yml
 
 
 class StorageConfig(BaseModel):
@@ -191,9 +190,7 @@ class KiwiConfig(BaseModel):
     def dump_kiwi_yml(self, stream: TextIO) -> None:
         """dump a kiwi.yml file"""
 
-        yml = YAML()
-        yml.indent(offset=2)
-        yml.dump(self.kiwi_dict, stream=stream, transform=_format_kiwi_yml)
+        YAML().dump(self.kiwi_dict, stream=stream, transform=_format_kiwi_yml)
 
     @property
     def kiwi_yml(self) -> str:
