@@ -1,13 +1,21 @@
 import click
 
-from kiwi_scp.misc import service_command
+from ..instance import Instance, pass_instance
+from ..misc import service_command
 
 
 @click.command(
     "list",
     short_help="Inspect a kiwi-scp instance",
 )
+@pass_instance
 @service_command
-def cmd(project: str, service: str):
+def cmd(ctx: Instance, project: str, service: str):
     """List projects in this instance, services inside a project or service(s) inside a project"""
-    print(f"project: {project!r}, service: {service!r}")
+    if project is not None:
+        if service is not None:
+            print(f"{ctx.get_service(project, service)}")
+        else:
+            print(f"services: {ctx.get_services(project)}")
+    else:
+        print(f"projects: {ctx.config.projects}")
