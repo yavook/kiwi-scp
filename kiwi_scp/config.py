@@ -7,7 +7,7 @@ from typing import Optional, Dict, List, Any, TextIO
 from pydantic import BaseModel, constr, root_validator, validator
 
 from ._constants import RE_SEMVER, RE_VARNAME, KIWI_CONF_NAME
-from .misc import YAML, _format_kiwi_yml
+from .misc import YAML
 
 
 class StorageConfig(BaseModel):
@@ -187,21 +187,16 @@ class KiwiConfig(BaseModel):
 
         return result
 
-    def dump_kiwi_yml(self, stream: TextIO) -> None:
+    def dump_kiwi_yml(self, stream: TextIO = None) -> Optional[str]:
         """dump a kiwi.yml file"""
 
-        YAML().dump(self.kiwi_dict, stream=stream, transform=_format_kiwi_yml)
+        return YAML().dump_kiwi_yml(self.kiwi_dict, stream=stream)
 
     @property
     def kiwi_yml(self) -> str:
         """get a kiwi.yml dump as a string"""
 
-        sio = io.StringIO()
-        self.dump_kiwi_yml(sio)
-        result: str = sio.getvalue()
-        sio.close()
-
-        return result
+        return self.dump_kiwi_yml()
 
     @validator("shells", pre=True)
     @classmethod

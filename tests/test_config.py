@@ -1,4 +1,3 @@
-import io
 from ipaddress import IPv4Network
 from pathlib import Path
 
@@ -45,13 +44,7 @@ class TestDefault:
         }
         assert c.kiwi_dict == kiwi_dict
 
-        sio = io.StringIO()
-        from kiwi_scp.misc import _format_kiwi_yml
-        YAML(typ="safe").dump(kiwi_dict, stream=sio, transform=_format_kiwi_yml)
-        yml_string = sio.getvalue()
-        sio.close()
-
-        assert c.kiwi_yml == yml_string
+        assert c.kiwi_yml == YAML().dump_kiwi_yml(kiwi_dict)
 
 
 class TestVersion:
