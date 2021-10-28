@@ -149,10 +149,7 @@ class TestProject:
         assert c == KiwiConfig(projects=[])
         assert c.projects == []
 
-        with pytest.raises(ValueError) as exc_info:
-            c.get_project_config("invalid")
-
-        assert str(exc_info.value) == "No Such Project"
+        assert c.get_project_config("invalid") is None
 
     def test_long(self):
         kiwi_dict = {
