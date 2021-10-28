@@ -1,7 +1,7 @@
 import functools
 import re
 from pathlib import Path
-from typing import Generator, List
+from typing import Generator, List, Tuple, Optional
 
 import attr
 import click
@@ -24,7 +24,7 @@ class Service:
             "service": {
                 self.name: self.description
             }
-        })
+        }).strip()
 
     @property
     def configs(self) -> Generator[Path, None, None]:
@@ -36,7 +36,7 @@ class Service:
             cd_match = _RE_CONFDIR.match(host_part)
 
             if cd_match:
-                yield cd_match.group(1)
+                yield Path(cd_match.group(1))
 
 
 @attr.s
@@ -50,7 +50,8 @@ class Services:
                 service.name: service.description
                 for service in self.content
             }
-        })
+        }).strip()
+
 
 @attr.s
 class Instance:
@@ -68,18 +69,21 @@ class Instance:
         with open(directory.joinpath(COMPOSE_FILE_NAME), "r") as cf:
             return YAML().load(cf)
 
-    def get_services(self, project_name: str) -> Services:
+    def get_services(self, project_name: str, service_names: Optional[Tuple[str]] = None) -> Services:
         yml = Instance._parse_compose_file(self.directory.joinpath(project_name))
-
-        return Services(project_name, [
+        services = [
             Service(name, description)
             for name, description in yml["services"].items()
-        ])
+        ]
 
-    def get_service(self, project_name: str, service_name: str) -> Service:
-        yml = Instance._parse_compose_file(self.directory.joinpath(project_name))
-
-        return Service(service_name, yml["services"][service_name])
+        if service_names is None:
+            return Services(project_name, services)
+        else:
+            return Services(project_name, [
+                service
+                for service in services
+                if service.name in service_names
+            ])
 
 
 pass_instance = click.make_pass_decorator(Instance, ensure=True)

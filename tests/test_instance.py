@@ -14,14 +14,13 @@ class TestDefault:
 
         assert p.name == "hello-world.project"
 
-        ss = list(i.get_services(p.name))
+        ss = i.get_services(p.name)
 
-        assert len(ss) == 5
+        assert len(ss.content) == 5
 
-        s = ss[0]
+        s = ss.content[0]
 
         assert s.name == "greeter"
-        assert s == i.get_service(p.name, s.name)
 
     def test_empty(self):
         i = Instance()
