@@ -27,15 +27,16 @@ _project_arg = click.argument(
     type=str,
 )
 
-_service_arg = click.argument(
-    "service",
-    required=False,
+_services_arg = click.argument(
+    "services",
+    metavar="[SERVICE]...",
+    nargs=-1,
     type=str,
 )
 
 instance_command = _MultiDecorator([])
 project_command = _MultiDecorator([_project_arg])
-service_command = _MultiDecorator([_project_arg, _service_arg])
+service_command = _MultiDecorator([_project_arg, _services_arg])
 
 
 def user_query(description: str, default: Any, cast_to: Type[Any] = str):
