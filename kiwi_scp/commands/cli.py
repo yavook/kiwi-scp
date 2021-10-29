@@ -2,6 +2,8 @@ import os
 
 import click
 
+from ..instance import Instance
+
 
 class KiwiCLI(click.MultiCommand):
     """Command Line Interface spread over multiple files in this directory"""
@@ -23,3 +25,6 @@ class KiwiCLI(click.MultiCommand):
         except ImportError:
             return
         return mod.cmd
+
+
+pass_instance = click.make_pass_decorator(Instance, ensure=True)

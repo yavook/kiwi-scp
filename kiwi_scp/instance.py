@@ -84,6 +84,3 @@ class Instance:
                 for service in services
                 if service.name in service_names
             ])
-
-
-pass_instance = click.make_pass_decorator(Instance, ensure=True)

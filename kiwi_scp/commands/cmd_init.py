@@ -5,9 +5,10 @@ from pathlib import Path
 
 import click
 
+from .cli import pass_instance
 from .._constants import KIWI_CONF_NAME
 from ..config import KiwiConfig
-from ..instance import Instance, pass_instance
+from ..instance import Instance
 from ..misc import user_query
 
 
