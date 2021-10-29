@@ -37,42 +37,49 @@ def kiwi_command(
             print(f"{ctx.directory!r}: {project!r}, {services!r}")
             if project is None:
                 # run for whole instance
-                print("instance")
+                print(f"for instance: {cmd_kwargs}")
                 command_cls.run_for_instance(ctx, **cmd_kwargs)
 
             elif not services:
                 # run for one entire project
-                print("project")
+                print(f"for project {project}: {cmd_kwargs}")
                 for project_cfg in ctx.config.projects:
                     if project_cfg.name == project:
-                        command_cls.run_for_project(ctx, project_cfg, **kwargs)
+                        command_cls.run_for_project(ctx, project_cfg, **cmd_kwargs)
 
             else:
                 # run for some services
-                print("services")
+                print(f"for services {project}.{services}: {cmd_kwargs}")
                 for project_cfg in ctx.config.projects:
                     if project_cfg.name == project:
                         services = ctx.get_services(project_cfg.name, services)
-                        command_cls.run_for_services(ctx, project_cfg, services)
+                        command_cls.run_for_services(ctx, project_cfg, services, **cmd_kwargs)
 
         return cmd
 
     return decorator
 
 
+@click.option(
+    "-s/-S",
+    "--show/--no-show",
+    help=f"EXAMPLE",
+)
 @kiwi_command(
     "list",
     short_help="Inspect a kiwi-scp instance",
 )
 class cmd(KiwiCommand):
     @classmethod
-    def run_for_instance(cls, instance: Instance, **kwargs):
+    def run_for_instance(cls, instance: Instance, show: bool = None, **kwargs):
+        print(show)
         print(instance.config.projects)
 
     @classmethod
-    def run_for_services(cls, instance: Instance, project: ProjectConfig, services: Services, **kwargs):
+    def run_for_services(cls, instance: Instance, project: ProjectConfig, services: Services, show: bool = None,
+                         **kwargs):
+        print(show)
         print(services)
-
 
 # @click.command(
 #     "list",
