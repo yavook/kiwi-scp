@@ -76,7 +76,7 @@ class Instance:
             for name, description in yml["services"].items()
         ]
 
-        if service_names is None:
+        if not service_names:
             return Services(project_name, services)
         else:
             return Services(project_name, [
