@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 
-from .cli import pass_instance
+from .decorators import _pass_instance as pass_instance
 from .._constants import KIWI_CONF_NAME
 from ..config import KiwiConfig
 from ..instance import Instance
@@ -37,7 +37,7 @@ from ..misc import user_query
     help=f"show effective {KIWI_CONF_NAME} contents instead",
 )
 @pass_instance
-def cmd(ctx: Instance, output: Path, force: bool, show: bool):
+def CMD(ctx: Instance, output: Path, force: bool, show: bool):
     """Initialize or reconfigure a kiwi-scp instance"""
 
     if output is not None:

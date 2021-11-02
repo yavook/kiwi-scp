@@ -1,4 +1,6 @@
 import os
+from enum import Enum, auto
+from typing import List
 
 import click
 
@@ -24,7 +26,28 @@ class KiwiCLI(click.MultiCommand):
             mod = __import__(f"kiwi_scp.commands.cmd_{name}", None, None, ["cmd"])
         except ImportError:
             return
-        return mod.cmd
+        return mod.CMD
 
 
-pass_instance = click.make_pass_decorator(Instance, ensure=True)
+class KiwiCommand:
+    @classmethod
+    def run_for_instance(cls, instance: Instance, **kwargs):
+        for project in instance.config.projects:
+            cls.run_for_project(instance, project.name, **kwargs)
+
+    @classmethod
+    def run_for_project(cls, instance: Instance, project_name: str, **kwargs):
+        service_names = [service.name for service in instance.get_services(project_name, None).content]
+        cls.run_for_services(instance, project_name, service_names, **kwargs)
+
+    @classmethod
+    def run_for_services(cls, instance: Instance, project_name: str, services: List[str], **kwargs):
+        pass
+
+
+class KiwiCommandType(Enum):
+    INSTANCE = auto()
+    PROJECT = auto()
+    SERVICE = auto()
+
+

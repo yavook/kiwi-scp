@@ -1,42 +1,11 @@
 import re
-from typing import Any, Type, List, Callable, Optional
+from typing import Any, Type, Optional
 
-import attr
 import click
 import ruamel.yaml
 import ruamel.yaml.compat
-from click.decorators import FC
 
 from ._constants import HEADER_KIWI_CONF_NAME
-
-
-@attr.s
-class _MultiDecorator:
-    options: List[Callable[[FC], FC]] = attr.ib(factory=list)
-
-    def __call__(self, target: FC):
-        for option in reversed(self.options):
-            target = option(target)
-
-        return target
-
-
-_project_arg = click.argument(
-    "project",
-    required=False,
-    type=str,
-)
-
-_services_arg = click.argument(
-    "services",
-    metavar="[SERVICE]...",
-    nargs=-1,
-    type=str,
-)
-
-instance_command = _MultiDecorator([])
-project_command = _MultiDecorator([_project_arg])
-service_command = _MultiDecorator([_project_arg, _services_arg])
 
 
 def user_query(description: str, default: Any, cast_to: Type[Any] = str):
