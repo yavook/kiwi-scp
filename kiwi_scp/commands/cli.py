@@ -49,5 +49,3 @@ class KiwiCommandType(Enum):
     INSTANCE = auto()
     PROJECT = auto()
     SERVICE = auto()
-
-

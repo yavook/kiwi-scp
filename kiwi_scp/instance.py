@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Generator, List, Tuple, Optional
 
 import attr
-import click
 from ruamel.yaml.comments import CommentedMap
 
 from ._constants import COMPOSE_FILE_NAME

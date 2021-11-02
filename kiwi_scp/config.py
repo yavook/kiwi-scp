@@ -1,5 +1,4 @@
 import functools
-import io
 from ipaddress import IPv4Network
 from pathlib import Path
 from typing import Optional, Dict, List, Any, TextIO
