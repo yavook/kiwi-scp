@@ -10,17 +10,15 @@ class TestDefault:
         assert i.config is not None
         assert len(i.config.projects) == 1
 
-        p = i.config.projects[0]
+        pc = i.config.projects[0]
 
-        assert p.name == "hello-world.project"
+        assert pc.name == "hello-world.project"
 
-        ss = i.get_services(p.name)
+        p = i.get_project("hello-world.project")
 
-        assert len(ss.content) == 5
+        assert p.directory == Path("example/hello-world.project")
 
-        s = ss.content[0]
-
-        assert s.name == "greeter"
+        assert i.get_project("nonexistent") is None
 
     def test_empty(self):
         i = Instance()

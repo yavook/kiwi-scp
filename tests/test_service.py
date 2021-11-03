@@ -9,7 +9,7 @@ class TestDefault:
     def test_empty(self):
         s = Service(
             name="s",
-            description=CommentedMap(),
+            content=CommentedMap(),
         )
 
         assert s.name == "s"
@@ -18,7 +18,7 @@ class TestDefault:
     def test_no_configs(self):
         s = Service(
             name="s",
-            description=CommentedMap({
+            content=CommentedMap({
                 "image": "repo/image:tag",
             }),
         )
@@ -29,7 +29,7 @@ class TestDefault:
     def test_no_configs_in_volumes(self):
         s = Service(
             name="s",
-            description=CommentedMap({
+            content=CommentedMap({
                 "image": "repo/image:tag",
                 "volumes": [
                     "docker_volume/third/dir:/path/to/third/mountpoint",
@@ -45,7 +45,7 @@ class TestDefault:
     def test_with_configs(self):
         s = Service(
             name="s",
-            description=CommentedMap({
+            content=CommentedMap({
                 "image": "repo/image:tag",
                 "volumes": [
                     "${CONFDIR}/some/config:/path/to/some/config",
