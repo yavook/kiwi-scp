@@ -1,3 +1,4 @@
+import logging
 from typing import Callable, Type, Optional, Tuple
 
 import click
@@ -9,11 +10,13 @@ _pass_instance = click.make_pass_decorator(
     Instance,
     ensure=True,
 )
+
 _project_arg = click.argument(
     "project",
     required=False,
     type=str,
 )
+
 _services_arg = click.argument(
     "services",
     metavar="[SERVICE]...",
@@ -21,33 +24,40 @@ _services_arg = click.argument(
     type=str,
 )
 
+_logger = logging.getLogger(__name__)
+
 
 def kiwi_command(
         name: str,
         command_type: KiwiCommandType,
-        **kwargs,
+        **decorator_kwargs,
 ) -> Callable:
     def decorator(command_cls: Type[KiwiCommand]) -> Callable:
 
-        @click.command(name, **kwargs)
+        @click.command(
+            name,
+            help=command_cls.__doc__,
+            **decorator_kwargs,
+        )
         @_pass_instance
         def cmd(ctx: Instance, project: Optional[str] = None, services: Optional[Tuple[str]] = None,
-                **cmd_kwargs) -> None:
-            print(f"{ctx.directory!r}: {project!r}, {services!r}")
+                **kwargs) -> None:
+
+            _logger.debug(f"{ctx.directory!r}: {project!r}, {services!r}")
             if project is None:
                 # run for whole instance
-                print(f"for instance: {cmd_kwargs}")
-                command_cls.run_for_instance(ctx, **cmd_kwargs)
+                _logger.debug(f"running for instance, kwargs={kwargs}")
+                command_cls.run_for_instance(ctx, **kwargs)
 
             elif not services:
                 # run for one entire project
-                print(f"for project {project}: {cmd_kwargs}")
-                command_cls.run_for_project(ctx, project, **cmd_kwargs)
+                _logger.debug(f"running for project {project}, kwargs={kwargs}")
+                command_cls.run_for_project(ctx, project, **kwargs)
 
             else:
                 # run for some services
-                print(f"for services {project}.{services}: {cmd_kwargs}")
-                command_cls.run_for_services(ctx, project, list(services), **cmd_kwargs)
+                _logger.debug(f"running for services {services} in project {project}, kwargs={kwargs}")
+                command_cls.run_for_services(ctx, project, list(services), **kwargs)
 
         if command_type is KiwiCommandType.PROJECT:
             cmd = _project_arg(cmd)

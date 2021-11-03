@@ -23,7 +23,7 @@ class KiwiCLI(click.MultiCommand):
         """import and return a specific command"""
 
         try:
-            mod = __import__(f"kiwi_scp.commands.cmd_{name}", None, None, ["cmd"])
+            mod = __import__(f"kiwi_scp.commands.cmd_{name}", None, None, ["CMD"])
         except ImportError:
             return
         return mod.CMD
@@ -31,17 +31,17 @@ class KiwiCLI(click.MultiCommand):
 
 class KiwiCommand:
     @classmethod
-    def run_for_instance(cls, instance: Instance, **kwargs):
+    def run_for_instance(cls, instance: Instance, **kwargs) -> None:
         for project in instance.config.projects:
             cls.run_for_project(instance, project.name, **kwargs)
 
     @classmethod
-    def run_for_project(cls, instance: Instance, project_name: str, **kwargs):
+    def run_for_project(cls, instance: Instance, project_name: str, **kwargs) -> None:
         service_names = [service.name for service in instance.get_services(project_name, None).content]
         cls.run_for_services(instance, project_name, service_names, **kwargs)
 
     @classmethod
-    def run_for_services(cls, instance: Instance, project_name: str, services: List[str], **kwargs):
+    def run_for_services(cls, instance: Instance, project_name: str, services: List[str], **kwargs) -> None:
         pass
 
 
