@@ -5,20 +5,18 @@ from pathlib import Path
 
 import click
 
-from .decorators import _pass_instance as pass_instance
+from .cli import KiwiCommandType, KiwiCommand
+from .decorators import kiwi_command
 from .._constants import KIWI_CONF_NAME
 from ..config import KiwiConfig
 from ..instance import Instance
-from ..misc import user_query
+
+_logger = logging.getLogger(__name__)
 
 
-@click.command(
-    "init",
-    short_help="Initializes kiwi-scp",
-)
 @click.option(
-    "-o",
-    "--output",
+    "-d",
+    "--directory",
     help=f"initialize a kiwi-scp instance in another directory",
     type=click.Path(
         path_type=Path,
@@ -31,46 +29,45 @@ from ..misc import user_query
     "--force/--no-force",
     help=f"use default values even if {KIWI_CONF_NAME} is present",
 )
-@click.option(
-    "-s/-S",
-    "--show/--no-show",
-    help=f"show effective {KIWI_CONF_NAME} contents instead",
+@kiwi_command(
+    "init",
+    KiwiCommandType.INSTANCE,
+    short_help="Initializes kiwi-scp",
 )
-@pass_instance
-def CMD(ctx: Instance, output: Path, force: bool, show: bool):
+class CMD(KiwiCommand):
     """Initialize or reconfigure a kiwi-scp instance"""
 
-    if output is not None:
-        ctx.directory = output
+    @classmethod
+    def run_for_instance(cls, instance: Instance, output: Path = None, force: bool = None, **kwargs) -> None:
+        if output is not None:
+            instance.directory = output
 
-    current_config = KiwiConfig() if force else ctx.config
+        current_config = KiwiConfig() if force else instance.config
 
-    if show:
-        # just show the currently effective kiwi.yml
-        click.echo_via_pager(current_config.kiwi_yml)
-        return
+        # check force switch
+        if force and os.path.isfile(KIWI_CONF_NAME):
+            _logger.warning(f"About to overwrite an existing '{KIWI_CONF_NAME}'!")
 
-    # check force switch
-    if force and os.path.isfile(KIWI_CONF_NAME):
-        logging.warning(f"Overwriting an existing '{KIWI_CONF_NAME}'!")
+        # build new kiwi dict
+        kiwi_dict = current_config.kiwi_dict
+        kiwi_dict.update({
+            "version": KiwiCommand.user_query("kiwi-scp version to use in this instance", current_config.version),
+            "storage": {
+                "directory": KiwiCommand.user_query("local directory for service data",
+                                                    current_config.storage.directory, Path),
+            },
+            "network": {
+                "name": KiwiCommand.user_query("name for local network hub", current_config.network.name),
+                "cidr": KiwiCommand.user_query("CIDRv4 block for local network hub", current_config.network.cidr,
+                                               IPv4Network),
+            },
+        })
 
-    # build new kiwi dict
-    kiwi_dict = current_config.kiwi_dict
-    kiwi_dict.update({
-        "version": user_query("kiwi-scp version to use in this instance", current_config.version),
-        "storage": {
-            "directory": user_query("local directory for service data", current_config.storage.directory, Path),
-        },
-        "network": {
-            "name": user_query("name for local network hub", current_config.network.name),
-            "cidr": user_query("CIDRv4 block for local network hub", current_config.network.cidr, IPv4Network),
-        },
-    })
+        # ensure output directory exists
+        if not os.path.isdir(instance.directory):
+            os.mkdir(instance.directory)
 
-    # ensure output directory exists
-    if not os.path.isdir(ctx.directory):
-        os.mkdir(ctx.directory)
-
-    # write out the new kiwi.yml
-    with open(ctx.directory.joinpath(KIWI_CONF_NAME), "w") as file:
-        KiwiConfig.parse_obj(kiwi_dict).dump_kiwi_yml(file)
+        # write out the new kiwi.yml
+        cfg = KiwiConfig.parse_obj(kiwi_dict)
+        with open(instance.directory.joinpath(KIWI_CONF_NAME), "w") as file:
+            cfg.dump_kiwi_yml(file)

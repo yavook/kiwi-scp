@@ -1,7 +1,7 @@
 import os
 import sys
 from enum import Enum, auto
-from typing import List, Tuple, Iterable
+from typing import List, Tuple, Iterable, Any, Type
 
 import click
 
@@ -52,6 +52,28 @@ class KiwiCommand:
                 ("  - ", "green"),
                 (item, "blue"),
             )
+
+    @staticmethod
+    def user_query(description: str, default: Any, cast_to: Type[Any] = str):
+        # prompt user as per argument
+        while True:
+            try:
+                prompt = \
+                    click.style(f"Enter {description} [", fg="green") + \
+                    click.style(default, fg="blue") + \
+                    click.style("] ", fg="green")
+                str_value = input(prompt).strip()
+                if str_value:
+                    return cast_to(str_value)
+                else:
+                    return default
+
+            except EOFError:
+                click.echo("Input aborted.")
+                return default
+
+            except Exception as e:
+                click.echo(f"Invalid input: {e}")
 
     @classmethod
     def run_for_instance(cls, instance: Instance, **kwargs) -> None:

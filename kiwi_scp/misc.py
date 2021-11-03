@@ -1,29 +1,10 @@
 import re
-from typing import Any, Type, Optional
+from typing import Optional
 
-import click
 import ruamel.yaml
 import ruamel.yaml.compat
 
 from ._constants import HEADER_KIWI_CONF_NAME
-
-
-def user_query(description: str, default: Any, cast_to: Type[Any] = str):
-    # prompt user as per argument
-    while True:
-        try:
-            str_value = input(f"Enter {description} [{default}] ").strip()
-            if str_value:
-                return cast_to(str_value)
-            else:
-                return default
-
-        except EOFError:
-            click.echo("Input aborted.")
-            return default
-
-        except Exception as e:
-            click.echo(f"Invalid input: {e}")
 
 
 class YAML(ruamel.yaml.YAML):
