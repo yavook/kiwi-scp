@@ -1,6 +1,7 @@
 import os
+import sys
 from enum import Enum, auto
-from typing import List
+from typing import List, Tuple, Iterable
 
 import click
 
@@ -30,6 +31,28 @@ class KiwiCLI(click.MultiCommand):
 
 
 class KiwiCommand:
+    @staticmethod
+    def print_multi_color(*content: Tuple[str, str]):
+        for message, color in content:
+            click.secho(message, fg=color, nl=False)
+        click.echo()
+
+    @staticmethod
+    def print_header(header: str):
+        click.secho(header, fg="green", bold=True)
+
+    @staticmethod
+    def print_error(header: str):
+        click.secho(header, file=sys.stderr, fg="red", bold=True)
+
+    @staticmethod
+    def print_list(content: Iterable[str]):
+        for item in content:
+            KiwiCommand.print_multi_color(
+                ("  - ", "green"),
+                (item, "blue"),
+            )
+
     @classmethod
     def run_for_instance(cls, instance: Instance, **kwargs) -> None:
         for project in instance.config.projects:
@@ -37,11 +60,18 @@ class KiwiCommand:
 
     @classmethod
     def run_for_project(cls, instance: Instance, project_name: str, **kwargs) -> None:
-        service_names = [service.name for service in instance.get_services(project_name, None).content]
+        project = instance.get_project(project_name)
+
+        if project is None:
+            click.secho(f"No project '{project_name}' in kiwi-scp instance at '{instance.directory}'.", fg="red", bold=True)
+            return
+
+        service_names = [service.name for service in project.get_services().content]
+
         cls.run_for_services(instance, project_name, service_names, **kwargs)
 
     @classmethod
-    def run_for_services(cls, instance: Instance, project_name: str, services: List[str], **kwargs) -> None:
+    def run_for_services(cls, instance: Instance, project_name: str, service_names: List[str], **kwargs) -> None:
         pass
 
 
