@@ -28,7 +28,7 @@ class Executable:
     def exe_file(self) -> Optional[Path]:
         return self.__find_exe_file(self.exe_name)
 
-    def __build_cmd(self, args, kwargs) -> List[Path, Any, ...]:
+    def __build_cmd(self, args, kwargs) -> List:
         cmd = [self.exe_file, *args]
 
         _logger.debug(f"Executable cmd{cmd}, kwargs{kwargs}")
@@ -40,7 +40,7 @@ class Executable:
             **kwargs
         )
 
-    def Popen(self, process_args, **kwargs) -> subprocess.Popen[str]:
+    def Popen(self, process_args, **kwargs) -> subprocess.Popen:
         return subprocess.Popen(
             self.__build_cmd(process_args, kwargs),
             **kwargs
