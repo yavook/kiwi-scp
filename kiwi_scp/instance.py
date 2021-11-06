@@ -43,6 +43,16 @@ class Services:
             }
         }).strip()
 
+    def __bool__(self) -> bool:
+        return bool(self.content)
+
+    def filter_existing(self, service_names: List[str]):
+        return Services([
+            service
+            for service in self.content
+            if service.name in service_names
+        ])
+
 
 @attr.s
 class Project:
@@ -54,21 +64,18 @@ class Project:
         with open(directory.joinpath(COMPOSE_FILE_NAME), "r") as cf:
             return YAML().load(cf)
 
-    def get_services(self, service_names: Optional[List[str]] = None) -> Services:
+    @property
+    def name(self) -> str:
+        return self.directory.name
+
+    @property
+    def services(self) -> Services:
         yml = Project._parse_compose_file(self.directory)
-        services = [
+
+        return Services([
             Service(name, description)
             for name, description in yml["services"].items()
-        ]
-
-        if not service_names:
-            return Services(services)
-        else:
-            return Services([
-                service
-                for service in services
-                if service.name in service_names
-            ])
+        ])
 
 
 @attr.s

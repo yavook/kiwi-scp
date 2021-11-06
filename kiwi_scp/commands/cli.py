@@ -5,7 +5,7 @@ from typing import List, Tuple, Iterable, Any, Type
 
 import click
 
-from ..instance import Instance
+from ..instance import Instance, Project, Services
 
 
 class KiwiCLI(click.MultiCommand):
@@ -42,8 +42,8 @@ class KiwiCommand:
         click.secho(header, fg="green", bold=True)
 
     @staticmethod
-    def print_error(header: str):
-        click.secho(header, file=sys.stderr, fg="red", bold=True)
+    def print_error(error: str):
+        click.secho(error, file=sys.stderr, fg="red", bold=True)
 
     @staticmethod
     def print_list(content: Iterable[str]):
@@ -77,24 +77,22 @@ class KiwiCommand:
 
     @classmethod
     def run_for_instance(cls, instance: Instance, **kwargs) -> None:
-        for project in instance.config.projects:
-            cls.run_for_project(instance, project.name, **kwargs)
+        for project_config in instance.config.projects:
+            project = instance.get_project(project_config.name)
+            cls.run_for_existing_project(instance, project, **kwargs)
 
     @classmethod
-    def run_for_project(cls, instance: Instance, project_name: str, **kwargs) -> None:
-        project = instance.get_project(project_name)
-
-        if project is None:
-            click.secho(f"No project '{project_name}' in kiwi-scp instance at '{instance.directory}'.", fg="red", bold=True)
-            return
-
-        service_names = [service.name for service in project.get_services().content]
-
-        cls.run_for_services(instance, project_name, service_names, **kwargs)
+    def run_for_new_project(cls, instance: Instance, project_name: str, **kwargs) -> None:
+        raise Exception
 
     @classmethod
-    def run_for_services(cls, instance: Instance, project_name: str, service_names: List[str], **kwargs) -> None:
-        pass
+    def run_for_existing_project(cls, instance: Instance, project: Project, **kwargs) -> None:
+        service_names = [service.name for service in project.services.content]
+        cls.run_for_services(instance, project, service_names, **kwargs)
+
+    @classmethod
+    def run_for_services(cls, instance: Instance, project: Project, service_names: List[str], **kwargs) -> None:
+        raise Exception
 
 
 class KiwiCommandType(Enum):

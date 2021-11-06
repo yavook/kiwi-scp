@@ -4,7 +4,7 @@ import click
 
 from .cli import KiwiCommandType, KiwiCommand
 from .decorators import kiwi_command
-from ..instance import Instance
+from ..instance import Instance, Project
 
 
 @click.option(
@@ -34,37 +34,29 @@ class CMD(KiwiCommand):
             )
 
     @classmethod
-    def run_for_project(cls, instance: Instance, project_name: str, show: bool = None, **kwargs) -> None:
-        project = instance.get_project(project_name)
-
-        if project is None:
-            KiwiCommand.print_error(f"No project '{project_name}' in kiwi-scp instance at '{instance.directory}'.")
-            return
-
-        services = project.get_services()
+    def run_for_existing_project(cls, instance: Instance, project: Project, show: bool = None, **kwargs) -> None:
         if show:
-            KiwiCommand.print_header(f"Showing config for all services in project '{project_name}'.")
-            click.echo_via_pager(str(services))
+            KiwiCommand.print_header(f"Showing config for all services in project '{project.name}'.")
+            click.echo_via_pager(str(project.services))
 
         else:
-            KiwiCommand.print_header(f"Services in project '{project_name}':")
-            KiwiCommand.print_list(service.name for service in services.content)
+            KiwiCommand.print_header(f"Services in project '{project.name}':")
+            KiwiCommand.print_list(service.name for service in project.services.content)
 
     @classmethod
-    def run_for_services(cls, instance: Instance, project_name: str, service_names: List[str], show: bool = None,
+    def run_for_new_project(cls, instance: Instance, project_name: str, **kwargs) -> None:
+        KiwiCommand.print_error(f"Project '{project_name}' not in kiwi-scp instance at '{instance.directory}'!")
+
+    @classmethod
+    def run_for_services(cls, instance: Instance, project: Project, service_names: List[str], show: bool = None,
                          **kwargs) -> None:
-        project = instance.get_project(project_name)
-
-        if project is None:
-            KiwiCommand.print_error(f"No project '{project_name}' in kiwi-scp instance at '{instance.directory}'.")
-            return
-
-        services = project.get_services(service_names)
+        services = project.services.filter_existing(service_names)
         if show:
+            service_names = [service.name for service in services.content]
             KiwiCommand.print_header(
-                f"Showing config for services '{', '.join(service_names)}' in project '{project_name}'.")
+                f"Showing config for matching services '{', '.join(service_names)}' in project '{project.name}'.")
             click.echo_via_pager(str(services))
 
         else:
-            KiwiCommand.print_header(f"Matching services in project '{project_name}':")
+            KiwiCommand.print_header(f"Matching services in project '{project.name}':")
             KiwiCommand.print_list(service.name for service in services.content)

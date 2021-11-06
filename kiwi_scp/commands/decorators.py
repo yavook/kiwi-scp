@@ -12,13 +12,14 @@ _pass_instance = click.make_pass_decorator(
 )
 
 _project_arg = click.argument(
-    "project",
+    "project_name",
+    metavar="[PROJECT]",
     required=False,
     type=str,
 )
 
 _services_arg = click.argument(
-    "services",
+    "service_names",
     metavar="[SERVICE]...",
     nargs=-1,
     type=str,
@@ -40,24 +41,35 @@ def kiwi_command(
             **decorator_kwargs,
         )
         @_pass_instance
-        def cmd(ctx: Instance, project: Optional[str] = None, services: Optional[Tuple[str]] = None,
+        def cmd(ctx: Instance, project_name: Optional[str] = None, service_names: Optional[Tuple[str]] = None,
                 **kwargs) -> None:
 
-            _logger.debug(f"{ctx.directory!r}: {project!r}, {services!r}")
-            if project is None:
+            _logger.debug(f"{ctx.directory!r}: {project_name!r}, {service_names!r}")
+            if project_name is None:
                 # run for whole instance
                 _logger.debug(f"running for instance, kwargs={kwargs}")
                 command_cls.run_for_instance(ctx, **kwargs)
 
-            elif not services:
+            elif not service_names:
                 # run for one entire project
-                _logger.debug(f"running for project {project}, kwargs={kwargs}")
-                command_cls.run_for_project(ctx, project, **kwargs)
+                project = ctx.get_project(project_name)
+                if project is not None:
+                    _logger.debug(f"running for existing project {project}, kwargs={kwargs}")
+                    command_cls.run_for_existing_project(ctx, project, **kwargs)
+
+                else:
+                    _logger.debug(f"running for new project {project_name}, kwargs={kwargs}")
+                    command_cls.run_for_new_project(ctx, project_name, **kwargs)
 
             else:
                 # run for some services
-                _logger.debug(f"running for services {services} in project {project}, kwargs={kwargs}")
-                command_cls.run_for_services(ctx, project, list(services), **kwargs)
+                project = ctx.get_project(project_name)
+                if project is not None:
+                    _logger.debug(f"running for services {service_names} in project {project}, kwargs={kwargs}")
+                    command_cls.run_for_services(ctx, project, list(service_names), **kwargs)
+
+                else:
+                    KiwiCommand.print_error(f"Project '{project_name}' not in kiwi-scp instance at '{ctx.directory}'!")
 
         if command_type is KiwiCommandType.PROJECT:
             cmd = _project_arg(cmd)
