@@ -21,6 +21,9 @@ from ..instance import Instance, Project
     "cmd",
     KiwiCommandType.PROJECT,
     short_help="Run docker-compose command",
+    # ignore arguments looking like options
+    # just pass everything down to docker-compose
+    context_settings={"ignore_unknown_options": True},
 )
 class CMD(KiwiCommand):
     """Run raw docker-compose command in a project"""
