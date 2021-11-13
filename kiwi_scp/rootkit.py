@@ -7,7 +7,7 @@ from typing import Optional, TypeVar, Union, List
 import attr
 
 from ._constants import IMAGES_DIRECTORY_NAME, LOCAL_IMAGES_NAME, DEFAULT_IMAGE_NAME
-from .executable import Executable
+from .executable import DOCKER_EXE
 
 _logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class Rootkit:
     @staticmethod
     @functools.lru_cache(maxsize=None)
     def __exists(image_tag: str) -> bool:
-        ps = Executable('docker').run([
+        ps = DOCKER_EXE.run([
             'images',
             '--filter', f"reference={Rootkit.__image_name(image_tag)}",
             '--format', '{{.Repository}}:{{.Tag}}'
@@ -54,13 +54,13 @@ class Rootkit:
         else:
             if self.image_tag is None:
                 _logger.info(f"Pulling image {Rootkit.__image_name(self.image_tag)}")
-                Executable('docker').run([
+                DOCKER_EXE.run([
                     'pull', Rootkit.__image_name(self.image_tag)
                 ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             else:
                 _logger.info(f"Building image {Rootkit.__image_name(self.image_tag)}")
-                Executable('docker').run([
+                DOCKER_EXE.run([
                     'build',
                     '-t', Rootkit.__image_name(self.image_tag),
                     '-f', f"{IMAGES_DIRECTORY_NAME}/{self.image_tag}.Dockerfile",
@@ -69,7 +69,7 @@ class Rootkit:
 
     def run(self, process_args, **kwargs):
         self.__build_image()
-        Executable('docker').run([
+        DOCKER_EXE.run([
             'run', '--rm',
             '-v', '/:/mnt',
             '-u', 'root',
