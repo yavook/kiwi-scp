@@ -1,13 +1,13 @@
 import functools
 import re
 from pathlib import Path
-from typing import Generator, List, Tuple, Optional
+from typing import Generator, List, Optional, Dict, Any
 
 import attr
 from ruamel.yaml.comments import CommentedMap
 
-from ._constants import COMPOSE_FILE_NAME
-from .config import KiwiConfig
+from ._constants import COMPOSE_FILE_NAME, CONF_DIRECTORY_NAME
+from .config import KiwiConfig, ProjectConfig
 from .misc import YAML
 
 _RE_CONFDIR = re.compile(r"^\s*\$(?:CONFDIR|{CONFDIR})/+(.*)$", flags=re.UNICODE)
@@ -57,6 +57,7 @@ class Services:
 @attr.s
 class Project:
     directory: Path = attr.ib()
+    config: KiwiConfig = attr.ib()
 
     @staticmethod
     @functools.lru_cache(maxsize=10)
@@ -67,6 +68,34 @@ class Project:
     @property
     def name(self) -> str:
         return self.directory.name
+
+    @property
+    def project_config(self) -> ProjectConfig:
+        return self.config.get_project_config(self.name)
+
+    @property
+    def process_kwargs(self) -> Dict[str, Any]:
+        directory: Path = self.directory
+        project_name: str = self.name
+        kiwi_hub_name: str = self.config.network.name
+        target_root_dir: Path = self.config.storage.directory
+        conf_dir: Path = target_root_dir.joinpath(CONF_DIRECTORY_NAME)
+        target_dir: Path = target_root_dir.joinpath(project_name)
+
+        result: Dict[str, Any] = {
+            "cwd": str(directory),
+            "env": {
+                "COMPOSE_PROJECT_NAME": project_name,
+                "KIWI_HUB_NAME": kiwi_hub_name,
+                "TARGETROOT": str(target_root_dir),
+                "CONFDIR": str(conf_dir),
+                "TARGETDIR": str(target_dir),
+            },
+        }
+
+        result["env"].update(self.config.environment)
+
+        return result
 
     @property
     def services(self) -> Services:
@@ -88,7 +117,20 @@ class Instance:
 
         return KiwiConfig.from_directory(self.directory)
 
-    def get_project(self, project_name: str) -> Optional[Project]:
-        for project in self.config.projects:
+    @staticmethod
+    @functools.lru_cache(maxsize=None)
+    def __get_project(instance_directory: Path, project_name: str) -> Optional[Project]:
+        instance = Instance(instance_directory)
+        config = instance.config
+
+        for project in config.projects:
             if project.name == project_name:
-                return Project(self.directory.joinpath(project.name))
+                return Project(
+                    directory=instance_directory.joinpath(project.name),
+                    config=config,
+                )
+
+    def get_project(self, project_name: str) -> Optional[Project]:
+        project = Instance.__get_project(self.directory, project_name)
+        project.instance = self
+        return project
