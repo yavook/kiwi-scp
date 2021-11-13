@@ -5,7 +5,7 @@ from typing import List, Tuple, Iterable, Any, Type
 
 import click
 
-from ..instance import Instance, Project, Services
+from ..instance import Instance, Project
 
 
 class KiwiCLI(click.MultiCommand):
@@ -83,7 +83,7 @@ class KiwiCommand:
 
     @classmethod
     def run_for_new_project(cls, instance: Instance, project_name: str, **kwargs) -> None:
-        raise Exception
+        cls.print_error(f"Project '{project_name}' not in kiwi-scp instance at '{instance.directory}'!")
 
     @classmethod
     def run_for_existing_project(cls, instance: Instance, project: Project, **kwargs) -> None:
