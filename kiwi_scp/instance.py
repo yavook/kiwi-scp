@@ -132,5 +132,8 @@ class Instance:
 
     def get_project(self, project_name: str) -> Optional[Project]:
         project = Instance.__get_project(self.directory, project_name)
+        if project is None:
+            return
+
         project.instance = self
         return project
