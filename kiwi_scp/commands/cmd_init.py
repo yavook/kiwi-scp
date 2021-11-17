@@ -38,9 +38,9 @@ class CMD(KiwiCommand):
     """Initialize or reconfigure a kiwi-scp instance"""
 
     @classmethod
-    def run_for_instance(cls, instance: Instance, output: Path = None, force: bool = None) -> None:
-        if output is not None:
-            instance.directory = output
+    def run_for_instance(cls, instance: Instance, directory: Path = None, force: bool = None) -> None:
+        if directory is not None:
+            instance.directory = directory
 
         current_config = KiwiConfig() if force else instance.config
 
