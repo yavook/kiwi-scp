@@ -3,14 +3,20 @@ from pathlib import Path
 import pytest
 
 from kiwi_scp._constants import COMPOSE_FILE_NAME
+from kiwi_scp.config import KiwiConfig
 from kiwi_scp.instance import Project
 
 
 class TestDefault:
-    def test_example(self):
-        p = Project(Path("example/hello-world.project"))
+    cfg = KiwiConfig()
 
-        ss = p.get_services()
+    def test_example(self):
+        p = Project(
+            directory=Path("example/hello-world.project"),
+            config=TestDefault.cfg,
+        )
+
+        ss = p.services
 
         assert len(ss.content) == 5
 
@@ -18,14 +24,17 @@ class TestDefault:
 
         assert s.name == "greeter"
 
-        ss2 = p.get_services(["nonexistent"])
+        ss2 = p.services.filter_existing(["nonexistent"])
 
         assert len(ss2.content) == 0
 
     def test_empty(self):
-        p = Project(Path("nonexistent"))
+        p = Project(
+            directory=Path("nonexistent"),
+            config=TestDefault.cfg,
+        )
 
         with pytest.raises(FileNotFoundError) as exc_info:
-            p.get_services()
+            _ = p.services
 
         assert exc_info.value.filename == f"nonexistent/{COMPOSE_FILE_NAME}"
