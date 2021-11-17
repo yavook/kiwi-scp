@@ -15,17 +15,16 @@ from ..instance import Instance, Project
 )
 @click.argument(
     "compose_cmd",
-    metavar="CMD",
+    metavar="COMMAND",
 )
 @kiwi_command(
-    "cmd",
-    KiwiCommandType.PROJECT,
+    cmd_type=KiwiCommandType.PROJECT,
     short_help="Run docker-compose command",
     # ignore arguments looking like options
     # just pass everything down to docker-compose
     context_settings={"ignore_unknown_options": True},
 )
-class CMD(KiwiCommand):
+class CmdCommand(KiwiCommand):
     """Run raw docker-compose command in a project"""
 
     @classmethod

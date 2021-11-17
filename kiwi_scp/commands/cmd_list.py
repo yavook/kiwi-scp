@@ -13,11 +13,10 @@ from ..instance import Instance, Project
     help=f"show actual config contents instead",
 )
 @kiwi_command(
-    "list",
-    KiwiCommandType.SERVICE,
+    cmd_type=KiwiCommandType.SERVICE,
     short_help="Inspect a kiwi-scp instance",
 )
-class CMD(KiwiCommand):
+class ListCommand(KiwiCommand):
     """List projects in this instance, services inside a project or service(s) inside a project"""
 
     @classmethod

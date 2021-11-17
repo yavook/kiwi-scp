@@ -29,14 +29,12 @@ _logger = logging.getLogger(__name__)
 
 
 def kiwi_command(
-        name: str,
-        command_type: KiwiCommandType,
+        cmd_type: KiwiCommandType = KiwiCommandType.SERVICE,
         **decorator_kwargs,
 ) -> Callable:
     def decorator(command_cls: Type[KiwiCommand]) -> Callable:
 
         @click.command(
-            name,
             help=command_cls.__doc__,
             **decorator_kwargs,
         )
@@ -71,10 +69,10 @@ def kiwi_command(
                 else:
                     KiwiCommand.print_error(f"Project '{project_name}' not in kiwi-scp instance at '{ctx.directory}'!")
 
-        if command_type is KiwiCommandType.PROJECT:
+        if cmd_type is KiwiCommandType.PROJECT:
             cmd = _project_arg(cmd)
 
-        elif command_type is KiwiCommandType.SERVICE:
+        elif cmd_type is KiwiCommandType.SERVICE:
             cmd = _project_arg(cmd)
             cmd = _services_arg(cmd)
 

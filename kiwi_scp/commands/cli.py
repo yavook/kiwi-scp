@@ -1,7 +1,8 @@
+import importlib
 import os
 import sys
 from enum import Enum, auto
-from typing import List, Tuple, Iterable, Any, Type
+from typing import List, Tuple, Iterable, Type, Optional, TypeVar
 
 import click
 
@@ -11,42 +12,50 @@ from ..instance import Instance, Project
 class KiwiCLI(click.MultiCommand):
     """Command Line Interface spread over multiple files in this directory"""
 
-    def list_commands(self, ctx):
+    def list_commands(self, ctx: click.Context) -> List[str]:
         """list all the commands defined by cmd_*.py files in this directory"""
 
-        return (
+        return [
             filename[4:-3]
             for filename in os.listdir(os.path.abspath(os.path.dirname(__file__)))
             if filename.startswith("cmd_") and filename.endswith(".py")
-        )
+        ]
 
-    def get_command(self, ctx, name):
+    def get_command(self, ctx: click.Context, cmd_name: str) -> Optional[click.Command]:
         """import and return a specific command"""
 
         try:
-            mod = __import__(f"kiwi_scp.commands.cmd_{name}", None, None, ["CMD"])
+            cmd_module = importlib.import_module(f"kiwi_scp.commands.cmd_{cmd_name}")
+
         except ImportError:
             return
-        return mod.CMD
+
+        for cmd_name in dir(cmd_module):
+            member = getattr(cmd_module, cmd_name)
+            if isinstance(member, click.Command):
+                return member
+
+
+T = TypeVar("T")
 
 
 class KiwiCommand:
     @staticmethod
-    def print_multi_color(*content: Tuple[str, str]):
+    def print_multi_color(*content: Tuple[str, str]) -> None:
         for message, color in content:
             click.secho(message, fg=color, nl=False)
         click.echo()
 
     @staticmethod
-    def print_header(header: str):
+    def print_header(header: str) -> None:
         click.secho(header, fg="green", bold=True)
 
     @staticmethod
-    def print_error(error: str):
+    def print_error(error: str) -> None:
         click.secho(error, file=sys.stderr, fg="red", bold=True)
 
     @staticmethod
-    def print_list(content: Iterable[str]):
+    def print_list(content: Iterable[str]) -> None:
         for item in content:
             KiwiCommand.print_multi_color(
                 ("  - ", "green"),
@@ -54,7 +63,7 @@ class KiwiCommand:
             )
 
     @staticmethod
-    def user_query(description: str, default: Any, cast_to: Type[Any] = str):
+    def user_query(description: str, default: T, cast_to: Type[T] = str) -> T:
         # prompt user as per argument
         while True:
             try:
