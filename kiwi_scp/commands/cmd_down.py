@@ -36,7 +36,7 @@ class DownCommand(KiwiCommand):
         # TODO net-down
 
     @classmethod
-    def run_for_existing_project(cls, instance: Instance, project: Project, **kwargs) -> None:
+    def run_for_project(cls, instance: Instance, project: Project, **kwargs) -> None:
         COMPOSE_EXE.run(["down"], **project.process_kwargs)
 
     @classmethod

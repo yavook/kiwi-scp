@@ -33,7 +33,7 @@ class ListCommand(KiwiCommand):
             )
 
     @classmethod
-    def run_for_existing_project(cls, instance: Instance, project: Project, show: bool = None) -> None:
+    def run_for_project(cls, instance: Instance, project: Project, show: bool = None) -> None:
         if show:
             KiwiCommand.print_header(f"Showing config for all services in project '{project.name}'.")
             click.echo_via_pager(str(project.services))

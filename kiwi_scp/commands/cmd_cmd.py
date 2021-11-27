@@ -28,7 +28,7 @@ class CmdCommand(KiwiCommand):
     """Run raw docker-compose command in a project"""
 
     @classmethod
-    def run_for_existing_project(cls, instance: Instance, project: Project, compose_cmd: str = None,
-                                 compose_args: Tuple[str] = None) -> None:
+    def run_for_project(cls, instance: Instance, project: Project, compose_cmd: str = None,
+                        compose_args: Tuple[str] = None) -> None:
         if project.project_config.enabled:
             COMPOSE_EXE.run([compose_cmd, *compose_args], **project.process_kwargs)

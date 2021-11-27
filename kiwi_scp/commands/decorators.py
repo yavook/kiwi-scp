@@ -53,7 +53,7 @@ def kiwi_command(
                 project = ctx.get_project(project_name)
                 if project is not None:
                     _logger.debug(f"running for existing project {project}, kwargs={kwargs}")
-                    command_cls.run_for_existing_project(ctx, project, **kwargs)
+                    command_cls.run_for_project(ctx, project, **kwargs)
 
                 else:
                     _logger.debug(f"running for new project {project_name}, kwargs={kwargs}")

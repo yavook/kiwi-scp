@@ -122,16 +122,16 @@ class KiwiCommand:
     def run_for_instance(cls, instance: Instance, **kwargs) -> None:
         for project_config in instance.config.projects:
             project = instance.get_project(project_config.name)
-            cls.run_for_existing_project(instance, project, **kwargs)
+            cls.run_for_project(instance, project, **kwargs)
+
+    @classmethod
+    def run_for_project(cls, instance: Instance, project: Project, **kwargs) -> None:
+        service_names = [service.name for service in project.services.content]
+        cls.run_for_services(instance, project, service_names, **kwargs)
 
     @classmethod
     def run_for_new_project(cls, instance: Instance, project_name: str, **kwargs) -> None:
         cls.print_error(f"Project '{project_name}' not in kiwi-scp instance at '{instance.directory}'!")
-
-    @classmethod
-    def run_for_existing_project(cls, instance: Instance, project: Project, **kwargs) -> None:
-        service_names = [service.name for service in project.services.content]
-        cls.run_for_services(instance, project, service_names, **kwargs)
 
     @classmethod
     def run_for_services(cls, instance: Instance, project: Project, service_names: List[str], **kwargs) -> None:
