@@ -1,7 +1,7 @@
 import functools
 from ipaddress import IPv4Network
 from pathlib import Path
-from typing import Optional, Dict, List, Any, TextIO
+from typing import Optional, Dict, List, Any, TextIO, Tuple
 
 from pydantic import BaseModel, constr, root_validator, validator
 
@@ -55,7 +55,7 @@ class ProjectConfig(BaseModel):
 
     @validator("override_storage", pre=True)
     @classmethod
-    def unify_storage(cls, value):
+    def unify_storage(cls, value) -> Dict[str, Any]:
         """parse different storage notations"""
 
         if value is None or isinstance(value, dict):
@@ -135,7 +135,7 @@ class KiwiConfig(BaseModel):
 
     @classmethod
     @functools.lru_cache(maxsize=5)
-    def from_directory(cls, directory: Path):
+    def from_directory(cls, directory: Path) -> "KiwiConfig":
         """parses an actual kiwi.yml from disk (cached)"""
 
         try:
@@ -148,7 +148,7 @@ class KiwiConfig(BaseModel):
 
     @classmethod
     @functools.lru_cache(maxsize=1)
-    def from_default(cls):
+    def from_default(cls) -> "KiwiConfig":
         """returns the default config (cached)"""
 
         return cls()
@@ -268,7 +268,7 @@ class KiwiConfig(BaseModel):
     def unify_environment(cls, value) -> Dict[str, Optional[str]]:
         """parse different environment notations"""
 
-        def parse_str(var_val: Any) -> (str, Optional[str]):
+        def parse_str(var_val: Any) -> Tuple[str, Optional[str]]:
             """parse a "<variable>=<value>" string"""
 
             try:
@@ -311,7 +311,7 @@ class KiwiConfig(BaseModel):
 
     @validator("storage", pre=True)
     @classmethod
-    def unify_storage(cls, value):
+    def unify_storage(cls, value) -> Dict[str, Any]:
         """parse different storage notations"""
 
         if value is None:
@@ -336,7 +336,7 @@ class KiwiConfig(BaseModel):
 
     @validator("network", pre=True)
     @classmethod
-    def unify_network(cls, value):
+    def unify_network(cls, value) -> Dict[str, Any]:
         """parse different network notations"""
 
         if value is None:

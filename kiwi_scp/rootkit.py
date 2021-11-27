@@ -67,9 +67,9 @@ class Rootkit:
                     f"{IMAGES_DIRECTORY_NAME}"
                 ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    def run(self, process_args, **kwargs):
+    def run(self, process_args, **kwargs) -> Optional[subprocess.CompletedProcess]:
         self.__build_image()
-        DOCKER_EXE.run([
+        return DOCKER_EXE.run([
             'run', '--rm',
             '-v', '/:/mnt',
             '-u', 'root',

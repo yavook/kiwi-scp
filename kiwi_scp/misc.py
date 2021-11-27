@@ -23,7 +23,7 @@ class YAML(ruamel.yaml.YAML):
             return stream.getvalue()
 
     @staticmethod
-    def _format_kiwi_yml(yml_string: str):
+    def _format_kiwi_yml(yml_string: str) -> str:
         # insert newline before every main key
         yml_string = re.sub(r'^(\S)', r'\n\1', yml_string, flags=re.MULTILINE)
 

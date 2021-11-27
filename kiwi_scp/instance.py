@@ -46,7 +46,7 @@ class Services:
     def __bool__(self) -> bool:
         return bool(self.content)
 
-    def filter_existing(self, service_names: List[str]):
+    def filter_existing(self, service_names: List[str]) -> "Services":
         return Services([
             service
             for service in self.content
