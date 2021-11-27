@@ -44,34 +44,29 @@ class WParagraph:
     def __str__(self) -> str:
         return "\n".join(
             str(line)
-            for line
-            in self.lines
+            for line in self.lines
         )
 
     @classmethod
     def from_strings(cls, *source: str) -> "WParagraph":
         return cls([
             WString(line)
-            for line
-            in source
+            for line in source
         ])
 
     def align(self, alignment: WAlignment = WAlignment.CENTER, padding: int = 0, char: str = " ") -> "WParagraph":
         total_length = max(
             len(line)
-            for line
-            in self.lines
+            for line in self.lines
         ) + padding
         pad_lengths = (
             total_length - len(line)
-            for line
-            in self.lines
+            for line in self.lines
         )
 
         return WParagraph([
             line.pad(alignment, wlen, char)
-            for line, wlen
-            in zip(self.lines, pad_lengths)
+            for line, wlen in zip(self.lines, pad_lengths)
         ])
 
     def surround(self, char: str, padding: int = 1) -> "WParagraph":
@@ -82,8 +77,7 @@ class WParagraph:
 
         lines = [
             WString(f"{l_border}{line}{r_border}")
-            for line
-            in self.lines
+            for line in self.lines
         ]
         extra_line = char * len(lines[0])
 
@@ -99,6 +93,5 @@ class WParagraph:
 
         return WParagraph([
             WString(f"{l_border}{line}{r_border}")
-            for line
-            in self.lines
+            for line in self.lines
         ])
