@@ -6,7 +6,7 @@ from typing import List, Tuple, Iterable, Type, Optional, TypeVar
 
 import click
 
-from ..instance import Instance, Project
+from ..instance import Instance, Project, Services
 from ..wstring import WParagraph, WAlignment
 
 
@@ -135,6 +135,20 @@ class KiwiCommand:
 
     @classmethod
     def run_for_services(cls, instance: Instance, project: Project, service_names: List[str], **kwargs) -> None:
+        services = project.services.filter_existing(service_names)
+
+        new_service_names = [
+            service_name
+            for service_name
+            in service_names
+            if service_name not in list(services.names)
+        ]
+
+        cls.run_for_filtered_services(instance, project, services, new_service_names, **kwargs)
+
+    @classmethod
+    def run_for_filtered_services(cls, instance: Instance, project: Project, services: Services,
+                                  new_service_names: List[str], **kwargs) -> None:
         raise Exception
 
 

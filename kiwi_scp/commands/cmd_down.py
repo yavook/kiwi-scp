@@ -5,7 +5,7 @@ import click
 from .cli import KiwiCommand, KiwiCommandType
 from .decorators import kiwi_command
 from ..executable import COMPOSE_EXE
-from ..instance import Instance, Project
+from ..instance import Instance, Project, Services
 
 
 @click.option(
@@ -40,15 +40,9 @@ class DownCommand(KiwiCommand):
         COMPOSE_EXE.run(["down"], **project.process_kwargs)
 
     @classmethod
-    def run_for_services(cls, instance: Instance, project: Project, service_names: List[str], **kwargs) -> None:
-        services = project.services.filter_existing(service_names)
-        existing_service_names = [
-            service.name
-            for service in services.content
-        ]
-        all_service_names_exist = len(existing_service_names) == len(service_names)
-
-        if not existing_service_names and not all_service_names_exist:
+    def run_for_filtered_services(cls, instance: Instance, project: Project, services: Services,
+                                  new_service_names: List[str], **kwargs) -> None:
+        if not services:
             if not click.confirm(
                     "Did not find any of those services. \n"
                     f"Bring down the entire project {project.name} instead?",
@@ -56,5 +50,5 @@ class DownCommand(KiwiCommand):
             ):
                 return
 
-        COMPOSE_EXE.run(["stop", *existing_service_names], **project.process_kwargs)
-        COMPOSE_EXE.run(["rm", "-f", *existing_service_names], **project.process_kwargs)
+        COMPOSE_EXE.run(["stop", *services.names], **project.process_kwargs)
+        COMPOSE_EXE.run(["rm", "-f", *services.names], **project.process_kwargs)

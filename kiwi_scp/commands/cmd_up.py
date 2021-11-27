@@ -5,7 +5,7 @@ import click
 from .cli import KiwiCommand, KiwiCommandType
 from .decorators import kiwi_command
 from ..executable import COMPOSE_EXE
-from ..instance import Instance, Project
+from ..instance import Instance, Project, Services
 
 
 @kiwi_command(
@@ -16,18 +16,12 @@ class UpCommand(KiwiCommand):
     """Bring up the whole instance, a project or service(s) inside a project"""
 
     @classmethod
-    def run_for_services(cls, instance: Instance, project: Project, service_names: List[str], **kwargs) -> None:
+    def run_for_filtered_services(cls, instance: Instance, project: Project, services: Services,
+                                  new_service_names: List[str], **kwargs) -> None:
         # TODO conf-copy
         # TODO net-up
 
-        services = project.services.filter_existing(service_names)
-        existing_service_names = [
-            service.name
-            for service in services.content
-        ]
-        all_service_names_exist = len(existing_service_names) == len(service_names)
-
-        if not existing_service_names and not all_service_names_exist:
+        if not services:
             if not click.confirm(
                     "Did not find any of those services. \n"
                     f"Bring up the entire project {project.name} instead?",
@@ -35,4 +29,4 @@ class UpCommand(KiwiCommand):
             ):
                 return
 
-        COMPOSE_EXE.run(["up", "-d", *existing_service_names], **project.process_kwargs)
+        COMPOSE_EXE.run(["up", "-d", *services.names], **project.process_kwargs)
