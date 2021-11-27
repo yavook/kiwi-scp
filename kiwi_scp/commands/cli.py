@@ -7,6 +7,7 @@ from typing import List, Tuple, Iterable, Type, Optional, TypeVar
 import click
 
 from ..instance import Instance, Project
+from ..wstring import WParagraph, WAlignment
 
 
 class KiwiCLI(click.MultiCommand):
@@ -83,6 +84,39 @@ class KiwiCommand:
 
             except Exception as e:
                 click.echo(f"Invalid input: {e}")
+
+    @staticmethod
+    def danger_confirm(*prompt_lines: str, default: Optional[bool] = None) -> bool:
+        if default is True:
+            suffix = "[YES|no]"
+        elif default is False:
+            suffix = "[yes|NO]"
+        else:
+            suffix = "[yes|no]"
+
+        dumb = WParagraph.from_strings(
+            click.style("WARNING", bold=True, underline=True, blink=True, fg="red"),
+            click.style("ここにゴミ", fg="cyan"),
+            click.style("を捨てないで下さい", fg="cyan"),
+            click.style("DO NOT DUMB HERE", fg="yellow"),
+            click.style("NO DUMB AREA", fg="yellow"),
+        ).align().surround("!")
+
+        prompt = WParagraph.from_strings(*prompt_lines).align(WAlignment.LEFT).emphasize(3)
+
+        answer = input(
+            f"{dumb}\n\n"
+            f"{prompt}\n\n"
+            f"Are you sure you want to proceed? {suffix} "
+        ).strip().lower()
+
+        if answer == '':
+            answer = default
+
+        while answer not in ['yes', 'no']:
+            answer = input("Please type 'yes' or 'no' explicitly: ").strip().lower()
+
+        return answer == 'yes'
 
     @classmethod
     def run_for_instance(cls, instance: Instance, **kwargs) -> None:
