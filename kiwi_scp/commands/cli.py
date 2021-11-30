@@ -1,4 +1,5 @@
 import importlib
+import logging
 import os
 import sys
 from enum import Enum, auto
@@ -8,6 +9,8 @@ import click
 
 from ..instance import Instance, Project, Services
 from ..wstring import WParagraph, WAlignment
+
+_logger = logging.getLogger(__name__)
 
 
 class KiwiCLI(click.MultiCommand):
@@ -117,6 +120,37 @@ class KiwiCommand:
             answer = input("Please type 'yes' or 'no' explicitly: ").strip().lower()
 
         return answer == 'yes'
+
+    @classmethod
+    def run(cls, instance: Instance, project_name: Optional[str] = None, service_names: Optional[List[str]] = None,
+            **kwargs):
+
+        _logger.debug(f"{instance.directory!r}: {project_name!r}, {service_names!r}")
+        if project_name is None:
+            # run for whole instance
+            _logger.debug(f"running for instance, kwargs={kwargs}")
+            cls.run_for_instance(instance, **kwargs)
+
+        elif not service_names:
+            # run for one entire project
+            project = instance.get_project(project_name)
+            if project is None:
+                _logger.debug(f"running for new project {project_name}, kwargs={kwargs}")
+                cls.run_for_new_project(instance, project_name, **kwargs)
+
+            else:
+                _logger.debug(f"running for project {project.name}, kwargs={kwargs}")
+                cls.run_for_project(instance, project, **kwargs)
+
+        else:
+            # run for some services
+            project = instance.get_project(project_name)
+            if project is not None:
+                _logger.debug(f"running for services {service_names} in project {project}, kwargs={kwargs}")
+                cls.run_for_services(instance, project, service_names, **kwargs)
+
+            else:
+                cls.print_error(f"Project '{project_name}' not in kiwi-scp instance at '{instance.directory}'!")
 
     @classmethod
     def run_for_instance(cls, instance: Instance, **kwargs) -> None:
