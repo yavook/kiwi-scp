@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 from enum import Enum, auto
-from typing import List, Tuple, Iterable, Type, Optional, TypeVar
+from typing import List, Iterable, Type, Optional, TypeVar
 
 import click
 
@@ -40,15 +40,19 @@ class KiwiCLI(click.MultiCommand):
                 return member
 
 
+class KiwiCommandType(Enum):
+    INSTANCE = auto()
+    PROJECT = auto()
+    PROJECTS = auto()
+    SERVICES = auto()
+
+
 T = TypeVar("T")
 
 
 class KiwiCommand:
-    @staticmethod
-    def print_multi_color(*content: Tuple[str, str]) -> None:
-        for message, color in content:
-            click.secho(message, fg=color, nl=False)
-        click.echo()
+    type: KiwiCommandType = KiwiCommandType.SERVICES
+    enabled_only: bool = False
 
     @staticmethod
     def print_header(header: str) -> None:
@@ -61,10 +65,7 @@ class KiwiCommand:
     @staticmethod
     def print_list(content: Iterable[str]) -> None:
         for item in content:
-            KiwiCommand.print_multi_color(
-                ("  - ", "green"),
-                (item, "blue"),
-            )
+            click.echo(click.style("  - ", fg="green") + click.style(item, fg="blue"))
 
     @staticmethod
     def user_query(description: str, default: T, cast_to: Type[T] = str) -> T:
@@ -127,39 +128,58 @@ class KiwiCommand:
         return answer == "yes"
 
     @classmethod
-    def run(cls, instance: Instance, project_name: Optional[str] = None, service_names: Optional[List[str]] = None,
-            **kwargs):
+    def run(cls, instance: Instance, project_names: List[str], service_names: List[str], **kwargs):
 
-        _logger.debug(f"{instance.directory!r}: {project_name!r}, {service_names!r}")
-        if project_name is None:
+        _logger.debug(f"{instance.directory!r}: {project_names!r}, {service_names!r}")
+
+        projects = [
+            instance.get_project(project_name)
+            for project_name in project_names
+        ]
+
+        if not projects:
             # run for whole instance
             _logger.debug(f"running for instance, kwargs={kwargs}")
             cls.run_for_instance(instance, **kwargs)
 
         elif not service_names:
-            # run for one entire project
-            project = instance.get_project(project_name)
-            if project is None:
-                _logger.debug(f"running for new project {project_name}, kwargs={kwargs}")
-                cls.run_for_new_project(instance, project_name, **kwargs)
+            # run for entire project(s)
+            for project_name, project in zip(project_names, projects):
+                if project is None:
+                    _logger.debug(f"running for new project {project_name}, kwargs={kwargs}")
+                    cls.run_for_new_project(instance, project_name, **kwargs)
 
-            else:
-                _logger.debug(f"running for project {project.name}, kwargs={kwargs}")
-                cls.run_for_project(instance, project, **kwargs)
+                else:
+                    if cls.enabled_only and not project.project_config.enabled:
+                        cls.print_error(f"Can't interact with disabled project {project_name}!")
+                        return
+
+                    _logger.debug(f"running for project {project.name}, kwargs={kwargs}")
+                    cls.run_for_project(instance, project, **kwargs)
 
         else:
             # run for some services
-            project = instance.get_project(project_name)
-            if project is not None:
-                _logger.debug(f"running for services {service_names} in project {project}, kwargs={kwargs}")
-                cls.run_for_services(instance, project, service_names, **kwargs)
+            project_name = project_names[0]
+            project = projects[0]
+
+            if project is None:
+                cls.print_error(f"Project '{project_name}' not in kiwi-scp instance at '{instance.directory}'!")
 
             else:
-                cls.print_error(f"Project '{project_name}' not in kiwi-scp instance at '{instance.directory}'!")
+                if cls.enabled_only and not project.project_config.enabled:
+                    cls.print_error(f"Can't interact with disabled project {project_name}!")
+                    return
+
+                _logger.debug(f"running for services {service_names} in project {project_name}, kwargs={kwargs}")
+                cls.run_for_services(instance, project, service_names, **kwargs)
 
     @classmethod
     def run_for_instance(cls, instance: Instance, **kwargs) -> None:
         for project_config in instance.config.projects:
+            if cls.enabled_only and not project_config.enabled:
+                cls.print_header(f"Skipping disabled project {project_config.name}")
+                continue
+
             project = instance.get_project(project_config.name)
             cls.run_for_project(instance, project, **kwargs)
 
@@ -189,10 +209,3 @@ class KiwiCommand:
     def run_for_filtered_services(cls, instance: Instance, project: Project, services: Services,
                                   new_service_names: List[str], **kwargs) -> None:
         raise Exception
-
-
-class KiwiCommandType(Enum):
-    INSTANCE = auto()
-    PROJECT = auto()
-    PROJECTS = auto()
-    SERVICE = auto()

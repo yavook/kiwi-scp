@@ -13,7 +13,6 @@ _pass_instance = click.make_pass_decorator(
 _project_arg = click.argument(
     "project_name",
     metavar="PROJECT",
-    required=False,  # TODO remove this line when PROJECTS logic is implemented
     type=str,
 )
 
@@ -40,7 +39,6 @@ _services_arg_s = click.argument(
 
 
 def kiwi_command(
-        cmd_type: KiwiCommandType = KiwiCommandType.SERVICE,
         **decorator_kwargs,
 ) -> Callable:
     def decorator(command_cls: Type[KiwiCommand]) -> Callable:
@@ -50,20 +48,33 @@ def kiwi_command(
             **decorator_kwargs,
         )
         @_pass_instance
-        def cmd(ctx: Instance, project_name: Optional[str] = None, service_names: Optional[Tuple[str]] = None,
-                **kwargs) -> None:
-            if service_names is not None:
-                service_names = list(service_names)
+        def cmd(ctx: Instance, project_name: Optional[str] = None, project_names: Optional[Tuple[str]] = None,
+                service_names: Optional[Tuple[str]] = None, **kwargs) -> None:
+            if command_cls.type is KiwiCommandType.INSTANCE:
+                project_names = []
 
-            command_cls.run(ctx, project_name, service_names, **kwargs)
+            elif command_cls.type is KiwiCommandType.PROJECTS:
+                project_names = list(project_names)
 
-        if cmd_type is KiwiCommandType.PROJECT:
+            else:
+                if project_name is None:
+                    project_names = []
+
+                else:
+                    project_names = [project_name]
+
+                if command_cls.type is KiwiCommandType.SERVICES:
+                    service_names = list(service_names)
+
+            command_cls.run(ctx, project_names, service_names, **kwargs)
+
+        if command_cls.type is KiwiCommandType.PROJECT:
             cmd = _project_arg(cmd)
 
-        elif cmd_type is KiwiCommandType.PROJECTS:
+        elif command_cls.type is KiwiCommandType.PROJECTS:
             cmd = _projects_arg(cmd)
 
-        elif cmd_type is KiwiCommandType.SERVICE:
+        elif command_cls.type is KiwiCommandType.SERVICES:
             cmd = _services_arg_p(cmd)
             cmd = _services_arg_s(cmd)
 
