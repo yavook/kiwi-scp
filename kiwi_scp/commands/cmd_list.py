@@ -13,11 +13,12 @@ from ..instance import Instance, Project
     help=f"show actual config contents instead",
 )
 @kiwi_command(
-    cmd_type=KiwiCommandType.SERVICE,
     short_help="Inspect a kiwi-scp instance",
 )
 class ListCommand(KiwiCommand):
     """List projects in this instance, services inside a project or service(s) inside a project"""
+
+    type = KiwiCommandType.SERVICES
 
     @classmethod
     def run_for_instance(cls, instance: Instance, show: bool = None) -> None:
@@ -43,7 +44,8 @@ class ListCommand(KiwiCommand):
             KiwiCommand.print_list(service.name for service in project.services.content)
 
     @classmethod
-    def run_for_services(cls, instance: Instance, project: Project, service_names: List[str], show: bool = None) -> None:
+    def run_for_services(cls, instance: Instance, project: Project, service_names: List[str],
+                         show: bool = None) -> None:
         services = project.services.filter_existing(service_names)
         if show:
             service_names = [service.name for service in services.content]

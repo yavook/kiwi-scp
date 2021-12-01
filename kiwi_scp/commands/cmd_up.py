@@ -8,12 +8,12 @@ from ..executable import COMPOSE_EXE
 from ..instance import Instance, Project, Services
 
 
-@kiwi_command(
-    cmd_type=KiwiCommandType.SERVICE,
-    short_help="Bring up kiwi services",
-)
+@kiwi_command(short_help="Bring up kiwi services")
 class UpCommand(KiwiCommand):
     """Bring up the whole instance, a project or service(s) inside a project"""
+
+    type = KiwiCommandType.SERVICES
+    enabled_only = True
 
     @classmethod
     def run_for_filtered_services(cls, instance: Instance, project: Project, services: Services,

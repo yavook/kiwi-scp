@@ -14,11 +14,13 @@ from ..instance import Instance, Project, Services
     help=f"skip confirmation",
 )
 @kiwi_command(
-    cmd_type=KiwiCommandType.SERVICE,
     short_help="Bring down kiwi services",
 )
 class DownCommand(KiwiCommand):
     """Bring down the whole instance, a project or service(s) inside a project"""
+
+    type = KiwiCommandType.SERVICES
+    enabled_only = True
 
     @classmethod
     def run_for_instance(cls, instance: Instance, force: bool = None) -> None:

@@ -18,7 +18,6 @@ from ..instance import Instance, Project
     metavar="COMMAND",
 )
 @kiwi_command(
-    cmd_type=KiwiCommandType.PROJECT,
     short_help="Run docker-compose command",
     # ignore arguments looking like options
     # just pass everything down to docker-compose
@@ -27,8 +26,10 @@ from ..instance import Instance, Project
 class CmdCommand(KiwiCommand):
     """Run raw docker-compose command in a project"""
 
+    type = KiwiCommandType.PROJECT
+    enabled_only = True
+
     @classmethod
     def run_for_project(cls, instance: Instance, project: Project, compose_cmd: str = None,
                         compose_args: Tuple[str] = None) -> None:
-        if project.project_config.enabled:
-            COMPOSE_EXE.run([compose_cmd, *compose_args], **project.process_kwargs)
+        COMPOSE_EXE.run([compose_cmd, *compose_args], **project.process_kwargs)

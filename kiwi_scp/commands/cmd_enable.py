@@ -11,11 +11,11 @@ from ..instance import Instance, Project
     "--force/--no-force",
     help=f"skip confirmation",
 )
-@kiwi_command(
-    cmd_type=KiwiCommandType.PROJECT,
-)
+@kiwi_command()
 class DisableCommand(KiwiCommand):
-    """Enable a project"""
+    """Enable project(s)"""
+
+    type = KiwiCommandType.PROJECTS
 
     @classmethod
     def run_for_instance(cls, instance: Instance, force: bool = None) -> None:

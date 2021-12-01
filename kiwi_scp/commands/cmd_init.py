@@ -30,11 +30,12 @@ _logger = logging.getLogger(__name__)
     help=f"use default values even if {KIWI_CONF_NAME} is present",
 )
 @kiwi_command(
-    cmd_type=KiwiCommandType.INSTANCE,
     short_help="Initializes kiwi-scp",
 )
 class InitCommand(KiwiCommand):
     """Initialize or reconfigure a kiwi-scp instance"""
+
+    type = KiwiCommandType.INSTANCE
 
     @classmethod
     def run_for_instance(cls, instance: Instance, directory: Path = None, force: bool = None) -> None:
