@@ -92,10 +92,15 @@ class KiwiCommand:
     def danger_confirm(*prompt_lines: str, default: Optional[bool] = None) -> bool:
         if default is True:
             suffix = "[YES|no]"
+            default_answer = "yes"
+
         elif default is False:
             suffix = "[yes|NO]"
+            default_answer = "no"
+
         else:
             suffix = "[yes|no]"
+            default_answer = None
 
         dumb = WParagraph.from_strings(
             click.style("WARNING", bold=True, underline=True, blink=True, fg="red"),
@@ -103,23 +108,23 @@ class KiwiCommand:
             click.style("を捨てないで下さい", fg="cyan"),
             click.style("DO NOT DUMB HERE", fg="yellow"),
             click.style("NO DUMB AREA", fg="yellow"),
-        ).align().surround("!")
+        ).align(WAlignment.CENTER).surround("!")
 
         prompt = WParagraph.from_strings(*prompt_lines).align(WAlignment.LEFT).emphasize(3)
 
         answer = input(
             f"{dumb}\n\n"
             f"{prompt}\n\n"
-            f"Are you sure you want to proceed? {suffix} "
+            f"Are you sure you want to proceed? {suffix}: "
         ).strip().lower()
 
-        if answer == '':
-            answer = default
+        if not answer:
+            answer = default_answer
 
-        while answer not in ['yes', 'no']:
+        while answer not in ["yes", "no"]:
             answer = input("Please type 'yes' or 'no' explicitly: ").strip().lower()
 
-        return answer == 'yes'
+        return answer == "yes"
 
     @classmethod
     def run(cls, instance: Instance, project_name: Optional[str] = None, service_names: Optional[List[str]] = None,

@@ -28,7 +28,7 @@ class ListCommand(KiwiCommand):
         else:
             KiwiCommand.print_header(f"Projects in kiwi-scp instance at '{instance.directory}':")
             KiwiCommand.print_list(
-                project.name + click.style(" (disabled)" if not project.enabled else "", fg="red")
+                project.name + (click.style(" (disabled)", fg="red") if not project.enabled else "")
                 for project in instance.config.projects
             )
 
