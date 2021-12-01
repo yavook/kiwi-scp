@@ -12,12 +12,26 @@ _pass_instance = click.make_pass_decorator(
 
 _project_arg = click.argument(
     "project_name",
+    metavar="PROJECT",
+    required=False,  # TODO remove this line when PROJECTS logic is implemented
+    type=str,
+)
+
+_projects_arg = click.argument(
+    "project_names",
+    metavar="[PROJECT]...",
+    nargs=-1,
+    type=str,
+)
+
+_services_arg_p = click.argument(
+    "project_name",
     metavar="[PROJECT]",
     required=False,
     type=str,
 )
 
-_services_arg = click.argument(
+_services_arg_s = click.argument(
     "service_names",
     metavar="[SERVICE]...",
     nargs=-1,
@@ -46,9 +60,12 @@ def kiwi_command(
         if cmd_type is KiwiCommandType.PROJECT:
             cmd = _project_arg(cmd)
 
+        elif cmd_type is KiwiCommandType.PROJECTS:
+            cmd = _projects_arg(cmd)
+
         elif cmd_type is KiwiCommandType.SERVICE:
-            cmd = _project_arg(cmd)
-            cmd = _services_arg(cmd)
+            cmd = _services_arg_p(cmd)
+            cmd = _services_arg_s(cmd)
 
         return cmd
 
