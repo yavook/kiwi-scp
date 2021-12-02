@@ -10,6 +10,7 @@ class TestDefault:
         s = Service(
             name="s",
             content=CommentedMap(),
+            parent=None,
         )
 
         assert s.name == "s"
@@ -21,6 +22,7 @@ class TestDefault:
             content=CommentedMap({
                 "image": "repo/image:tag",
             }),
+            parent=None,
         )
 
         assert s.name == "s"
@@ -37,6 +39,7 @@ class TestDefault:
                     "$TARGETDIR/other/dir:/path/to/other/mountpoint",
                 ]
             }),
+            parent=None,
         )
 
         assert s.name == "s"
@@ -52,6 +55,7 @@ class TestDefault:
                     "$CONFDIR/other/config:/path/to/other/config",
                 ]
             }),
+            parent=None,
         )
 
         assert s.name == "s"
