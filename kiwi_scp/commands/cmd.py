@@ -5,10 +5,10 @@ from typing import TypeVar, Iterable, Type, Optional, List
 
 import click
 
-from kiwi_scp.instance import Instance
-from kiwi_scp.project import Project
-from kiwi_scp.services import Services
-from kiwi_scp.wstring import WParagraph, WAlignment
+from ..instance import Instance
+from ..project import Project
+from ..services import Services
+from ..wstring import WParagraph, WAlignment
 
 _logger = logging.getLogger(__name__)
 
