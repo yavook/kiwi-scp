@@ -8,7 +8,7 @@ from ._constants import HEADER_KIWI_CONF_NAME
 
 
 class YAML(ruamel.yaml.YAML):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.indent(offset=2)
 

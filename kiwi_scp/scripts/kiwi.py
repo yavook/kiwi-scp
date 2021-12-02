@@ -6,7 +6,7 @@ from kiwi_scp.commands.cli import KiwiCLI
 
 
 @click.command(cls=KiwiCLI)
-def main():
+def main() -> None:
     """kiwi is the simple tool for managing container servers."""
 
     verbosity = 0

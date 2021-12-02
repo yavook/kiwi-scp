@@ -130,7 +130,7 @@ class KiwiCommand:
         return answer == "yes"
 
     @classmethod
-    def run(cls, instance: Instance, project_names: List[str], service_names: List[str], **kwargs):
+    def run(cls, instance: Instance, project_names: List[str], service_names: List[str], **kwargs) -> None:
 
         _logger.debug(f"{instance.directory!r}: {project_names!r}, {service_names!r}")
 
