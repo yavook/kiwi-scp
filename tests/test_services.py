@@ -1,6 +1,7 @@
 from ruamel.yaml import CommentedMap
 
-from kiwi_scp.instance import Service, Services
+from kiwi_scp.services import Services
+from kiwi_scp.service import Service
 
 
 class TestServices:

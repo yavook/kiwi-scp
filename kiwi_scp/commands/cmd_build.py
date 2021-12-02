@@ -3,7 +3,8 @@ from typing import List
 from .cli import KiwiCommand, KiwiCommandType
 from .decorators import kiwi_command
 from ..executable import COMPOSE_EXE
-from ..instance import Instance, Project
+from ..instance import Instance
+from ..project import Project
 
 
 @kiwi_command(

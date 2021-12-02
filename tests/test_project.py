@@ -4,7 +4,7 @@ import pytest
 
 from kiwi_scp._constants import COMPOSE_FILE_NAME
 from kiwi_scp.config import KiwiConfig
-from kiwi_scp.instance import Project
+from kiwi_scp.project import Project
 
 
 class TestDefault:

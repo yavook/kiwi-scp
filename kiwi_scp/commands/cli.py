@@ -7,7 +7,9 @@ from typing import List, Iterable, Type, Optional, TypeVar
 
 import click
 
-from ..instance import Instance, Project, Services
+from ..instance import Instance
+from ..project import Project
+from ..services import Services
 from ..wstring import WParagraph, WAlignment
 
 _logger = logging.getLogger(__name__)

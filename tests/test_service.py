@@ -2,7 +2,7 @@ from pathlib import Path
 
 from ruamel.yaml import CommentedMap
 
-from kiwi_scp.instance import Service
+from kiwi_scp.service import Service
 
 
 class TestDefault:

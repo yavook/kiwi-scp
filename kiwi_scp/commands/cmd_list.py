@@ -4,7 +4,8 @@ import click
 
 from .cli import KiwiCommandType, KiwiCommand
 from .decorators import kiwi_command
-from ..instance import Instance, Project
+from ..instance import Instance
+from ..project import Project
 
 
 @click.option(
