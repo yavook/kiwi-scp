@@ -105,11 +105,7 @@ class KiwiCommand:
 
         _logger.debug(f"{instance.directory!r}: {project_names!r}, {service_names!r}")
 
-        projects = [
-            project
-            for project in instance.projects
-            if project.name in project_names
-        ]
+        projects = instance.get_projects(project_names)
 
         if not projects:
             # run for whole instance
@@ -118,7 +114,7 @@ class KiwiCommand:
 
         elif not service_names:
             # run for entire project(s)
-            for project_name, project in zip(project_names, projects):
+            for project_name, project in projects.items():
                 if project is None:
                     _logger.debug(f"running for new project {project_name}, kwargs={kwargs}")
                     cls.run_for_new_project(instance, project_name, **kwargs)
@@ -133,8 +129,8 @@ class KiwiCommand:
 
         else:
             # run for some services
-            project_name = project_names[0]
-            project = projects[0]
+            project_name = list(projects)[0]
+            project = projects[project_name]
 
             if project is None:
                 cls.print_error(f"Project '{project_name}' not in kiwi-scp instance at '{instance.directory}'!")
