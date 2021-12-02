@@ -1,7 +1,9 @@
+import logging
 import re
 import subprocess
+from itertools import zip_longest
 from pathlib import Path
-from typing import TYPE_CHECKING, Generator
+from typing import TYPE_CHECKING, Generator, Sequence
 
 import attr
 from ruamel.yaml import CommentedMap
@@ -10,6 +12,8 @@ from .executable import COMPOSE_EXE
 
 if TYPE_CHECKING:
     from .project import Project
+
+_logger = logging.getLogger(__name__)
 
 
 @attr.s
@@ -44,3 +48,15 @@ class Service:
 
         except subprocess.CalledProcessError:
             return False
+
+    def existing_executables(self, exe_names: Sequence[str]) -> Generator[str, None, None]:
+        for cur, nxt in zip_longest(exe_names, exe_names[1:]):
+            if self.has_executable(cur):
+                # found working shell
+                _logger.debug(f"Found executable '{cur}'")
+                yield cur
+
+            elif nxt is not None:
+                # try next in list
+                _logger.info(f"Executable '{cur}' not found in container, trying '{nxt}'")
+
