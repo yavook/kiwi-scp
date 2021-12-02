@@ -33,6 +33,19 @@ class Service:
             if cd_match:
                 yield Path(cd_match.group(1))
 
+    def has_executable(self, exe_name: str) -> bool:
+        try:
+            # test if desired executable exists
+            COMPOSE_EXE.run(
+                ["exec", "-T", self.name, "/bin/sh", "-c", f"command -v {exe_name}"],
+                check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                **self.parent.process_kwargs,
+            )
+            return True
+
+        except subprocess.CalledProcessError:
+            return False
+
 
 @attr.s
 class Services:
