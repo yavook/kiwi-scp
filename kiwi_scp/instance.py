@@ -17,7 +17,7 @@ from .misc import YAML
 class Service:
     name: str = attr.ib()
     content: CommentedMap = attr.ib()
-    parent: Optional["Project"] = attr.ib(default=None)
+    parent: "Project" = attr.ib()
 
     _RE_CONFDIR = re.compile(r"^\s*\$(?:CONFDIR|{CONFDIR})/+(.*)$", flags=re.UNICODE)
 
@@ -80,7 +80,7 @@ class Services:
 @attr.s
 class Project:
     directory: Path = attr.ib()
-    parent: Optional["Instance"] = attr.ib(default=None)
+    parent: "Instance" = attr.ib()
 
     @staticmethod
     @functools.lru_cache(maxsize=10)
@@ -93,7 +93,7 @@ class Project:
         return self.directory.name
 
     @property
-    def config(self) -> ProjectConfig:
+    def config(self) -> Optional[ProjectConfig]:
         return self.parent.config.get_project_config(self.name)
 
     @property
@@ -125,12 +125,15 @@ class Project:
         yml = Project._parse_compose_file(self.directory)
 
         return Services([
-            Service(name, content, self)
-            for name, content in yml["services"].items()
+            Service(
+                name=name,
+                content=content,
+                parent=self,
+            ) for name, content in yml["services"].items()
         ])
 
 
-@attr.s(frozen=True)
+@attr.s
 class Instance:
     directory: Path = attr.ib(default=Path('.'))
 
@@ -140,11 +143,10 @@ class Instance:
 
         return KiwiConfig.from_directory(self.directory)
 
-    @functools.lru_cache(maxsize=None)
-    def get_project(self, project_name: str) -> Optional[Project]:
+    @property
+    def projects(self) -> Generator[Project, None, None]:
         for project in self.config.projects:
-            if project.name == project_name:
-                return Project(
-                    directory=self.directory.joinpath(project.name),
-                    parent=self,
-                )
+            yield Project(
+                directory=self.directory.joinpath(project.name),
+                parent=self,
+            )

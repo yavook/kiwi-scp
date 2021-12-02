@@ -133,8 +133,9 @@ class KiwiCommand:
         _logger.debug(f"{instance.directory!r}: {project_names!r}, {service_names!r}")
 
         projects = [
-            instance.get_project(project_name)
-            for project_name in project_names
+            project
+            for project in instance.projects
+            if project.name in project_names
         ]
 
         if not projects:
@@ -175,12 +176,11 @@ class KiwiCommand:
 
     @classmethod
     def run_for_instance(cls, instance: Instance, **kwargs) -> None:
-        for project_config in instance.config.projects:
-            if cls.enabled_only and not project_config.enabled:
-                cls.print_header(f"Skipping disabled project {project_config.name}")
+        for project in instance.projects:
+            if cls.enabled_only and not project.config.enabled:
+                cls.print_header(f"Skipping disabled project {project.name}")
                 continue
 
-            project = instance.get_project(project_config.name)
             cls.run_for_project(instance, project, **kwargs)
 
     @classmethod

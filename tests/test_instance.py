@@ -14,12 +14,6 @@ class TestDefault:
 
         assert pc.name == "hello-world.project"
 
-        p = i.get_project("hello-world.project")
-
-        assert p.directory == Path("example/hello-world.project")
-
-        assert i.get_project("nonexistent") is None
-
     def test_empty(self):
         i = Instance()
 
