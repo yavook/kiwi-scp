@@ -13,7 +13,6 @@ class TestDefault:
     def test_example(self):
         p = Project(
             directory=Path("example/hello-world.project"),
-            config=TestDefault.cfg,
         )
 
         ss = p.services
@@ -31,7 +30,6 @@ class TestDefault:
     def test_empty(self):
         p = Project(
             directory=Path("nonexistent"),
-            config=TestDefault.cfg,
         )
 
         with pytest.raises(FileNotFoundError) as exc_info:

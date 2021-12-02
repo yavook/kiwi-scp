@@ -1,5 +1,6 @@
 import functools
 import re
+import subprocess
 from pathlib import Path
 from typing import Generator, List, Optional, Dict, Any
 
@@ -8,15 +9,17 @@ from ruamel.yaml.comments import CommentedMap
 
 from ._constants import COMPOSE_FILE_NAME, CONF_DIRECTORY_NAME
 from .config import KiwiConfig, ProjectConfig
+from .executable import COMPOSE_EXE
 from .misc import YAML
-
-_RE_CONFDIR = re.compile(r"^\s*\$(?:CONFDIR|{CONFDIR})/+(.*)$", flags=re.UNICODE)
 
 
 @attr.s
 class Service:
     name: str = attr.ib()
     content: CommentedMap = attr.ib()
+    parent: Optional["Project"] = attr.ib(default=None)
+
+    _RE_CONFDIR = re.compile(r"^\s*\$(?:CONFDIR|{CONFDIR})/+(.*)$", flags=re.UNICODE)
 
     @property
     def configs(self) -> Generator[Path, None, None]:
@@ -25,7 +28,7 @@ class Service:
 
         for volume in self.content["volumes"]:
             host_part = volume.split(":")[0]
-            cd_match = _RE_CONFDIR.match(host_part)
+            cd_match = Service._RE_CONFDIR.match(host_part)
 
             if cd_match:
                 yield Path(cd_match.group(1))
@@ -64,7 +67,7 @@ class Services:
 @attr.s
 class Project:
     directory: Path = attr.ib()
-    config: KiwiConfig = attr.ib()
+    parent: Optional["Instance"] = attr.ib(default=None)
 
     @staticmethod
     @functools.lru_cache(maxsize=10)
@@ -77,15 +80,15 @@ class Project:
         return self.directory.name
 
     @property
-    def project_config(self) -> ProjectConfig:
-        return self.config.get_project_config(self.name)
+    def config(self) -> ProjectConfig:
+        return self.parent.config.get_project_config(self.name)
 
     @property
     def process_kwargs(self) -> Dict[str, Any]:
         directory: Path = self.directory
         project_name: str = self.name
-        kiwi_hub_name: str = self.config.network.name
-        target_root_dir: Path = self.config.storage.directory
+        kiwi_hub_name: str = self.parent.config.network.name
+        target_root_dir: Path = self.parent.config.storage.directory
         conf_dir: Path = target_root_dir.joinpath(CONF_DIRECTORY_NAME)
         target_dir: Path = target_root_dir.joinpath(project_name)
 
@@ -100,7 +103,7 @@ class Project:
             },
         }
 
-        result["env"].update(self.config.environment)
+        result["env"].update(self.parent.config.environment)
 
         return result
 
@@ -109,12 +112,12 @@ class Project:
         yml = Project._parse_compose_file(self.directory)
 
         return Services([
-            Service(name, description)
-            for name, description in yml["services"].items()
+            Service(name, content, self)
+            for name, content in yml["services"].items()
         ])
 
 
-@attr.s
+@attr.s(frozen=True)
 class Instance:
     directory: Path = attr.ib(default=Path('.'))
 
@@ -124,23 +127,11 @@ class Instance:
 
         return KiwiConfig.from_directory(self.directory)
 
-    @staticmethod
     @functools.lru_cache(maxsize=None)
-    def __get_project(instance_directory: Path, project_name: str) -> Optional[Project]:
-        instance = Instance(instance_directory)
-        config = instance.config
-
-        for project in config.projects:
+    def get_project(self, project_name: str) -> Optional[Project]:
+        for project in self.config.projects:
             if project.name == project_name:
                 return Project(
-                    directory=instance_directory.joinpath(project.name),
-                    config=config,
+                    directory=self.directory.joinpath(project.name),
+                    parent=self,
                 )
-
-    def get_project(self, project_name: str) -> Optional[Project]:
-        project = Instance.__get_project(self.directory, project_name)
-        if project is None:
-            return
-
-        project.instance = self
-        return project

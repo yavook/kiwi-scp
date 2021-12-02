@@ -150,7 +150,7 @@ class KiwiCommand:
                     cls.run_for_new_project(instance, project_name, **kwargs)
 
                 else:
-                    if cls.enabled_only and not project.project_config.enabled:
+                    if cls.enabled_only and not project.config.enabled:
                         cls.print_error(f"Can't interact with disabled project {project_name}!")
                         return
 
@@ -166,7 +166,7 @@ class KiwiCommand:
                 cls.print_error(f"Project '{project_name}' not in kiwi-scp instance at '{instance.directory}'!")
 
             else:
-                if cls.enabled_only and not project.project_config.enabled:
+                if cls.enabled_only and not project.config.enabled:
                     cls.print_error(f"Can't interact with disabled project {project_name}!")
                     return
 

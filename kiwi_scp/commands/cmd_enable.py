@@ -27,11 +27,11 @@ class DisableCommand(KiwiCommand):
 
     @classmethod
     def run_for_project(cls, instance: Instance, project: Project, **kwargs) -> None:
-        if project.project_config.enabled:
+        if project.config.enabled:
             KiwiCommand.print_error(f"Project {project.name} is already enabled!")
             return
 
-        project.project_config.enabled = True
+        project.config.enabled = True
         KiwiCommand.print_header(f"Project {project.name} enabled")
 
         # write out the new kiwi.yml
