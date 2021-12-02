@@ -5,16 +5,19 @@ import click
 from kiwi_scp.commands.cli import KiwiCLI
 
 
+@click.option(
+    "-v", "--verbose",
+    help="increase output verbosity",
+    count=True,
+)
 @click.command(cls=KiwiCLI)
-def main() -> None:
+def main(verbose: int) -> None:
     """kiwi is the simple tool for managing container servers."""
 
-    verbosity = 0
-
-    if verbosity >= 2:
+    if verbose >= 2:
         log_level = logging.DEBUG
         log_format = "[%(asctime)s] %(levelname)s @ %(filename)s:%(funcName)s:%(lineno)d: %(message)s"
-    elif verbosity >= 1:
+    elif verbose >= 1:
         log_level = logging.INFO
         log_format = "[%(asctime)s] %(levelname)s: %(message)s"
     else:
