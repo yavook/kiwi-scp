@@ -2,7 +2,7 @@ from typing import Callable, Type, Optional, Tuple
 
 import click
 
-from .cli import KiwiCommandType, KiwiCommand
+from .cmd import KiwiCommandType, KiwiCommand
 from ..instance import Instance
 
 _pass_instance = click.make_pass_decorator(

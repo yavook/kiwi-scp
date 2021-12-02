@@ -2,7 +2,7 @@ from typing import List
 
 import click
 
-from .cli import KiwiCommand, KiwiCommandType
+from .cmd import KiwiCommandType, KiwiCommand
 from .decorators import kiwi_command
 from ..executable import COMPOSE_EXE
 from ..instance import Instance

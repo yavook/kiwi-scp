@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 
-from .cli import KiwiCommandType, KiwiCommand
+from .cmd import KiwiCommandType, KiwiCommand
 from .decorators import kiwi_command
 from .._constants import KIWI_CONF_NAME
 from ..config import KiwiConfig

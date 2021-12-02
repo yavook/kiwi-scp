@@ -1,6 +1,6 @@
 import click
 
-from .cli import KiwiCommand, KiwiCommandType
+from .cmd import KiwiCommandType, KiwiCommand
 from .decorators import kiwi_command
 from .._constants import KIWI_CONF_NAME
 from ..instance import Instance
