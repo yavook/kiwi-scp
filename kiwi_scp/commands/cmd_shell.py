@@ -48,10 +48,11 @@ class ShellCommand(KiwiCommand):
         if shell is not None:
             shells.appendleft(shell)
 
+        shells = list(shells)
         user_args = ["-u", user] if user is not None else []
 
         for service in services.content:
-            existing_shells = service.existing_executables(list(shells))
+            existing_shells = service.existing_executables(shells)
 
             try:
                 use_shell = next(existing_shells)
@@ -61,8 +62,8 @@ class ShellCommand(KiwiCommand):
                 if shell is not None:
                     use_shell = shell
                     _logger.warning(
-                        "Could not find any working shell in this container. "
-                        f"Launching provided {use_shell!r} nevertheless. This might fail!"
+                        "Could not find a working shell in this container. "
+                        f"Launching provided shell {use_shell!r} nevertheless. This might fail!"
                     )
 
                 else:
@@ -70,7 +71,7 @@ class ShellCommand(KiwiCommand):
                         f"Could not find any working shell among {shells!r} in this container. "
                         "Please suggest a shell using the '-s SHELL' command line option!"
                     )
-                    return
+                    continue
 
             # spawn shell
             COMPOSE_EXE.run(['exec', *user_args, service.name, use_shell], **project.process_kwargs)
