@@ -1,16 +1,18 @@
 import functools
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import TYPE_CHECKING, Optional, Dict, Any
 
 import attr
 from ruamel.yaml import CommentedMap
 
 from ._constants import COMPOSE_FILE_NAME, CONF_DIRECTORY_NAME
 from .config import ProjectConfig
-from .instance import Instance
 from .service import Service
 from .services import Services
 from .yaml import YAML
+
+if TYPE_CHECKING:
+    from .instance import Instance
 
 
 @attr.s

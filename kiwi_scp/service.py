@@ -1,13 +1,15 @@
 import re
 import subprocess
 from pathlib import Path
-from typing import Generator
+from typing import TYPE_CHECKING, Generator
 
 import attr
 from ruamel.yaml import CommentedMap
 
 from .executable import COMPOSE_EXE
-from .project import Project
+
+if TYPE_CHECKING:
+    from .project import Project
 
 
 @attr.s
