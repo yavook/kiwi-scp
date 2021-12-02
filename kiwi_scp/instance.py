@@ -10,7 +10,7 @@ from ruamel.yaml.comments import CommentedMap
 from ._constants import COMPOSE_FILE_NAME, CONF_DIRECTORY_NAME
 from .config import KiwiConfig, ProjectConfig
 from .executable import COMPOSE_EXE
-from .misc import YAML
+from .yaml import YAML
 
 
 @attr.s

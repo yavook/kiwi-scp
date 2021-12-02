@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from kiwi_scp.config import KiwiConfig
-from kiwi_scp.misc import YAML
+from kiwi_scp.yaml import YAML
 
 
 class UnCoercible:

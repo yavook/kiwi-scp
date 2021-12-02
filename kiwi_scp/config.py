@@ -6,7 +6,7 @@ from typing import Optional, Dict, List, Any, TextIO, Tuple
 from pydantic import BaseModel, constr, root_validator, validator
 
 from ._constants import RE_SEMVER, RE_VARNAME, KIWI_CONF_NAME
-from .misc import YAML
+from .yaml import YAML
 
 
 class StorageConfig(BaseModel):

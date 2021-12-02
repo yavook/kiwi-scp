@@ -1,14 +1,15 @@
-#!/usr/bin/env python3
-
-# system
 import logging
 
-# local
-import kiwi_scp
+import click
+
+from kiwi_scp.commands.cli import KiwiCLI
 
 
-def set_verbosity(logger, handler, verbosity):
-    """set logging default verbosity level and format"""
+@click.command(cls=KiwiCLI)
+def main():
+    """kiwi is the simple tool for managing container servers."""
+
+    verbosity = 0
 
     if verbosity >= 2:
         log_level = logging.DEBUG
@@ -20,19 +21,12 @@ def set_verbosity(logger, handler, verbosity):
         log_level = logging.WARNING
         log_format = "%(levelname)s: %(message)s"
 
-    logger.setLevel(log_level)
-    handler.setFormatter(logging.Formatter(log_format))
-
-
-def main():
     # add a new handler (needed to set the level)
     log_handler = logging.StreamHandler()
     logging.getLogger().addHandler(log_handler)
-    set_verbosity(logging.getLogger(), log_handler, kiwi_scp.verbosity())
 
-    # run the app
-    if not kiwi_scp.run():
-        quit(1)
+    logging.getLogger().setLevel(log_level)
+    log_handler.setFormatter(logging.Formatter(log_format))
 
 
 if __name__ == "__main__":
