@@ -2,7 +2,7 @@ import logging
 
 import click
 
-from kiwi_scp.commands.cli import KiwiCLI
+from kiwi_scp.commands import KiwiCLI
 
 
 @click.option(
