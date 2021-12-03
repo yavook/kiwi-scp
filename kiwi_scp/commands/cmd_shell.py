@@ -1,5 +1,4 @@
 import logging
-from collections import deque
 from typing import List, Optional
 
 import click
@@ -37,25 +36,22 @@ class ShellCommand(KiwiCommand):
     def run_for_filtered_services(cls, instance: Instance, project: Project, services: Services,
                                   new_service_names: List[str], shell: Optional[str] = None,
                                   user: Optional[str] = None) -> None:
-        # builtin shells: as a last resort, fallback to '/bin/sh' and 'sh'
-        shells = deque(["/bin/sh", "sh"])
-
-        # add shells from KiwiConfig
-        config_shells = map(str, instance.config.shells)
-        shells.extendleft(config_shells)
+        # shells from KiwiConfig
+        shells = [
+            *(str(path) for path in instance.config.shells),
+            # as a last resort, fall back to '/bin/sh' and 'sh'
+            "/bin/sh", "sh",
+        ]
 
         # add shell from argument
         if shell is not None:
-            shells.appendleft(shell)
+            shells.insert(0, shell)
 
-        shells = list(shells)
         user_args = ["-u", user] if user is not None else []
 
         for service in services.content:
-            existing_shells = service.existing_executables(shells)
-
             try:
-                use_shell = next(existing_shells)
+                use_shell = next(service.existing_executables(shells))
                 _logger.debug(f"Using shell {use_shell!r}")
 
             except StopIteration:
