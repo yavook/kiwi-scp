@@ -26,9 +26,16 @@ class KiwiCLI(click.MultiCommand):
         except ImportError:
             return
 
-        for cmd_name in dir(cmd_module):
-            member = getattr(cmd_module, cmd_name)
+        member_name = f"{cmd_name.capitalize()}Command"
+
+        if member_name in dir(cmd_module):
+            member = getattr(cmd_module, member_name)
+
             if isinstance(member, click.Command):
                 return member
 
+            else:
+                raise Exception("Fail class")
 
+        else:
+            raise Exception("Fail member name")

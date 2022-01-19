@@ -13,7 +13,7 @@ from ..project import Project
     help=f"skip confirmation",
 )
 @kiwi_command()
-class DisableCommand(KiwiCommand):
+class EnableCommand(KiwiCommand):
     """Enable project(s)"""
 
     type = KiwiCommandType.PROJECTS
