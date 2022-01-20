@@ -12,7 +12,15 @@ from kiwi_scp.commands import KiwiCLI
 )
 @click.command(cls=KiwiCLI)
 def main(verbose: int) -> None:
-    """kiwi is the simple tool for managing container servers."""
+    """kiwi is the simple tool for managing container servers.
+
+    \b
+    - Manage full instances using just your favorite version control system
+    - Group services into projects, each with their own docker-compose.yml
+    - Build service-specific, private docker images from Dockerfiles
+    - Make use of the local file system by referring to ${TARGETDIR}, ${TARGETROOT} and ${CONFDIR} in compose files
+    - Create your own instance-global variables for compose files using the kiwi.yml "environment" section
+    """
 
     if verbose >= 2:
         log_level = logging.DEBUG
