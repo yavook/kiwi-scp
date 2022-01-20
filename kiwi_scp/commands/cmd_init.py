@@ -68,6 +68,4 @@ class InitCommand(KiwiCommand):
             os.mkdir(instance.directory)
 
         # write out the new kiwi.yml
-        cfg = KiwiConfig.parse_obj(kiwi_dict)
-        with open(instance.directory.joinpath(KIWI_CONF_NAME), "w") as file:
-            cfg.dump_kiwi_yml(file)
+        instance.save_config(KiwiConfig.parse_obj(kiwi_dict))

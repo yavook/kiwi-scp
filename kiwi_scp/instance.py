@@ -3,6 +3,7 @@ from typing import Generator, Dict, Sequence
 
 import attr
 
+from ._constants import KIWI_CONF_NAME
 from .config import KiwiConfig
 from .project import Project
 
@@ -16,6 +17,10 @@ class Instance:
         """shorthand: get the current configuration"""
 
         return KiwiConfig.from_directory(self.directory)
+
+    def save_config(self, config: KiwiConfig) -> None:
+        with open(self.directory.joinpath(KIWI_CONF_NAME), "w") as file:
+            config.dump_kiwi_yml(file)
 
     @property
     def projects(self) -> Generator[Project, None, None]:
