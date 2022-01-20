@@ -10,6 +10,10 @@ networks:
       name: ${KIWI_HUB_NAME}
 
 services:
+  ######################
+  # START EDITING HERE #
+  ######################
+
   # an example service
   something:
     # uses an image
