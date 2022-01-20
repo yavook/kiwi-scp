@@ -28,10 +28,7 @@ COMPOSE_FILE_NAME = "docker-compose.yml"
 # text files inside kiwi-scp "src" directory
 HEADER_KIWI_CONF_NAME = f"{KIWI_ROOT}/data/etc/kiwi_header.yml"
 DEFAULT_KIWI_CONF_NAME = f"{KIWI_ROOT}/data/etc/kiwi_default.yml"
-VERSION_TAG_NAME = f"{KIWI_ROOT}/data/etc/version_tag"
 DEFAULT_DOCKER_COMPOSE_NAME = f"{KIWI_ROOT}/data/etc/docker-compose_default.yml"
-KIWI_HELP_TEXT_NAME = f"{KIWI_ROOT}/data/etc/kiwi_help.txt"
-COMMAND_HELP_TEXT_NAME = f"{KIWI_ROOT}/data/etc/command_help.txt"
 
 # special config directory in projects
 CONF_DIRECTORY_NAME = 'conf'
