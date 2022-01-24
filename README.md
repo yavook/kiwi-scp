@@ -112,11 +112,11 @@ networks:
 ```
 
 
-#### The `CONFDIR`
+#### The `CONFIGDIR`
 
 Sometimes, it's convenient to re-use configuration files across projects.
 For this use case, create a directory named `conf` in a project.
-Those will all be combined into a directory available as **${CONFDIR}** in your `docker-compose.yml` files.
+Those will all be combined into a directory available as **${CONFIGDIR}** in your `docker-compose.yml` files.
 
 
 #### `kiwi.yml` options

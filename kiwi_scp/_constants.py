@@ -34,8 +34,9 @@ HEADER_KIWI_CONF_NAME = f"{KIWI_ROOT}/data/etc/kiwi_header.yml"
 DEFAULT_KIWI_CONF_NAME = f"{KIWI_ROOT}/data/etc/kiwi_default.yml"
 DEFAULT_DOCKER_COMPOSE_NAME = f"{KIWI_ROOT}/data/etc/docker-compose_default.yml"
 
-# special config directory in projects
-CONF_DIRECTORY_NAME = 'conf'
+# special config directory
+CONF_DIRECTORY_NAME = 'config'
+
 # location for auxiliary Dockerfiles
 IMAGES_DIRECTORY_NAME = f"{KIWI_ROOT}/data/images"
 

@@ -46,10 +46,10 @@ services:
       - "8081:8080"
 
   another-web:
-    # Another webserver just to show off the ${CONFDIR} variable
+    # Another webserver just to show off the ${CONFIGDIR} variable
     image: nginx:stable-alpine
     restart: unless-stopped
     ports:
       - "8082:80"
     volumes:
-      - "${CONFDIR}/html/index.html:/usr/share/nginx/html/index.html:ro"
+      - "${CONFIGDIR}/html/index.html:/usr/share/nginx/html/index.html:ro"

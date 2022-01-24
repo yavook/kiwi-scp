@@ -49,7 +49,7 @@ class Project:
                 "COMPOSE_PROJECT_NAME": project_name,
                 "KIWI_HUB_NAME": kiwi_hub_name,
                 "TARGETROOT": str(target_root_dir),
-                "CONFDIR": str(conf_dir),
+                "CONFIGDIR": str(conf_dir),
                 "TARGETDIR": str(target_dir),
             },
         }

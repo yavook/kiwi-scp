@@ -51,8 +51,8 @@ class TestDefault:
             content=CommentedMap({
                 "image": "repo/image:tag",
                 "volumes": [
-                    "${CONFDIR}/some/config:/path/to/some/config",
-                    "$CONFDIR/other/config:/path/to/other/config",
+                    "${CONFIGDIR}/some/config:/path/to/some/config",
+                    "CONFIGDIR/other/config:/path/to/other/config",
                 ]
             }),
             parent=None,
