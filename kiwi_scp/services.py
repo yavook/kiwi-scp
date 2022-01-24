@@ -2,8 +2,8 @@ from typing import List, Generator
 
 import attr
 
-from kiwi_scp.service import Service
-from kiwi_scp.yaml import YAML
+from .service import Service
+from .yaml import YAML
 
 
 @attr.s
