@@ -21,6 +21,17 @@ class Services:
     def __bool__(self) -> bool:
         return bool(self.content)
 
+    # def copy_configs(self):
+    #     configs = (
+    #         config
+    #         for service in self.content
+    #         for config in service.configs
+    #     )
+    #
+    #     print(list(configs))
+    #
+    #     # Rootkit("rsync").
+
     @property
     def names(self) -> Generator[str, None, None]:
         return (
