@@ -5,7 +5,7 @@ import click
 
 from .cmd import KiwiCommandType, KiwiCommand
 from .decorators import kiwi_command
-from .._constants import DEFAULT_DOCKER_COMPOSE_NAME, COMPOSE_FILE_NAME
+from .._constants import DEFAULT_DOCKER_COMPOSE_NAME, COMPOSE_FILE_NAME, RESERVED_PROJECT_NAMES
 from ..config import ProjectConfig
 from ..instance import Instance
 from ..project import Project
@@ -23,6 +23,10 @@ class NewCommand(KiwiCommand):
 
     @classmethod
     def run_for_new_project(cls, instance: Instance, project_name: str, **kwargs) -> None:
+        if project_name in RESERVED_PROJECT_NAMES:
+            KiwiCommand.print_error(f"Project name '{project_name}' is reserved!")
+            return
+
         try:
             os.mkdir(project_name)
             instance.config.projects.append(ProjectConfig(

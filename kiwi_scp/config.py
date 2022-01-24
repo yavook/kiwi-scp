@@ -5,7 +5,7 @@ from typing import Optional, Dict, List, Any, TextIO, Tuple
 
 from pydantic import BaseModel, constr, root_validator, validator
 
-from ._constants import RE_SEMVER, RE_VARNAME, KIWI_CONF_NAME
+from ._constants import RE_SEMVER, RE_VARNAME, KIWI_CONF_NAME, RESERVED_PROJECT_NAMES
 from .yaml import YAML
 
 
@@ -52,6 +52,16 @@ class ProjectConfig(BaseModel):
             result = self.dict(exclude={"override_storage"})
             result["override_storage"] = self.override_storage.kiwi_dict
             return result
+
+    @validator("name")
+    @classmethod
+    def check_project(cls, value: str) -> str:
+        """check if project name is allowed"""
+
+        if value in RESERVED_PROJECT_NAMES:
+            raise ValueError(f"Project name '{value}' is reserved!")
+
+        return value
 
     @validator("override_storage", pre=True)
     @classmethod

@@ -1,5 +1,9 @@
 import os
 
+RESERVED_PROJECT_NAMES = [
+    'config'
+]
+
 #############
 # REGEX PARTS
 
