@@ -13,4 +13,4 @@ class TestServices:
         )
         ss = Services([s])
 
-        assert str(ss) == "services:\n  s: {}"
+        assert str(ss) == "services:\n  s: {}\nconfigs: []"
