@@ -11,6 +11,7 @@ from ruamel.yaml import CommentedMap
 from .executable import COMPOSE_EXE
 
 if TYPE_CHECKING:
+    from .instance import Instance
     from .project import Project
 
 _logger = logging.getLogger(__name__)
@@ -20,9 +21,13 @@ _logger = logging.getLogger(__name__)
 class Service:
     name: str = attr.ib()
     content: CommentedMap = attr.ib()
-    parent: "Project" = attr.ib()
+    parent_project: "Project" = attr.ib()
 
     _RE_CONFIGDIR = re.compile(r"^\s*\$(?:CONFIGDIR|{CONFIGDIR})/+(.*)$", flags=re.UNICODE)
+
+    @property
+    def parent_instance(self) -> "Instance":
+        return self.parent_project.parent_instance
 
     @property
     def configs(self) -> Generator[Path, None, None]:
@@ -42,7 +47,7 @@ class Service:
             COMPOSE_EXE.run(
                 ["exec", "-T", self.name, "/bin/sh", "-c", f"command -v {exe_name}"],
                 check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                **self.parent.process_kwargs,
+                **self.parent_project.process_kwargs,
             )
             return True
 

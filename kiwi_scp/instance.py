@@ -27,7 +27,7 @@ class Instance:
         for project in self.config.projects:
             yield Project(
                 directory=self.directory.joinpath(project.name),
-                parent=self,
+                parent_instance=self,
             )
 
     def get_projects(self, project_names: Sequence[str]) -> Dict[str, Project]:

@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 @attr.s
 class Project:
     directory: Path = attr.ib()
-    parent: "Instance" = attr.ib()
+    parent_instance: "Instance" = attr.ib()
 
     @staticmethod
     @functools.lru_cache(maxsize=10)
@@ -32,14 +32,14 @@ class Project:
 
     @property
     def config(self) -> Optional[ProjectConfig]:
-        return self.parent.config.get_project_config(self.name)
+        return self.parent_instance.config.get_project_config(self.name)
 
     @property
     def process_kwargs(self) -> Dict[str, Any]:
         directory: Path = self.directory
         project_name: str = self.name
-        kiwi_hub_name: str = self.parent.config.network.name
-        target_root_dir: Path = self.parent.config.storage.directory
+        kiwi_hub_name: str = self.parent_instance.config.network.name
+        target_root_dir: Path = self.parent_instance.config.storage.directory
         conf_dir: Path = target_root_dir.joinpath(CONF_DIRECTORY_NAME)
         target_dir: Path = target_root_dir.joinpath(project_name)
 
@@ -54,7 +54,7 @@ class Project:
             },
         }
 
-        result["env"].update(self.parent.config.environment)
+        result["env"].update(self.parent_instance.config.environment)
 
         return result
 
@@ -66,6 +66,6 @@ class Project:
             Service(
                 name=name,
                 content=content,
-                parent=self,
+                parent_project=self,
             ) for name, content in yml["services"].items()
         ])

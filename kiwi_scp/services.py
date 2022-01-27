@@ -1,14 +1,18 @@
-from typing import List, Generator
+from pathlib import Path
+from typing import List, Generator, Optional, TYPE_CHECKING
 
 import attr
 
-from .service import Service
 from .yaml import YAML
+
+if TYPE_CHECKING:
+    from .instance import Instance
+    from .service import Service
 
 
 @attr.s
 class Services:
-    content: List[Service] = attr.ib()
+    content: List["Service"] = attr.ib()
 
     def __str__(self) -> str:
         return YAML().dump({
@@ -21,14 +25,25 @@ class Services:
     def __bool__(self) -> bool:
         return bool(self.content)
 
-    # def copy_configs(self):
-    #     configs = (
-    #         config
-    #         for service in self.content
-    #         for config in service.configs
-    #     )
+    @property
+    def parent_instance(self) -> Optional["Instance"]:
+        if not self:
+            return
+
+        return self.content[0].parent_instance
+
+    @property
+    def configs(self) -> Generator[Path, None, None]:
+        for service in self.content:
+            yield from service.configs
+
+    # def copy_configs(self) -> None:
+    #     instance = self.parent_instance
     #
-    #     print(list(configs))
+    #     if instance is None:
+    #         return
+    #
+    #     print(list(self.configs))
     #
     #     # Rootkit("rsync").
 

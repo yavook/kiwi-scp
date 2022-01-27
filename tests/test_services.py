@@ -9,7 +9,7 @@ class TestServices:
         s = Service(
             name="s",
             content=CommentedMap(),
-            parent=None,
+            parent_project=None,
         )
         ss = Services([s])
 
