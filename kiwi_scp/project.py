@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Optional, Dict, Any
 import attr
 from ruamel.yaml import CommentedMap
 
-from ._constants import COMPOSE_FILE_NAME, CONF_DIRECTORY_NAME
+from ._constants import COMPOSE_FILE_NAME, CONFIG_DIRECTORY_NAME
 from .config import ProjectConfig
 from .service import Service
 from .services import Services
@@ -40,7 +40,7 @@ class Project:
         project_name: str = self.name
         kiwi_hub_name: str = self.parent_instance.config.network.name
         target_root_dir: Path = self.parent_instance.config.storage.directory
-        conf_dir: Path = target_root_dir.joinpath(CONF_DIRECTORY_NAME)
+        conf_dir: Path = target_root_dir.joinpath(CONFIG_DIRECTORY_NAME)
         target_dir: Path = target_root_dir.joinpath(project_name)
 
         result: Dict[str, Any] = {

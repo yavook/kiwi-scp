@@ -26,10 +26,6 @@ class Service:
     _RE_CONFIGDIR = re.compile(r"^\s*\$(?:CONFIGDIR|{CONFIGDIR})/+(.*)$", flags=re.UNICODE)
 
     @property
-    def parent_instance(self) -> "Instance":
-        return self.parent_project.parent_instance
-
-    @property
     def configs(self) -> Generator[Path, None, None]:
         if "volumes" not in self.content:
             return

@@ -1,9 +1,5 @@
 import os
 
-RESERVED_PROJECT_NAMES = [
-    'config'
-]
-
 #############
 # REGEX PARTS
 
@@ -39,6 +35,11 @@ CONF_DIRECTORY_NAME = 'config'
 
 # location for auxiliary Dockerfiles
 IMAGES_DIRECTORY_NAME = f"{KIWI_ROOT}/data/images"
+
+# prohibited project names
+RESERVED_PROJECT_NAMES = [
+    CONFIG_DIRECTORY_NAME,
+]
 
 ####################
 # DOCKER IMAGE NAMES

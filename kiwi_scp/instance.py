@@ -3,7 +3,7 @@ from typing import Generator, Dict, Sequence
 
 import attr
 
-from ._constants import KIWI_CONF_NAME
+from ._constants import KIWI_CONF_NAME, CONFIG_DIRECTORY_NAME
 from .config import KiwiConfig
 from .project import Project
 
@@ -21,6 +21,14 @@ class Instance:
     def save_config(self, config: KiwiConfig) -> None:
         with open(self.directory.joinpath(KIWI_CONF_NAME), "w") as file:
             config.dump_kiwi_yml(file)
+
+    @property
+    def config_directory(self):
+        return self.directory.joinpath(CONFIG_DIRECTORY_NAME)
+
+    @property
+    def storage_config_directory(self):
+        return self.config.storage.directory.joinpath(CONFIG_DIRECTORY_NAME)
 
     @property
     def projects(self) -> Generator[Project, None, None]:

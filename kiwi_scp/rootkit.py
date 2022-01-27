@@ -2,7 +2,7 @@ import functools
 import logging
 import subprocess
 from pathlib import Path
-from typing import Optional, TypeVar, Union, List
+from typing import Optional, TypeVar, Union, Sequence, Any
 
 import attr
 
@@ -11,18 +11,7 @@ from .executable import DOCKER_EXE
 
 _logger = logging.getLogger(__name__)
 
-PSL = TypeVar("PSL", Union[Path, str], List[Union[Path, str]])
-
-
-def prefix_path(path: PSL, prefix: Path = Path("/mnt")) -> PSL:
-    if isinstance(path, Path):
-        return prefix.joinpath(path.absolute())
-
-    if isinstance(path, str):
-        return prefix_path(Path(path), prefix)
-
-    elif isinstance(path, list):
-        return [prefix_path(prefix, p) for p in path]
+ROOTKIT_PREFIX = Path("/mnt")
 
 
 @attr.s
@@ -68,11 +57,38 @@ class Rootkit:
                 ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     def run(self, process_args, **kwargs) -> Optional[subprocess.CompletedProcess]:
+        any_sequence = TypeVar("any_sequence", Union[str, Path, Any], Sequence[Union[str, Path, Any]])
+
+        def parse_args(argument: any_sequence) -> any_sequence:
+            if isinstance(argument, str):
+                return argument
+
+            elif isinstance(argument, Path):
+                if argument.is_absolute():
+                    argument = argument.relative_to("/")
+
+                return str(ROOTKIT_PREFIX.joinpath(argument))
+
+            elif not isinstance(argument, Sequence):
+                return str(argument)
+
+            else:
+                parsed = [parse_args(path) for path in argument]
+
+                flat = []
+                for item in parsed:
+                    if not isinstance(item, list):
+                        flat.append(item)
+                    else:
+                        flat.extend(item)
+
+                return flat
+
         self.__build_image()
         return DOCKER_EXE.run([
-            'run', '--rm',
-            '-v', '/:/mnt',
-            '-u', 'root',
+            "run", "--rm",
+            "-v", f"/:{ROOTKIT_PREFIX!s}",
+            "-u", "root",
             Rootkit.__image_name(self.image_tag),
-            *process_args
+            *parse_args(process_args)
         ], **kwargs)

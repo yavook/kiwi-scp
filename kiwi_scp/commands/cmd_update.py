@@ -53,15 +53,12 @@ class UpdateCommand(KiwiCommand):
             ):
                 return
 
-        # services.copy_configs()
-        # return
-
         ctx = get_current_context()
         assert isinstance(BuildCommand, click.Command)
         ctx.forward(BuildCommand)
         assert isinstance(PullCommand, click.Command)
         ctx.forward(PullCommand)
-        # TODO conf-copy
+        services.copy_configs()
         assert isinstance(DownCommand, click.Command)
         ctx.forward(DownCommand)
         assert isinstance(UpCommand, click.Command)
