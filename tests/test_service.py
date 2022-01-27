@@ -52,7 +52,7 @@ class TestDefault:
                 "image": "repo/image:tag",
                 "volumes": [
                     "${CONFIGDIR}/some/config:/path/to/some/config",
-                    "CONFIGDIR/other/config:/path/to/other/config",
+                    "$CONFIGDIR/other/config:/path/to/other/config",
                 ]
             }),
             parent=None,
