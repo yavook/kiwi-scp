@@ -5,38 +5,7 @@ import subprocess
 # local
 from ..config import LoadedConfig
 from ..executable import Executable
-from ..projects import Projects
-from ..rootkit import Rootkit, prefix_path_mnt
 from ..subcommand import SubCommand
-
-
-class ConfCopyCommand(SubCommand):
-    """kiwi conf-copy"""
-
-    def __init__(self):
-        super().__init__(
-            'conf-copy',
-            action="Syncing all configs for", add_parser=False,
-            description="Synchronize all config files to target directory"
-        )
-
-    def _run_instance(self, runner, args):
-        conf_dirs = [
-            project.conf_dir_name()
-            for project in Projects.from_dir().filter_enabled()
-            if project.has_configs()
-        ]
-
-        if conf_dirs:
-            # add target directory
-            conf_dirs.append(LoadedConfig.get()['runtime:storage'])
-            logging.info(f"Sync directories: {conf_dirs}")
-
-            Rootkit('rsync').run([
-                'rsync', '-rpt', '--delete', *prefix_path_mnt(conf_dirs)
-            ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-        return True
 
 
 def _find_net(net_name):
