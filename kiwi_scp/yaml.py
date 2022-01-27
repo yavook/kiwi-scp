@@ -25,7 +25,7 @@ class YAML(ruamel.yaml.YAML):
     @staticmethod
     def _format_kiwi_yml(yml_string: str) -> str:
         # insert newline before every main key
-        yml_string = re.sub(r'^(\S)', r'\n\1', yml_string, flags=re.MULTILINE)
+        yml_string = re.sub(r"^(\S)", r"\n\1", yml_string, flags=re.MULTILINE)
 
         # load header comment from file
         with open(HEADER_KIWI_CONF_NAME, 'r') as stream:

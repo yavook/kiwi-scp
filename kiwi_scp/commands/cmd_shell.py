@@ -39,7 +39,7 @@ class ShellCommand(KiwiCommand):
         # shells from KiwiConfig
         shells = [
             *(str(path) for path in instance.config.shells),
-            # as a last resort, fall back to '/bin/sh' and 'sh'
+            # as a last resort, fall back to "/bin/sh" and "sh"
             "/bin/sh", "sh",
         ]
 

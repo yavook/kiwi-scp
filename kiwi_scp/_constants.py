@@ -18,7 +18,7 @@ RE_VARNAME = r"^[A-Za-z](?:[A-Za-z0-9\._-]*[A-Za-z0-9])$"
 # location of "kiwi_scp" module
 KIWI_ROOT = os.path.dirname(__file__)
 # default name of kiwi-scp file
-KIWI_CONF_NAME = os.getenv('KIWI_CONF_NAME', "kiwi.yml")
+KIWI_CONF_NAME = os.getenv("KIWI_CONF_NAME", "kiwi.yml")
 # default name of compose files
 COMPOSE_FILE_NAME = "docker-compose.yml"
 
@@ -31,7 +31,7 @@ DEFAULT_KIWI_CONF_NAME = f"{KIWI_ROOT}/data/etc/kiwi_default.yml"
 DEFAULT_DOCKER_COMPOSE_NAME = f"{KIWI_ROOT}/data/etc/docker-compose_default.yml"
 
 # special config directory
-CONF_DIRECTORY_NAME = 'config'
+CONFIG_DIRECTORY_NAME = "config"
 
 # location for auxiliary Dockerfiles
 IMAGES_DIRECTORY_NAME = f"{KIWI_ROOT}/data/images"
@@ -45,5 +45,5 @@ RESERVED_PROJECT_NAMES = [
 # DOCKER IMAGE NAMES
 
 # name for auxiliary docker images
-LOCAL_IMAGES_NAME = 'localhost/kiwi-scp/auxiliary'
-DEFAULT_IMAGE_NAME = 'alpine:latest'
+LOCAL_IMAGES_NAME = "localhost/kiwi-scp/auxiliary"
+DEFAULT_IMAGE_NAME = "alpine:latest"

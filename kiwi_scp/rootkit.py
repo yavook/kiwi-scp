@@ -30,12 +30,12 @@ class Rootkit:
     @functools.lru_cache(maxsize=None)
     def __exists(image_tag: str) -> bool:
         ps = DOCKER_EXE.run([
-            'images',
-            '--filter', f"reference={Rootkit.__image_name(image_tag)}",
-            '--format', '{{.Repository}}:{{.Tag}}'
+            "images",
+            "--filter", f"reference={Rootkit.__image_name(image_tag)}",
+            "--format", "{{.Repository}}:{{.Tag}}"
         ], stdout=subprocess.PIPE)
 
-        return str(ps.stdout, 'utf-8').strip() == Rootkit.__image_name(image_tag)
+        return str(ps.stdout, "utf-8").strip() == Rootkit.__image_name(image_tag)
 
     def __build_image(self) -> None:
         if Rootkit.__exists(self.image_tag):
@@ -44,15 +44,15 @@ class Rootkit:
             if self.image_tag is None:
                 _logger.info(f"Pulling image {Rootkit.__image_name(self.image_tag)}")
                 DOCKER_EXE.run([
-                    'pull', Rootkit.__image_name(self.image_tag)
+                    "pull", Rootkit.__image_name(self.image_tag)
                 ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
             else:
                 _logger.info(f"Building image {Rootkit.__image_name(self.image_tag)}")
                 DOCKER_EXE.run([
-                    'build',
-                    '-t', Rootkit.__image_name(self.image_tag),
-                    '-f', f"{IMAGES_DIRECTORY_NAME}/{self.image_tag}.Dockerfile",
+                    "build",
+                    "-t", Rootkit.__image_name(self.image_tag),
+                    "-f", f"{IMAGES_DIRECTORY_NAME}/{self.image_tag}.Dockerfile",
                     f"{IMAGES_DIRECTORY_NAME}"
                 ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
