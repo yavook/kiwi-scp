@@ -1,8 +1,6 @@
 import os
 import shutil
 
-import click
-
 from .cmd import KiwiCommandType, KiwiCommand
 from .decorators import kiwi_command
 from .._constants import DEFAULT_DOCKER_COMPOSE_NAME, COMPOSE_FILE_NAME, RESERVED_PROJECT_NAMES

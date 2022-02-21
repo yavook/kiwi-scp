@@ -59,4 +59,3 @@ class Service:
             elif nxt is not None:
                 # try next in list
                 _logger.info(f"Executable '{cur}' not found in container, trying '{nxt}'")
-
