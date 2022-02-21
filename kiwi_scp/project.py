@@ -39,18 +39,18 @@ class Project:
         directory: Path = self.directory
         project_name: str = self.name
         kiwi_hub_name: str = self.parent_instance.config.network.name
-        target_root_dir: Path = self.parent_instance.config.storage.directory
-        conf_dir: Path = target_root_dir.joinpath(CONFIG_DIRECTORY_NAME)
-        target_dir: Path = target_root_dir.joinpath(project_name)
+        kiwi_instance_dir: Path = self.parent_instance.config.storage.directory
+        kiwi_config_dir: Path = kiwi_instance_dir.joinpath(CONFIG_DIRECTORY_NAME)
+        kiwi_project_dir: Path = kiwi_instance_dir.joinpath(project_name)
 
         result: Dict[str, Any] = {
             "cwd": str(directory),
             "env": {
                 "COMPOSE_PROJECT_NAME": project_name,
                 "KIWI_HUB_NAME": kiwi_hub_name,
-                "TARGETROOT": str(target_root_dir),
-                "CONFIGDIR": str(conf_dir),
-                "TARGETDIR": str(target_dir),
+                "KIWI_INSTANCE": str(kiwi_instance_dir),
+                "KIWI_CONFIG": str(kiwi_config_dir),
+                "KIWI_PROJECT": str(kiwi_project_dir),
             },
         }
 
