@@ -45,13 +45,12 @@ class ProjectConfig(BaseModel):
     def kiwi_dict(self) -> Dict[str, Any]:
         """write this object as a dictionary of strings"""
 
-        if self.override_storage is None:
-            return {self.name: self.enabled}
+        result = self.dict(exclude={"override_storage"})
 
-        else:
-            result = self.dict(exclude={"override_storage"})
+        if self.override_storage is not None:
             result["override_storage"] = self.override_storage.kiwi_dict
-            return result
+
+        return result
 
     @validator("name")
     @classmethod

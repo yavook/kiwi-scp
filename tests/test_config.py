@@ -221,7 +221,12 @@ class TestProject:
         assert p.name == "project"
         assert not p.enabled
         assert p.override_storage is None
-        assert p.kiwi_dict == kiwi_dict
+
+        resulting_kiwi_dict = {
+            "name": "project",
+            "enabled": False,
+        }
+        assert p.kiwi_dict == resulting_kiwi_dict
 
     def test_dict(self):
         c = KiwiConfig(projects={"name": "project"})
