@@ -20,9 +20,6 @@ class UpCommand(KiwiCommand):
     @classmethod
     def run_for_filtered_services(cls, instance: Instance, project: Project, services: Services,
                                   new_service_names: List[str], **kwargs) -> None:
-        # TODO conf-copy
-        # TODO net-up
-
         if not services:
             if not click.confirm(
                     "Did not find any of those services. \n"
@@ -30,5 +27,8 @@ class UpCommand(KiwiCommand):
                     default=True
             ):
                 return
+
+        instance.create_net()
+        services.copy_configs()
 
         COMPOSE_EXE.run(["up", "-d", *services.names], **project.process_kwargs)

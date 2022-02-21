@@ -11,7 +11,6 @@ from ruamel.yaml import CommentedMap
 from .executable import COMPOSE_EXE
 
 if TYPE_CHECKING:
-    from .instance import Instance
     from .project import Project
 
 _logger = logging.getLogger(__name__)

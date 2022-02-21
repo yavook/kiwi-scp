@@ -36,8 +36,7 @@ class DownCommand(KiwiCommand):
                 return
 
         super().run_for_instance(instance)
-
-        # TODO net-down
+        instance.remove_net()
 
     @classmethod
     def run_for_project(cls, instance: Instance, project: Project, **kwargs) -> None:
