@@ -8,7 +8,7 @@ shells:
   - /bin/bash
 
 projects:
-  - name: hello-world.project
+  - name: hello_world
     enabled: true
 
 storage:

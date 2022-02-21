@@ -12,7 +12,7 @@ class TestDefault:
 
         pc = i.config.projects[0]
 
-        assert pc.name == "hello-world.project"
+        assert pc.name == "hello_world"
 
     def test_empty(self):
         i = Instance()

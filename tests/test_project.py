@@ -12,7 +12,7 @@ class TestDefault:
 
     def test_example(self):
         p = Project(
-            directory=Path("example/hello-world.project"),
+            directory=Path("example/hello_world"),
             parent_instance=None,
         )
 
