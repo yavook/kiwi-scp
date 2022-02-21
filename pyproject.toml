@@ -13,7 +13,7 @@ pydantic = "^1.8.2"
 wcwidth = "^0.2.5"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.5"
+pytest = "^7.0.0"
 pytest-cov = "^3.0.0"
 toml = "^0.10.2"
 virtualenv = "^20.10.0"
