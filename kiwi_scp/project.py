@@ -43,6 +43,9 @@ class Project:
         kiwi_config_dir: Path = kiwi_instance_dir.joinpath(CONFIG_DIRECTORY_NAME)
         kiwi_project_dir: Path = kiwi_instance_dir.joinpath(project_name)
 
+        if self.config.override_storage is not None:
+            kiwi_project_dir = self.config.override_storage.directory
+
         result: Dict[str, Any] = {
             "cwd": str(directory),
             "env": {
