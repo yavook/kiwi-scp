@@ -7,7 +7,7 @@
 # default installation directory
 INSTALL_DIR_DEFAULT="/usr/local/sbin"
 # URI of "kiwi" launcher script
-KIWI_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/kiwi"
+KIWI_URI="https://raw.githubusercontent.com/ldericher/kiwi-scp/master/dist/kiwi"
 
 #############
 # FUNCTIONS #
