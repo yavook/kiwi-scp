@@ -193,12 +193,12 @@ network:
   cidr: "10.22.46.0/24"
 ```
 
-##### `network:name`
+###### `network:name`
 Configuration for the internal `kiwi_hub` network.
 
 Default: `"kiwi_hub"`
 
-##### `network:cidr`
+###### `network:cidr`
 [CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#IPv4_CIDR_blocks) for the subnet of the internal `kiwi_hub` network.
 
 Default: `"10.22.46.0/24"`
