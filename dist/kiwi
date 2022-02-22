@@ -1,0 +1,204 @@
+#!/bin/sh
+
+#############
+# CONSTANTS #
+#############
+
+# base config filename
+KIWI_CONF_NAME="kiwi.yml"
+
+# dependencies to run kiwi-scp
+KIWI_DEPENDENCIES="python3 less docker docker-compose"
+# base install dir
+KIWI_BASEDIR="${HOME}/.cache/kiwi-scp"
+# per-user env setup script
+KIWI_PROFILE="${HOME}/.kiwi_profile"
+
+# repository uri
+KIWI_REPO="https://github.com/ldericher/kiwi-scp"
+KIWI_REPO_RAW="https://raw.githubusercontent.com/ldericher/kiwi-scp"
+# use latest version by default
+KIWI_VERSION="master"
+
+# URIs in this directory
+PACKAGE_URI="pyproject.toml"
+KIWI_URI="dist/kiwi"
+INSTALLER_URI="dist/install.sh"
+# canary file: limit curl requests
+CANARY_FILENAME="/tmp/kiwi-scp-$(id -u).canary"
+CANARY_MAX_AGE=600
+
+###################
+# DYNAMIC STRINGS #
+###################
+
+# uri of correct kiwi-scp archive
+kiwi_archive_uri() {
+  echo "${KIWI_REPO}/archive/refs/heads/${KIWI_VERSION}.tar.gz"
+}
+
+# directory of correct installation
+kiwi_install_dir() {
+  echo "${KIWI_BASEDIR}/${KIWI_VERSION}"
+}
+
+# main script in installed version
+kiwi_executable() {
+  echo "$(kiwi_install_dir)/bin/kiwi"
+}
+
+#############
+# FUNCTIONS #
+#############
+
+# prompt yes/no question (default yes)
+yes_no() {
+  # prompt and read from terminal
+  printf "%s [Y|n] " "${1}"
+  read -r answer </dev/tty || answer=""
+
+  # check first character
+  answer="$(printf '%.1s' "${answer}")"
+  if [ "${answer}" = "N" ] || [ "${answer}" = "n" ]; then
+    # negative
+    return 1
+  else
+    # positive
+    return 0
+  fi
+}
+
+##################
+# PER-USER SETUP #
+##################
+
+# add in environment setup
+if [ -f "${KIWI_PROFILE}" ]; then
+  # shellcheck source=$HOME/.kiwi_profile
+  . "${KIWI_PROFILE}"
+fi
+
+##########
+# CHECKS #
+##########
+
+for dep in ${KIWI_DEPENDENCIES}; do
+  if ! command -v "${dep}" >/dev/null 2>/dev/null; then
+    echo "Dependency '${dep}' not found, please install!" >/dev/stderr
+    exit 1
+  fi
+done
+
+########
+# MAIN #
+########
+
+# check if we should check for new kiwi version
+if [ -f "${CANARY_FILENAME}" ]; then
+  # check canary age
+  current_time="$(date '+%s')"
+  canary_mod_time="$(date -r "${CANARY_FILENAME}" '+%s')"
+  canary_age="$((current_time - canary_mod_time))"
+
+  if [ ${canary_age} -gt ${CANARY_MAX_AGE} ]; then
+    # canary file too old!
+    run_kiwi_check="yes"
+  fi
+
+else
+  # no canary file!
+  run_kiwi_check="yes"
+
+fi
+
+# run check for new kiwi version
+if [ "${run_kiwi_check}" = "yes" ]; then
+  # hash this script and the master version
+  hash_local="$(md5sum <"$(readlink -f "${0}")")"
+  hash_remote="$(curl --proto '=https' --tlsv1.2 -sSfL "${KIWI_REPO_RAW}/${KIWI_VERSION}/${KIWI_URI}" | md5sum)"
+
+  # warn if different
+  if [ "${hash_local}" != "${hash_remote}" ]; then
+
+    if yes_no "Your kiwi launcher is outdated. Update now?" >/dev/stderr; then
+      # should reinstall, so download installer
+      installer="$(curl --proto '=https' --tlsv1.2 -sSfL "${KIWI_REPO_RAW}/${KIWI_VERSION}/${INSTALLER_URI}")"
+
+      if yes_no "Use sudo to run as root?"; then
+        # enable system-wide install
+        echo "${installer}" | sudo sh
+
+      else
+        # per-user install
+        echo "${installer}" | sh
+      fi
+
+      echo ""
+      echo "####################"
+      echo "kiwi self-update finished, please re-run your last command."
+      exit 0
+
+    else
+      echo "" >/dev/stderr
+      echo "####################" >/dev/stderr
+      echo "Please manually update your kiwi launcher by re-running the installation process:" >/dev/stderr
+      echo "https://github.com/ldericher/kiwi-scp/#installation" >/dev/stderr
+      echo "####################" >/dev/stderr
+      echo "" >/dev/stderr
+
+    fi
+  fi
+
+  # refresh canary file
+  printf '' > "${CANARY_FILENAME}"
+  echo "Installed: '${hash_local}'" >> "${CANARY_FILENAME}"
+  echo "Available: '${hash_remote}'" >> "${CANARY_FILENAME}"
+  chmod 0777 "${CANARY_FILENAME}"
+fi
+
+# check if pwd is a kiwi instance
+path="$(pwd)"
+while [ "${path}" != "" ]; do
+  if [ -e "${path}/${KIWI_CONF_NAME}" ]; then
+    # cd into kiwi instance
+    cd "${path}" || yes_no "Could not enter kiwi instance at '${path}'. Continue anyway?" || exit 1
+
+    # determine needed kiwi-scp version
+    re_version_line='version\s*:\s*'
+    eval "$(grep -E "${re_version_line}" "./${KIWI_CONF_NAME}" | sed -r "s/${re_version_line}/KIWI_VERSION=/")"
+    break;
+  fi
+  path="${path%/*}"
+done
+
+# install if kiwi-scp not found
+if [ ! -x "$(kiwi_executable)" ]; then
+  printf "Installing kiwi-scp v%s into %s ... " "${KIWI_VERSION}" "${KIWI_BASEDIR}"
+
+  # read version tag
+  KIWI_VERSION="$( \
+    curl --proto '=https' --tlsv1.2 -sSfL "${KIWI_REPO_RAW}/${KIWI_VERSION}/${PACKAGE_URI}" \
+    | grep -e 'version\s*=' \
+    | sed -r "s/version\s*=\s*\"([^\"]*)\"$/\1/" \
+  )"
+
+  if [ -x "$(kiwi_executable)" ]; then
+    # after version tag update: no need to install
+    echo "v${KIWI_VERSION} already installed!"
+
+  else
+    # install archive
+    python3 -m virtualenv "$(kiwi_install_dir)" >/dev/null 2>/dev/null
+    . "$(kiwi_install_dir)/bin/activate"
+    python3 -m pip install "git+${KIWI_REPO}@${KIWI_VERSION}" >/dev/null 2>/dev/null
+
+    echo "OK"
+  fi
+fi
+
+# setup main environment
+export KIWI_CONF_NAME
+. "$(kiwi_install_dir)/bin/activate"
+
+# run main script
+exec "$(kiwi_executable)" "${@}"

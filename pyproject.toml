@@ -1,14 +1,22 @@
 [tool.poetry]
 name = "kiwi-scp"
-version = "0.1.7"
+version = "0.2.0"
 description = "kiwi is the simple tool for managing container servers."
 authors = ["ldericher <40151420+ldericher@users.noreply.github.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.6"
-PyYAML = "^5.4.1"
+python = "^3.6.1"
+attrs = "^21.2.0"
+click = "^8.0.3"
+pydantic = "^1.8.2"
+"ruamel.yaml" = "^0.17.16"
+wcwidth = "^0.2.5"
 
 [tool.poetry.dev-dependencies]
+pytest = "^7.0.0"
+pytest-cov = "^3.0.0"
+toml = "^0.10.2"
+virtualenv = "^20.10.0"
 
 [tool.poetry.scripts]
 kiwi = "kiwi_scp.scripts.kiwi:main"
