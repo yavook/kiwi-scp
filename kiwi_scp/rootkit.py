@@ -64,9 +64,7 @@ class Rootkit:
                 return argument
 
             elif isinstance(argument, Path):
-                if argument.is_absolute():
-                    argument = argument.relative_to("/")
-
+                argument = argument.absolute().relative_to("/")
                 return str(ROOTKIT_PREFIX.joinpath(argument))
 
             elif not isinstance(argument, Sequence):

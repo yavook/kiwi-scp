@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from typing import List, Generator, Optional, TYPE_CHECKING, TypeVar, Union
+from typing import List, Generator, Optional, TYPE_CHECKING
 
 import attr
 
@@ -44,36 +44,20 @@ class Services:
             yield from service.configs
 
     def copy_configs(self) -> None:
-        path_str_list = TypeVar("path_str_list", Union[Path, str], List[Union[Path, str]])
-
-        def prefix_path(path: path_str_list, prefix: Path) -> path_str_list:
-            if isinstance(path, Path):
-                return prefix.absolute().joinpath(path)
-
-            elif isinstance(path, str):
-                return prefix_path(Path(path), prefix)
-
-            elif isinstance(path, list):
-                return [prefix_path(p, prefix) for p in path]
-
         project = self.parent_project
+        configs = list(self.configs)
 
-        if project is None:
+        if project is None or not configs:
             return
 
         instance = project.parent_instance
-        cfgs = list(self.configs)
-
-        local_cfgs = prefix_path(cfgs, instance.config_directory)
-        storage_cfgs = prefix_path(cfgs, instance.storage_config_directory)
-        storage_dirs = [path.parent for path in storage_cfgs]
 
         Rootkit("rsync").run([
-            "mkdir", "-p", storage_dirs
+            "mkdir", "-p", instance.storage_directory
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         Rootkit("rsync").run([
-            "rsync", "-rpt", list(zip(local_cfgs, storage_cfgs))
+            "rsync", "-rpt", instance.config_directory, instance.storage_directory
         ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     @property
