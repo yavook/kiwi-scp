@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kiwi-scp"
-version = "0.2.1"
+version = "0.2.0"
 description = "kiwi is the simple tool for managing container servers."
 authors = ["ldericher <40151420+ldericher@users.noreply.github.com>"]
 
