@@ -18,7 +18,7 @@ def main(verbose: int) -> None:
     - Manage full instances using just your favorite version control system
     - Group services into projects, each with their own docker-compose.yml
     - Build service-specific, private docker images from Dockerfiles
-    - Make use of the local file system by referring to ${TARGETDIR}, ${TARGETROOT} and ${CONFIGDIR} in compose files
+    - Make use of the local file system by referring to ${KIWI_PROJECT}, ${KIWI_INSTANCE} and ${KIWI_CONFIG} in compose files
     - Create your own instance-global variables for compose files using the kiwi.yml "environment" section
     """
 

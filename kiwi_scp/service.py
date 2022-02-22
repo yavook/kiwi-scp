@@ -22,7 +22,7 @@ class Service:
     content: CommentedMap = attr.ib()
     parent_project: "Project" = attr.ib()
 
-    _RE_CONFIGDIR = re.compile(r"^\s*\$(?:CONFIGDIR|{CONFIGDIR})/+(.*)$", flags=re.UNICODE)
+    _RE_KIWI_CONFIG = re.compile(r"^\s*\$(?:KIWI_CONFIG|{KIWI_CONFIG})/+(.*)$", flags=re.UNICODE)
 
     @property
     def configs(self) -> Generator[Path, None, None]:
@@ -31,7 +31,7 @@ class Service:
 
         for volume in self.content["volumes"]:
             host_part = volume.split(":")[0]
-            cd_match = Service._RE_CONFIGDIR.match(host_part)
+            cd_match = Service._RE_KIWI_CONFIG.match(host_part)
 
             if cd_match:
                 yield Path(cd_match.group(1))

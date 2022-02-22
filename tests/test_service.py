@@ -35,8 +35,8 @@ class TestDefault:
                 "image": "repo/image:tag",
                 "volumes": [
                     "docker_volume/third/dir:/path/to/third/mountpoint",
-                    "${TARGETDIR}/some/dir:/path/to/some/mountpoint",
-                    "$TARGETDIR/other/dir:/path/to/other/mountpoint",
+                    "${KIWI_PROJECT}/some/dir:/path/to/some/mountpoint",
+                    "$KIWI_PROJECT/other/dir:/path/to/other/mountpoint",
                 ]
             }),
             parent_project=None,
@@ -51,8 +51,8 @@ class TestDefault:
             content=CommentedMap({
                 "image": "repo/image:tag",
                 "volumes": [
-                    "${CONFIGDIR}/some/config:/path/to/some/config",
-                    "$CONFIGDIR/other/config:/path/to/other/config",
+                    "${KIWI_CONFIG}/some/config:/path/to/some/config",
+                    "$KIWI_CONFIG/other/config:/path/to/other/config",
                 ]
             }),
             parent_project=None,
