@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-from typing import List, Generator, Optional, TYPE_CHECKING, TypeVar, Union
+from typing import List, Generator, Optional, TYPE_CHECKING
 
 import attr
 

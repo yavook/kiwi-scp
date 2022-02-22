@@ -16,7 +16,7 @@ class InvalidFormatError(ValueError):
     member: Optional[str]
     data: str
 
-    def __init__(self, cls, data, member = None):
+    def __init__(self, cls, data, member=None):
         self.cls = cls
         self.data = data
 
