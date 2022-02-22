@@ -10,7 +10,7 @@ The simple tool for managing container servers
 ## Quick start
 
 - Learn to use `docker` with `docker-compose`
-- Install kiwi-scp
+- Install `kiwi-scp`
 - Look at [the example instance](./example)
 - Look at the output of `kiwi --help`
 - Start building your own instances
@@ -29,7 +29,7 @@ The installer downloads the `kiwi` launcher script and installs it to a location
 Please consider installing into a directory inside your `$PATH`.
 Run in a root shell or use `sudo sh` at the end instead for system-wide installation.
 
-You should now be able to run `kiwi list --show` and see the default configuration file.
+You should then be able to run `kiwi list --show` and see the default configuration file.
 This installs the latest version of the kiwi-scp package and sets it up for you.
 
 
@@ -44,8 +44,7 @@ at login time.
 
 In those cases, you can simply create a `.kiwi_profile` file in your home directory.
 It will be sourced every time you use the `kiwi` command.
-For the aforementioned case where you installed `centos-release-scl` and `rh-python36`, your `~/.kiwi_profile` should
-contain:
+For the aforementioned case where you installed `centos-release-scl` and `rh-python36`, your `~/.kiwi_profile` should contain:
 
 ```shell script
 #!/bin/sh
@@ -59,8 +58,7 @@ contain:
 ### Create a kiwi-scp instance
 
 Any directory is implicitly a valid kiwi-scp instance using the default configuration.
-To prevent surprises however, you should run `kiwi init` in an empty directory and follow its directions to
-create a `kiwi.yml` before using `kiwi` more.
+To prevent surprises however, you should run `kiwi init` and follow its directions to create a `kiwi.yml` for your instance before using `kiwi` more.
 
 
 ### Concept
@@ -69,11 +67,11 @@ A kiwi-scp instance is a directory containing a bunch of static configuration fi
 "Static" there as in "those don't change during normal service operation".
 These files  could be anything from actual `.conf` files to entire html-web-roots.
 
-Non-static, but persistent files are to be kept in a "service data directory", by default `/var/local/kiwi`.
+Non-static, persistent files are to be kept in a "service data storage", by default the directory `/var/local/kiwi`.
 In your `docker-compose.yml` files, you can refer to that directory as **${KIWI_INSTANCE}**.
 
-Start the current directory as a kiwi-scp instance using `kiwi up`, or stop it using `kiwi down`.
-This also creates kiwi's internal hub network, which you can use as **kiwi_hub** in your `docker-compose.yml` files.
+Start the current kiwi-scp instance using `kiwi up`, or stop it using `kiwi down`.
+This also manages kiwi's internal hub network, which you can use as **kiwi_hub** in your `docker-compose.yml` files.
 
 
 ### Projects
@@ -143,9 +141,9 @@ runtime:
 Sequence of project definitions in this instance.
 
 ###### Project definition
-Defining a project in this instance. Any subdirectory with a `docker-compose.yml` might be considered a project.
+Defining a project in this instance. Any subdirectory with a `docker-compose.yml` should be considered a project. The directory name is equivalent to the project name.
 
-Format: Mapping using the keys `name`, `enabled` and `override_storage`
+Format[^1]: Mapping using the keys `name` (required), `enabled` and `override_storage`
 Example:
 
 ```yaml
@@ -156,7 +154,7 @@ Example:
 ##### `environment`
 Custom variables available in projects' `docker-compose.yml` files.
 
-Format: Mapping of `KEY: "value"` pairs  
+Format[^1]: Mapping of `KEY: "value"` pairs  
 Example:
 
 ```yaml
@@ -168,15 +166,45 @@ environment:
 ##### `storage`
 Configuration for the service data storage.
 
-Format: Mapping using the key `directory`
+Format: Mapping using the key `directory`  
+Example:
+
+```yaml
+storage:
+  directory: "/var/local/kiwi"
+```
 
 ###### `storage:directory`
 Path to the local service data directory, the only currently supported service data storage. 
 Available as **${KIWI_INSTANCE}** in projects.
 
-Default: `/var/local/kiwi`
+Default: `"/var/local/kiwi"`
+
 
 ##### `network`
+Configuration for the internal `kiwi_hub` network.
+
+Format: Mapping using the keys `name` and `cidr`
+Example:
+
+```yaml
+network:
+  name: "kiwi_hub"
+  cidr: "10.22.46.0/24"
+```
+
+##### `network:name`
+Configuration for the internal `kiwi_hub` network.
+
+Default: `"kiwi_hub"`
+
+##### `network:cidr`
+[CIDR notation](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing#IPv4_CIDR_blocks) for the subnet of the internal `kiwi_hub` network.
+
+Default: `"10.22.46.0/24"`
+
 
 #### For everything else, look at `kiwi --help`
 #### Happy kiwi-ing!
+
+[^1]: This is the officially correct format. For enabling varying conventions, there are multiple accepted formats. Start trying and check with `kiwi list --show` -- if it makes sense, it will likely just work.
