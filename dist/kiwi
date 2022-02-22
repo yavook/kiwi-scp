@@ -178,7 +178,7 @@ if [ ! -x "$(kiwi_executable)" ]; then
   # read version tag
   KIWI_VERSION="$( \
     curl --proto '=https' --tlsv1.2 -sSfL "${KIWI_REPO_RAW}/${KIWI_VERSION}/${PACKAGE_URI}" \
-    | grep -r 'version\s*=' \
+    | grep -e 'version\s*=' \
     | sed -r "s/version\s*=\s*\"([^\"]*)\"$/\1/" \
   )"
 
