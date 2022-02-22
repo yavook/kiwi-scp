@@ -203,8 +203,8 @@ Default: `"kiwi_hub"`
 
 Default: `"10.22.46.0/24"`
 
+<font size="5">**For everything else, look at `kiwi --help`**
 
-#### For everything else, look at `kiwi --help`
-#### Happy kiwi-ing!
+**Happy kiwi-ing!**</font>
 
 [^1]: This is the officially correct format. For enabling varying conventions, there are multiple accepted formats. Start trying and check with `kiwi list --show` -- if it makes sense, it will likely just work.
