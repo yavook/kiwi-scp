@@ -1,86 +1,94 @@
-# system
+import functools
 import logging
-import os
 import subprocess
+from pathlib import Path
+from typing import Optional, TypeVar, Union, Sequence, Any
 
-# local
+import attr
+
 from ._constants import IMAGES_DIRECTORY_NAME, LOCAL_IMAGES_NAME, DEFAULT_IMAGE_NAME
-from .executable import Executable
+from .executable import DOCKER_EXE
+
+_logger = logging.getLogger(__name__)
+
+ROOTKIT_PREFIX = Path("/mnt")
 
 
-def _prefix_path(prefix, path):
-    if isinstance(path, str):
-        abs_path = os.path.abspath(path)
-        return os.path.realpath(f"{prefix}/{abs_path}")
-
-    elif isinstance(path, list):
-        return [_prefix_path(prefix, p) for p in path]
-
-
-def prefix_path_mnt(path):
-    return _prefix_path('/mnt/', path)
-
-
-def _image_name(image_tag):
-    if image_tag is not None:
-        return f"{LOCAL_IMAGES_NAME}:{image_tag}"
-    else:
-        return DEFAULT_IMAGE_NAME
-
-
+@attr.s
 class Rootkit:
-    class __Rootkit:
-        __image_tag = None
+    image_tag: str = attr.ib()
 
-        def __init__(self, image_tag=None):
-            self.__image_tag = image_tag
+    @staticmethod
+    @functools.lru_cache(maxsize=None)
+    def __image_name(image_tag: Optional[str]) -> str:
+        if image_tag is not None:
+            return f"{LOCAL_IMAGES_NAME}:{image_tag}"
+        else:
+            return DEFAULT_IMAGE_NAME
 
-        def __exists(self):
-            ps = Executable('docker').run([
-                'images',
-                '--filter', f"reference={_image_name(self.__image_tag)}",
-                '--format', '{{.Repository}}:{{.Tag}}'
-            ], stdout=subprocess.PIPE)
+    @staticmethod
+    @functools.lru_cache(maxsize=None)
+    def __exists(image_tag: str) -> bool:
+        ps = DOCKER_EXE.run([
+            "images",
+            "--filter", f"reference={Rootkit.__image_name(image_tag)}",
+            "--format", "{{.Repository}}:{{.Tag}}"
+        ], stdout=subprocess.PIPE)
 
-            return str(ps.stdout, 'utf-8').strip() == _image_name(self.__image_tag)
+        return str(ps.stdout, "utf-8").strip() == Rootkit.__image_name(image_tag)
 
-        def __build_image(self):
-            if self.__exists():
-                logging.info(f"Using image {_image_name(self.__image_tag)}")
+    def __build_image(self) -> None:
+        if Rootkit.__exists(self.image_tag):
+            _logger.info(f"Using image {Rootkit.__image_name(self.image_tag)}")
+        else:
+            if self.image_tag is None:
+                _logger.info(f"Pulling image {Rootkit.__image_name(self.image_tag)}")
+                DOCKER_EXE.run([
+                    "pull", Rootkit.__image_name(self.image_tag)
+                ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
             else:
-                if self.__image_tag is None:
-                    logging.info(f"Pulling image {_image_name(self.__image_tag)}")
-                    Executable('docker').run([
-                        'pull', _image_name(self.__image_tag)
-                    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                _logger.info(f"Building image {Rootkit.__image_name(self.image_tag)}")
+                DOCKER_EXE.run([
+                    "build",
+                    "-t", Rootkit.__image_name(self.image_tag),
+                    "-f", f"{IMAGES_DIRECTORY_NAME}/{self.image_tag}.Dockerfile",
+                    f"{IMAGES_DIRECTORY_NAME}"
+                ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-                else:
-                    logging.info(f"Building image {_image_name(self.__image_tag)}")
-                    Executable('docker').run([
-                        'build',
-                        '-t', _image_name(self.__image_tag),
-                        '-f', f"{IMAGES_DIRECTORY_NAME}/{self.__image_tag}.Dockerfile",
-                        f"{IMAGES_DIRECTORY_NAME}"
-                    ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    def run(self, process_args, **kwargs) -> Optional[subprocess.CompletedProcess]:
+        any_sequence = TypeVar("any_sequence", Union[str, Path, Any], Sequence[Union[str, Path, Any]])
 
-        def run(self, process_args, **kwargs):
-            self.__build_image()
-            Executable('docker').run([
-                'run', '--rm',
-                '-v', '/:/mnt',
-                '-u', 'root',
-                _image_name(self.__image_tag),
-                *process_args
-            ], **kwargs)
+        def parse_args(argument: any_sequence) -> any_sequence:
+            if isinstance(argument, str):
+                return argument
 
-    __image_tag = None
-    __instances = {}
+            elif isinstance(argument, Path):
+                if argument.is_absolute():
+                    argument = argument.relative_to("/")
 
-    def __init__(self, image_tag=None):
-        self.__image_tag = image_tag
+                return str(ROOTKIT_PREFIX.joinpath(argument))
 
-        if _image_name(self.__image_tag) not in Rootkit.__instances:
-            Rootkit.__instances[_image_name(self.__image_tag)] = Rootkit.__Rootkit(image_tag)
+            elif not isinstance(argument, Sequence):
+                return str(argument)
 
-    def __getattr__(self, item):
-        return getattr(self.__instances[_image_name(self.__image_tag)], item)
+            else:
+                parsed = [parse_args(path) for path in argument]
+
+                flat = []
+                for item in parsed:
+                    if not isinstance(item, list):
+                        flat.append(item)
+                    else:
+                        flat.extend(item)
+
+                return flat
+
+        self.__build_image()
+        return DOCKER_EXE.run([
+            "run", "--rm",
+            "-v", f"/:{ROOTKIT_PREFIX!s}",
+            "-u", "root",
+            Rootkit.__image_name(self.image_tag),
+            *parse_args(process_args)
+        ], **kwargs)
