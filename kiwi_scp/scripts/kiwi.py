@@ -1,38 +1,43 @@
-#!/usr/bin/env python3
-
-# system
 import logging
 
-# local
-import kiwi_scp
+import click
+
+from kiwi_scp.commands import KiwiCLI
 
 
-def set_verbosity(logger, handler, verbosity):
-    """set logging default verbosity level and format"""
+@click.option(
+    "-v", "--verbose",
+    help="increase output verbosity",
+    count=True,
+)
+@click.command(cls=KiwiCLI)
+def main(verbose: int) -> None:
+    """kiwi is the simple tool for managing container servers.
 
-    if verbosity >= 2:
+    \b
+    - Manage full instances using just your favorite version control system
+    - Group services into projects, each with their own docker-compose.yml
+    - Build service-specific, private docker images from Dockerfiles
+    - Make use of the local file system by referring to ${TARGETDIR}, ${TARGETROOT} and ${CONFIGDIR} in compose files
+    - Create your own instance-global variables for compose files using the kiwi.yml "environment" section
+    """
+
+    if verbose >= 2:
         log_level = logging.DEBUG
         log_format = "[%(asctime)s] %(levelname)s @ %(filename)s:%(funcName)s:%(lineno)d: %(message)s"
-    elif verbosity >= 1:
+    elif verbose >= 1:
         log_level = logging.INFO
         log_format = "[%(asctime)s] %(levelname)s: %(message)s"
     else:
         log_level = logging.WARNING
         log_format = "%(levelname)s: %(message)s"
 
-    logger.setLevel(log_level)
-    handler.setFormatter(logging.Formatter(log_format))
-
-
-def main():
     # add a new handler (needed to set the level)
     log_handler = logging.StreamHandler()
     logging.getLogger().addHandler(log_handler)
-    set_verbosity(logging.getLogger(), log_handler, kiwi_scp.verbosity())
 
-    # run the app
-    if not kiwi_scp.run():
-        quit(1)
+    logging.getLogger().setLevel(log_level)
+    log_handler.setFormatter(logging.Formatter(log_format))
 
 
 if __name__ == "__main__":

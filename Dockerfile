@@ -12,6 +12,6 @@ RUN set -ex; \
 COPY . /usr/src/kiwi_scp
 
 RUN set -ex; \
-    pip3 --use-feature=in-tree-build install /usr/src/kiwi_scp
+    pip3 --no-cache-dir --use-feature=in-tree-build install /usr/src/kiwi_scp
 
 ENTRYPOINT ["kiwi"]

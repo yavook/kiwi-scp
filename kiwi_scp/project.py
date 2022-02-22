@@ -1,133 +1,74 @@
-import logging
-import os
+import functools
+from pathlib import Path
+from typing import TYPE_CHECKING, Optional, Dict, Any
 
-from ._constants import CONF_DIRECTORY_NAME
-from .config import LoadedConfig
-from .executable import Executable
+import attr
+from ruamel.yaml import CommentedMap
+
+from ._constants import COMPOSE_FILE_NAME, CONFIG_DIRECTORY_NAME
+from .config import ProjectConfig
+from .service import Service
+from .services import Services
+from .yaml import YAML
+
+if TYPE_CHECKING:
+    from .instance import Instance
 
 
+@attr.s
 class Project:
-    __name = None
+    directory: Path = attr.ib()
+    parent_instance: "Instance" = attr.ib()
 
-    def __init__(self, name):
-        self.__name = name
+    @staticmethod
+    @functools.lru_cache(maxsize=10)
+    def _parse_compose_file(directory: Path) -> CommentedMap:
+        with open(directory.joinpath(COMPOSE_FILE_NAME), "r") as cf:
+            return YAML().load(cf)
 
-    @classmethod
-    def from_file_name(cls, file_name):
-        if os.path.isdir(file_name):
-            config = LoadedConfig.get()
+    @property
+    def name(self) -> str:
+        return self.directory.name
 
-            if file_name.endswith(config['markers:disabled']):
-                file_name = file_name[:-len(config['markers:disabled'])]
+    @property
+    def config(self) -> Optional[ProjectConfig]:
+        return self.parent_instance.config.get_project_config(self.name)
 
-            if file_name.endswith(config['markers:project']):
-                file_name = file_name[:-len(config['markers:project'])]
-                return cls(file_name)
+    @property
+    def process_kwargs(self) -> Dict[str, Any]:
+        directory: Path = self.directory
+        project_name: str = self.name
+        kiwi_hub_name: str = self.parent_instance.config.network.name
+        kiwi_instance_dir: Path = self.parent_instance.config.storage.directory
+        kiwi_config_dir: Path = kiwi_instance_dir.joinpath(CONFIG_DIRECTORY_NAME)
+        kiwi_project_dir: Path = kiwi_instance_dir.joinpath(project_name)
 
-        return None
+        if self.config.override_storage is not None:
+            kiwi_project_dir = self.config.override_storage.directory
 
-    def get_name(self):
-        return self.__name
+        result: Dict[str, Any] = {
+            "cwd": str(directory),
+            "env": {
+                "COMPOSE_PROJECT_NAME": project_name,
+                "KIWI_HUB_NAME": kiwi_hub_name,
+                "KIWI_INSTANCE": str(kiwi_instance_dir),
+                "KIWI_CONFIG": str(kiwi_config_dir),
+                "KIWI_PROJECT": str(kiwi_project_dir),
+            },
+        }
 
-    def dir_name(self):
-        if self.is_enabled():
-            return self.enabled_dir_name()
-        elif self.is_disabled():
-            return self.disabled_dir_name()
-        else:
-            return None
+        result["env"].update(self.parent_instance.config.environment)
 
-    def enabled_dir_name(self):
-        return f"{self.__name}{LoadedConfig.get()['markers:project']}"
+        return result
 
-    def disabled_dir_name(self):
-        return f"{self.enabled_dir_name()}{LoadedConfig.get()['markers:disabled']}"
+    @property
+    def services(self) -> Services:
+        yml = Project._parse_compose_file(self.directory)
 
-    def conf_dir_name(self):
-        return os.path.join(self.dir_name(), CONF_DIRECTORY_NAME)
-
-    def compose_file_name(self):
-        return os.path.join(self.dir_name(), 'docker-compose.yml')
-
-    def target_dir_name(self):
-        return os.path.join(LoadedConfig.get()['runtime:storage'], self.enabled_dir_name())
-
-    def exists(self):
-        return os.path.isdir(self.enabled_dir_name()) or os.path.isdir(self.disabled_dir_name())
-
-    def is_enabled(self):
-        return os.path.isdir(self.enabled_dir_name())
-
-    def is_disabled(self):
-        return os.path.isdir(self.disabled_dir_name())
-
-    def has_configs(self):
-        return os.path.isdir(self.conf_dir_name())
-
-    def __update_kwargs(self, kwargs):
-        if not self.is_enabled():
-            # cannot compose in a disabled project
-            logging.warning(f"Project '{self.get_name()}' is not enabled!")
-            return False
-
-        config = LoadedConfig.get()
-
-        # execute command in project directory
-        kwargs['cwd'] = self.dir_name()
-
-        # ensure there is an environment
-        if 'env' not in kwargs:
-            kwargs['env'] = {}
-
-        # create environment variables for docker commands
-        kwargs['env'].update({
-            'COMPOSE_PROJECT_NAME': self.get_name(),
-            'KIWI_HUB_NAME': config['network:name'],
-            'TARGETROOT': config['runtime:storage'],
-            'CONFDIR': os.path.join(config['runtime:storage'], CONF_DIRECTORY_NAME),
-            'TARGETDIR': self.target_dir_name()
-        })
-
-        # add common environment from config
-        if config['runtime:env'] is not None:
-            kwargs['env'].update(config['runtime:env'])
-
-        logging.debug(f"kwargs updated: {kwargs}")
-
-        return True
-
-    def compose_run(self, compose_args, **kwargs):
-        if self.__update_kwargs(kwargs):
-            Executable('docker-compose').run(compose_args, **kwargs)
-
-    def compose_run_less(self, compose_args, **kwargs):
-        if self.__update_kwargs(kwargs):
-            Executable('docker-compose').run_less(compose_args, **kwargs)
-
-    def enable(self):
-        if self.is_disabled():
-            logging.info(f"Enabling project '{self.get_name()}'")
-            os.rename(self.dir_name(), self.enabled_dir_name())
-
-        elif self.is_enabled():
-            logging.warning(f"Project '{self.get_name()}' is enabled!")
-
-        else:
-            logging.warning(f"Project '{self.get_name()}' not found in instance!")
-            return False
-
-        return True
-
-    def disable(self):
-        if self.is_enabled():
-            logging.info(f"Disabling project '{self.get_name()}'")
-            os.rename(self.dir_name(), self.disabled_dir_name())
-
-        elif self.is_disabled():
-            logging.warning(f"Project '{self.get_name()}' is disabled!")
-
-        else:
-            logging.warning(f"Project '{self.get_name()}' not found in instance!")
-            return False
-
-        return True
+        return Services([
+            Service(
+                name=name,
+                content=content,
+                parent_project=self,
+            ) for name, content in yml["services"].items()
+        ])

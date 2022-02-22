@@ -1,0 +1,10 @@
+.git/
+.idea/
+
+dist/
+example/
+
+Dockerfile
+.dockerignore
+.gitignore
+.drone.yml
