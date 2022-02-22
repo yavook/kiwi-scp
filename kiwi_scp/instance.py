@@ -32,8 +32,8 @@ class Instance:
         return self.directory.joinpath(CONFIG_DIRECTORY_NAME)
 
     @property
-    def storage_config_directory(self):
-        return self.config.storage.directory.joinpath(CONFIG_DIRECTORY_NAME)
+    def storage_directory(self):
+        return self.config.storage.directory
 
     @staticmethod
     def __find_net(net_name):

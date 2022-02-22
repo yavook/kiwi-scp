@@ -16,7 +16,7 @@ class InvalidFormatError(ValueError):
     member: Optional[str]
     data: str
 
-    def __init__(self, cls, data, member = None):
+    def __init__(self, cls, data, member=None):
         self.cls = cls
         self.data = data
 
@@ -164,7 +164,7 @@ class MissingMemberError(ValueError):
 class KiwiConfig(BaseModel):
     """represents a kiwi.yml"""
 
-    version: constr(regex=RE_SEMVER) = "0.2.0"
+    version: constr(regex=RE_SEMVER) = "0.2.1"
 
     shells: List[Path] = [
         Path("/bin/bash"),
