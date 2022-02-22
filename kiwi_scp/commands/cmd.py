@@ -23,6 +23,10 @@ class KiwiCommandType(Enum):
 T = TypeVar("T")
 
 
+class KiwiCommandNotImplementedError(Exception):
+    pass
+
+
 class KiwiCommand:
     type: KiwiCommandType = KiwiCommandType.SERVICES
     enabled_only: bool = False
@@ -177,4 +181,4 @@ class KiwiCommand:
     @classmethod
     def run_for_filtered_services(cls, instance: Instance, project: Project, services: Services,
                                   new_service_names: List[str], **kwargs) -> None:
-        raise Exception
+        raise KiwiCommandNotImplementedError()

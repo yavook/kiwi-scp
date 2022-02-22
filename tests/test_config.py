@@ -8,11 +8,18 @@ from kiwi_scp.config import KiwiConfig
 from kiwi_scp.yaml import YAML
 
 
+class UnCoercibleError(ValueError):
+    pass
+
+
 class UnCoercible:
     """A class that doesn't have a string representation"""
 
     def __str__(self):
-        raise ValueError
+        raise UnCoercibleError()
+
+    def __repr__(self) -> str:
+        return "UnCoercible()"
 
 
 class TestDefault:
@@ -130,8 +137,8 @@ class TestShells:
 
         assert len(exc_info.value.errors()) == 1
         error = exc_info.value.errors()[0]
-        assert error["msg"] == "Invalid Shells Format"
-        assert error["type"] == "value_error"
+        assert error["msg"] == "Invalid 'KiwiConfig'.'shells' Format: UnCoercible()"
+        assert error["type"] == "value_error.invalidformat"
 
         with pytest.raises(ValidationError) as exc_info:
             KiwiConfig(shells=["/bin/bash", UnCoercible()])
@@ -207,8 +214,8 @@ class TestProject:
 
         assert len(exc_info.value.errors()) == 1
         error = exc_info.value.errors()[0]
-        assert error["msg"] == "Invalid Storage Format"
-        assert error["type"] == "value_error"
+        assert error["msg"] == "Invalid 'StorageConfig' Format: '{}'"
+        assert error["type"] == "value_error.invalidformat"
 
     def test_short(self):
         kiwi_dict = {
@@ -239,6 +246,15 @@ class TestProject:
         assert p.enabled
         assert p.override_storage is None
 
+    def test_reserved_name(self):
+        with pytest.raises(ValidationError) as exc_info:
+            KiwiConfig(projects={"name": "config"})
+
+        assert len(exc_info.value.errors()) == 1
+        error = exc_info.value.errors()[0]
+        assert error["msg"] == "Project name 'config' is reserved!"
+        assert error["type"] == "value_error.projectnamereserved"
+
     def test_invalid_dict(self):
         with pytest.raises(ValidationError) as exc_info:
             KiwiConfig(projects={
@@ -248,8 +264,9 @@ class TestProject:
 
         assert len(exc_info.value.errors()) == 1
         error = exc_info.value.errors()[0]
-        assert error["msg"] == "Invalid Project Format"
-        assert error["type"] == "value_error"
+        assert error["msg"] == "Invalid 'ProjectConfig' Format: " \
+                               "{'random key 1': 'random value 1', 'random key 2': 'random value 2'}"
+        assert error["type"] == "value_error.invalidformat"
 
     def test_coercible(self):
         c = KiwiConfig(projects="project")
@@ -268,16 +285,16 @@ class TestProject:
 
         assert len(exc_info.value.errors()) == 1
         error = exc_info.value.errors()[0]
-        assert error["msg"] == "Invalid Projects Format"
-        assert error["type"] == "value_error"
+        assert error["msg"] == "Invalid 'KiwiConfig'.'projects' Format: ['valid', UnCoercible()]"
+        assert error["type"] == "value_error.invalidformat"
 
         with pytest.raises(ValidationError) as exc_info:
             KiwiConfig(projects=UnCoercible())
 
         assert len(exc_info.value.errors()) == 1
         error = exc_info.value.errors()[0]
-        assert error["msg"] == "Invalid Projects Format"
-        assert error["type"] == "value_error"
+        assert error["msg"] == "Invalid 'KiwiConfig'.'projects' Format: UnCoercible()"
+        assert error["type"] == "value_error.invalidformat"
 
 
 class TestEnvironment:
@@ -360,16 +377,16 @@ class TestEnvironment:
 
         assert len(exc_info.value.errors()) == 1
         error = exc_info.value.errors()[0]
-        assert error["msg"] == "Invalid Environment Format"
-        assert error["type"] == "value_error"
+        assert error["msg"] == "Invalid 'KiwiConfig'.'environment' Format: UnCoercible()"
+        assert error["type"] == "value_error.invalidformat"
 
         with pytest.raises(ValidationError) as exc_info:
             KiwiConfig(environment=["valid", UnCoercible()])
 
         assert len(exc_info.value.errors()) == 1
         error = exc_info.value.errors()[0]
-        assert error["msg"] == "Invalid Environment Format"
-        assert error["type"] == "value_error"
+        assert error["msg"] == "Invalid 'KiwiConfig'.'environment' Format: None"
+        assert error["type"] == "value_error.invalidformat"
 
 
 class TestStorage:
@@ -379,8 +396,8 @@ class TestStorage:
 
         assert len(exc_info.value.errors()) == 1
         error = exc_info.value.errors()[0]
-        assert error["msg"] == "No Storage Given"
-        assert error["type"] == "value_error"
+        assert error["msg"] == "Member 'KiwiConfig'.'storage' is required!"
+        assert error["type"] == "value_error.missingmember"
 
     def test_dict(self):
         kiwi_dict = {"directory": "/test/directory"}
@@ -395,8 +412,8 @@ class TestStorage:
 
         assert len(exc_info.value.errors()) == 1
         error = exc_info.value.errors()[0]
-        assert error["msg"] == "Invalid Storage Format"
-        assert error["type"] == "value_error"
+        assert error["msg"] == "Invalid 'StorageConfig' Format: \"{'random key': 'random value'}\""
+        assert error["type"] == "value_error.invalidformat"
 
     def test_str(self):
         c = KiwiConfig(storage="/test/directory")
@@ -414,8 +431,8 @@ class TestStorage:
 
         assert len(exc_info.value.errors()) == 1
         error = exc_info.value.errors()[0]
-        assert error["msg"] == "Invalid Storage Format"
-        assert error["type"] == "value_error"
+        assert error["msg"] == "Invalid 'StorageConfig' Format: '{}'"
+        assert error["type"] == "value_error.invalidformat"
 
 
 class TestNetwork:
@@ -425,8 +442,8 @@ class TestNetwork:
 
         assert len(exc_info.value.errors()) == 1
         error = exc_info.value.errors()[0]
-        assert error["msg"] == "No Network Given"
-        assert error["type"] == "value_error"
+        assert error["msg"] == "Member 'KiwiConfig'.'network' is required!"
+        assert error["type"] == "value_error.missingmember"
 
     def test_dict(self):
         kiwi_dict = {
@@ -470,5 +487,5 @@ class TestNetwork:
 
         assert len(exc_info.value.errors()) == 1
         error = exc_info.value.errors()[0]
-        assert error["msg"] == "Invalid Network Format"
-        assert error["type"] == "value_error"
+        assert error["msg"] == "Invalid 'KiwiConfig'.'network' Format: True"
+        assert error["type"] == "value_error.invalidformat"

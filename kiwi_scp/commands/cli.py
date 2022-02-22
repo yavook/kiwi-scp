@@ -6,6 +6,27 @@ from typing import List, Optional
 import click
 
 
+class MissingCMDObjectError(ValueError):
+    """raised if command object can't be found in its module"""
+    pass
+
+
+class CMDObjectSubclassError(TypeError):
+    """raised if a command object is not inheriting click.Command"""
+    pass
+
+
+class CMDUnregisteredError(ValueError):
+    """raised if commands have not been assigned to a command group"""
+
+    unregistered: List[str]
+
+    def __init__(self, unregistered):
+        self.unregistered = unregistered
+
+        super().__init__(f"Some commands were not registered in a group above: {unregistered!r}")
+
+
 class KiwiCLI(click.MultiCommand):
     """Command Line Interface spread over multiple files in this directory"""
 
@@ -27,19 +48,19 @@ class KiwiCLI(click.MultiCommand):
         except ImportError:
             return
 
-        member_name = f"{cmd_name.capitalize()}Command"
+        cmd_object_name = f"{cmd_name.capitalize()}Command"
 
-        if member_name in dir(cmd_module):
-            member = getattr(cmd_module, member_name)
+        if cmd_object_name in dir(cmd_module):
+            cmd_object = getattr(cmd_module, cmd_object_name)
 
-            if isinstance(member, click.Command):
-                return member
+            if isinstance(cmd_object, click.Command):
+                return cmd_object
 
             else:
-                raise Exception("Fail class")
+                raise CMDObjectSubclassError()
 
         else:
-            raise Exception("Fail member name")
+            raise MissingCMDObjectError()
 
     def format_commands(self, ctx: click.Context, formatter: click.HelpFormatter) -> None:
         commands = {
@@ -71,4 +92,4 @@ class KiwiCLI(click.MultiCommand):
             cmd_names -= set(cmd_list)
 
         if len(cmd_names) > 0:
-            raise Exception(f"Some commands were not registered in a group above: {cmd_names}")
+            raise CMDUnregisteredError(cmd_names)

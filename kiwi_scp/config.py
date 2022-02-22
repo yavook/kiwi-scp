@@ -9,6 +9,25 @@ from ._constants import RE_SEMVER, RE_VARNAME, KIWI_CONF_NAME, RESERVED_PROJECT_
 from .yaml import YAML
 
 
+class InvalidFormatError(ValueError):
+    """raised if format recognition unsuccessful"""
+
+    cls: type
+    member: Optional[str]
+    data: str
+
+    def __init__(self, cls, data, member = None):
+        self.cls = cls
+        self.data = data
+
+        if member is not None:
+            self.member = member
+            super().__init__(f"Invalid {self.cls.__name__!r}.{self.member!r} Format: {self.data!r}")
+
+        else:
+            super().__init__(f"Invalid {self.cls.__name__!r} Format: {self.data!r}")
+
+
 class StorageConfig(BaseModel):
     """a storage subsection"""
 
@@ -31,7 +50,17 @@ class StorageConfig(BaseModel):
 
         else:
             # undefined format
-            raise ValueError("Invalid Storage Format")
+            raise InvalidFormatError(cls, str(values))
+
+
+class ProjectNameReservedError(ValueError):
+    """raised if trying to create a project with a reserved name"""
+
+    name: str
+
+    def __init__(self, name):
+        self.name = name
+        super().__init__(f"Project name {self.name!r} is reserved!")
 
 
 class ProjectConfig(BaseModel):
@@ -58,7 +87,7 @@ class ProjectConfig(BaseModel):
         """check if project name is allowed"""
 
         if value in RESERVED_PROJECT_NAMES:
-            raise ValueError(f"Project name '{value}' is reserved!")
+            raise ProjectNameReservedError(value)
 
         return value
 
@@ -101,7 +130,7 @@ class ProjectConfig(BaseModel):
 
         else:
             # undefined format
-            raise ValueError("Invalid Project Format")
+            raise InvalidFormatError(ProjectConfig, values)
 
 
 class NetworkConfig(BaseModel):
@@ -118,6 +147,18 @@ class NetworkConfig(BaseModel):
             "name": self.name,
             "cidr": str(self.cidr),
         }
+
+
+class MissingMemberError(ValueError):
+    """raised if class member is missing a definition"""
+
+    cls: type
+    member: str
+
+    def __init__(self, cls, member):
+        self.cls = cls
+        self.member = member
+        super().__init__(f"Member {self.cls.__name__!r}.{self.member!r} is required!")
 
 
 class KiwiConfig(BaseModel):
@@ -225,7 +266,7 @@ class KiwiConfig(BaseModel):
 
             except Exception:
                 # undefined format
-                raise ValueError("Invalid Shells Format")
+                raise InvalidFormatError(KiwiConfig, value, "shells")
 
     @validator("projects", pre=True)
     @classmethod
@@ -254,7 +295,7 @@ class KiwiConfig(BaseModel):
 
                         except Exception:
                             # undefined format
-                            raise ValueError("Invalid Projects Format")
+                            raise InvalidFormatError(KiwiConfig, value, "projects")
 
             return result
 
@@ -270,7 +311,7 @@ class KiwiConfig(BaseModel):
 
             except Exception:
                 # undefined format
-                raise ValueError("Invalid Projects Format")
+                raise InvalidFormatError(KiwiConfig, value, "projects")
 
     @validator("environment", pre=True)
     @classmethod
@@ -284,7 +325,7 @@ class KiwiConfig(BaseModel):
                 idx = str(var_val).find("=")
             except Exception:
                 # undefined format
-                raise ValueError("Invalid Environment Format")
+                raise InvalidFormatError(KiwiConfig, value, "environment")
 
             if idx == -1:
                 # don't split, just define the variable
@@ -325,7 +366,7 @@ class KiwiConfig(BaseModel):
 
         if value is None:
             # empty storage
-            raise ValueError("No Storage Given")
+            raise MissingMemberError(KiwiConfig, "storage")
 
         elif isinstance(value, dict):
             # native dict format
@@ -350,7 +391,7 @@ class KiwiConfig(BaseModel):
 
         if value is None:
             # empty network
-            raise ValueError("No Network Given")
+            raise MissingMemberError(KiwiConfig, "network")
 
         elif isinstance(value, dict):
             # native dict format
@@ -358,4 +399,4 @@ class KiwiConfig(BaseModel):
 
         else:
             # undefined format
-            raise ValueError("Invalid Network Format")
+            raise InvalidFormatError(KiwiConfig, value, "network")
