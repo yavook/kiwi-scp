@@ -164,7 +164,7 @@ class MissingMemberError(ValueError):
 class KiwiConfig(BaseModel):
     """represents a kiwi.yml"""
 
-    version: constr(regex=RE_SEMVER) = "0.2.1"
+    version: constr(regex=RE_SEMVER) = "0.2.2"
 
     shells: List[Path] = [
         Path("/bin/bash"),

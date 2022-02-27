@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "kiwi-scp"
-version = "0.2.1"
+version = "0.2.2"
 description = "kiwi is the simple tool for managing container servers."
-authors = ["ldericher <40151420+ldericher@users.noreply.github.com>"]
+authors = ["LDericher <40151420+ldericher@users.noreply.github.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.6.1"
