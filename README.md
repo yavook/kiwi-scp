@@ -1,6 +1,6 @@
 # kiwi-scp
 
-[![Build Status](https://github.drone.yavook.de/api/badges/ldericher/kiwi-scp/status.svg)](https://github.drone.yavook.de/ldericher/kiwi-scp)
+[![Build Status](https://github.drone.yavook.de/api/badges/yavook/kiwi-scp/status.svg)](https://github.drone.yavook.de/yavook/kiwi-scp)
 
 > `kiwi` - simple, consistent, powerful
 
@@ -22,7 +22,7 @@ A convenience installer is available as [install.sh](./dist/install.sh) in the `
 You can `curl | sh` it using the following one-liner.
 
 ```shell script
-curl --proto '=https' --tlsv1.2 -sSf 'https://raw.githubusercontent.com/ldericher/kiwi-scp/master/dist/install.sh' | sh
+curl --proto '=https' --tlsv1.2 -sSf 'https://raw.githubusercontent.com/yavook/kiwi-scp/master/dist/install.sh' | sh
 ```
 
 The installer downloads the `kiwi` launcher script and installs it to a location of your choice.
@@ -122,7 +122,7 @@ In your `docker-compose.yml` files, you can refer to that directory as **${KIWI_
 ##### `version`
 Version of kiwi-scp to use for this instance.
 
-Default: Version of [`master` branch](https://github.com/ldericher/kiwi-scp/tree/master).
+Default: Version of [`master` branch](https://github.com/yavook/kiwi-scp/tree/master).
 
 ##### `shells`
 Sequence of additionally preferable shell executables when entering service containers.
