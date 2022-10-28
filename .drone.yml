@@ -7,8 +7,8 @@ steps:
 - name: pytest
   image: python:3.6-alpine3.13
   commands:
-    - apk add --no-cache g++ libffi-dev
-    - wget -O- https://raw.githubusercontent.com/python-poetry/poetry/master/install-poetry.py | python3 -
+    - apk add --no-cache g++ libffi-dev curl
+    - wget -O- https://install.python-poetry.org | python3 - --version 1.1.15
     - /root/.local/bin/poetry install
     - /root/.local/bin/poetry run pytest
 
